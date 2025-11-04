@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages (with optional WASM build)
 
 on:
   push:
@@ -16,12 +16,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # No build step required for this repo (static files at repository root).
-      # If you later add a build step (npm build, wasm build, etc.), add it here.
+      - name: Install & build WASM with Emscripten (if emsdk available)
+        # We clone and install emsdk and then run the build script in the same shell
+        # so the emsdk environment (emsdk_env.sh) is active for the build step.
+        run: |
+          set -euo pipefail
+
+          # Only attempt to build if build script exists
+          if [ -x "wasm/build_wasm.sh" ] || [ -f "wasm/build_wasm.sh" ]; then
+            echo "Found wasm/build_wasm.sh — attempting to install emsdk and build"
+
+            # Clone emsdk
+            git clone https://github.com/emscripten-core/emsdk.git emsdk
+            pushd emsdk
+            ./emsdk install latest
+            ./emsdk activate latest
+            # Source the environment to make emcc available in this shell
+            source ./emsdk_env.sh
+            popd
+
+            # Run the project's build script
+            chmod +x wasm/build_wasm.sh
+            ./wasm/build_wasm.sh
+          else
+            echo "No wasm/build_wasm.sh found — skipping WASM build"
+          fi
+        shell: bash
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v1
         with:
+          # Upload repository root (includes wasm/dist if build produced it)
           path: './'
 
       - name: Deploy to GitHub Pages
