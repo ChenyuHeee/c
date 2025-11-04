@@ -70,10 +70,11 @@ jobs:
         shell: bash
 
       - name: Upload artifact for GitHub Pages
-        uses: actions/upload-pages-artifact@v1
+        # Use the latest stable release; update if GitHub releases a newer major.
+        uses: actions/upload-pages-artifact@v2
         with:
           # Upload repository root (includes wasm/dist if build produced it)
           path: './'
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
