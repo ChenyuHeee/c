@@ -1,4 +1,4 @@
-<!--Version:1.3.4-->
+<!--Version:1.3.5-->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -138,7 +138,7 @@
             <div class="meta">
                 <a id="contestLink" href="./competition/index.html" title="赛事 / Contest"><i class="fas fa-flag-checkered"></i> 赛事</a>
                 <span class="badge" id="netBadge" title="网络状态">在线</span>
-                <span class="badge" id="verBadge" title="版本">v1.3.4</span>
+                <span class="badge" id="verBadge" title="版本">v1.3.5</span>
             </div>
         </header>
 
@@ -193,7 +193,7 @@
             <button class="btn ghost" id="redoBtn" title="重做" disabled><i class="fas fa-redo"></i></button>
             <button class="btn ghost" id="fsBtn"><i class="fas fa-expand"></i> 全屏</button>
             <a id="introLink" href="./about.html" target="_blank" style="margin-left:auto;color:var(--muted);font-size:12px;text-decoration:none"><i class="fas fa-circle-info"></i> 简介与帮助</a>
-            <a id="versionLink" href="javascript:void(0)" style="color:var(--muted);font-size:12px;text-decoration:none;padding-left:12px">By C. He from ZJU | <span id="footerEditorVersion">v1.3.4</span></a>
+            <a id="versionLink" href="javascript:void(0)" style="color:var(--muted);font-size:12px;text-decoration:none;padding-left:12px">By C. He from ZJU | <span id="footerEditorVersion">v1.3.5</span></a>
         </div>
         </div>
     </div>
@@ -1534,6 +1534,33 @@ int main() {
             const closeBtn = document.getElementById('milkTeaClose');
             const okBtn = document.getElementById('milkTeaOk');
             if(!trigger || !modal) return;
+            // 提供一个“强制更新到最新版”的隐藏入口：按住 Alt 点击版本号
+            async function forceUpdate(){
+                try{
+                    // 1) 清除本应用相关缓存
+                    if (window.caches && caches.keys) {
+                        const keys = await caches.keys();
+                        await Promise.all(keys.map(k=>{
+                            if (/^c-compiler-/i.test(k)) return caches.delete(k);
+                            return Promise.resolve(false);
+                        }));
+                    }
+                    // 2) 注销所有 Service Worker
+                    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+                        const regs = await navigator.serviceWorker.getRegistrations();
+                        await Promise.all(regs.map(r=>r.unregister()));
+                    }
+                    // 3) 清理本地动态图标缓存（可选）
+                    try{ localStorage.removeItem('dyn_icons_v1'); localStorage.removeItem('dyn_icons_about_v1'); }catch(e){}
+                    // 4) 使用时间戳参数重新加载，尽量绕过中间缓存
+                    const url = new URL(location.href);
+                    url.searchParams.set('v', Date.now());
+                    location.replace(url.toString());
+                }catch(e){
+                    // 失败则回退普通 reload
+                    location.reload();
+                }
+            }
             function open(){
                 modal.style.display='block';
                 requestAnimationFrame(()=>modal.classList.add('show'));
@@ -1543,7 +1570,12 @@ int main() {
                 modal.classList.remove('show');
                 setTimeout(()=>{modal.style.display='none';modal.setAttribute('aria-hidden','true');},260);
             }
-            trigger.addEventListener('click', ()=>{
+            trigger.addEventListener('click', (e)=>{
+                // 按住 Alt 点击触发强制更新
+                if (e && e.altKey){ e.preventDefault();
+                    if (confirm('强制更新将清理缓存并重载页面，是否继续？')) forceUpdate();
+                    return;
+                }
                 if(modal.style.display==='block'){close();return;}
                 open();
             });

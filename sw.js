@@ -1,10 +1,10 @@
 /*
-  Service Worker for Online C Compiler v1.3.4
+  Service Worker for Online C Compiler v1.3.5
   - Precache core assets for offline edit/view
   - Runtime cache for GET requests (cache-first with network fallback)
   Note: bump VERSION when index.html or core assets change to refresh cache.
 */
-const VERSION = 'v1.3.4';
+const VERSION = 'v1.3.5';
 const CACHE_NAME = `c-compiler-${VERSION}`;
 const CORE_ASSETS = [
   './',
