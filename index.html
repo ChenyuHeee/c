@@ -416,7 +416,7 @@ int main() {
         function applyThemeImmediately() {
             document.body.classList.toggle('light-theme', !isDark);
             try { if (window.monaco) monaco.editor.setTheme(isDark ? 'vs-dark' : 'vs-light'); } catch (e) {}
-            themeBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i> 明亮' : '<i class="fas fa-moon"></i> 暗色';
+            try{ const tb=document.getElementById('themeBtn'); if(tb) tb.innerHTML = isDark ? '<i class="fas fa-sun"></i> '+t('theme_light') : '<i class="fas fa-moon"></i> '+t('theme_dark'); }catch(e){}
         }
 
         function toggleTheme() {
@@ -426,7 +426,7 @@ int main() {
             // 添加/移除全局类以切换 CSS 变量（平滑过渡）
             document.body.classList.toggle('light-theme', !isDark);
             // 更新按钮文案并在短延迟后切换 Monaco 主题，避免强烈反差
-            themeBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i> 明亮' : '<i class="fas fa-moon"></i> 暗色';
+            try{ const tb=document.getElementById('themeBtn'); if(tb) tb.innerHTML = isDark ? '<i class="fas fa-sun"></i> '+t('theme_light') : '<i class="fas fa-moon"></i> '+t('theme_dark'); }catch(e){}
             try {
                 setTimeout(() => {
                     monaco.editor.setTheme(isDark ? 'vs-dark' : 'vs-light');
@@ -641,7 +641,10 @@ int main() {
                 cases_empty:'暂无用例，点击 + 新建。', case_name:'用例', delete:'删除',
                 share_title:'生成分享链接', share_desc:'可选择包含以下内容以便对方完整复现：', include_stdin:'包含输入 (stdin)', include_cases:'包含测试用例',
                 offline_title:'离线不可运行', offline_desc:'当前处于离线状态，暂不进行本地模拟运行，以避免结果不一致。请恢复网络后再点击“运行”。测试用例批量/单个运行也需要网络。', ok:'知道了',
-                metrics_title:'代码复杂度与度量', metrics_desc:'实时分析当前编辑器内容，帮助了解规模与潜在复杂度。复杂度为近似估算（启发式），非精确解析。', metrics_refresh:'刷新度量', metrics_copy:'复制报告', metrics_copied:'已复制', metrics_placeholder:'(点击“刷新度量”或编辑代码后查看)'
+                metrics_title:'代码复杂度与度量', metrics_desc:'实时分析当前编辑器内容，帮助了解规模与潜在复杂度。复杂度为近似估算（启发式），非精确解析。', metrics_refresh:'刷新度量', metrics_copy:'复制报告', metrics_copied:'已复制', metrics_placeholder:'(点击“刷新度量”或编辑代码后查看)',
+                save_as:'另存为', theme:'主题', theme_light:'明亮', theme_dark:'暗色', stdin_placeholder:'请先输入再点击运行...', stdout_placeholder:'程序输出将显示在这里...', expected_placeholder:'期望输出 (可留空)',
+                close:'关闭', collapse:'折叠',
+                cmd_palette:'命令面板', cmd_close:'关闭', cmd_no_match:'无匹配命令', cmd_hint_open:'Ctrl/Cmd+Shift+P 打开', cmd_hint_close:'Esc 关闭', cmd_filter_placeholder:'输入关键字过滤，如 run / format'
             },
             en: {
                 run:'Run', open:'Open', format:'Format', copy:'Copy', copied:'Copied', share:'Share', share_copy:'Copy Link', metrics:'Metrics', undo:'Undo', redo:'Redo', fullscreen:'Fullscreen',
@@ -650,7 +653,10 @@ int main() {
                 cases_empty:'No cases yet, click + to add.', case_name:'Case', delete:'Delete',
                 share_title:'Create Share Link', share_desc:'Select items to include for full reproduction:', include_stdin:'Include stdin', include_cases:'Include test cases',
                 offline_title:'Offline - Execution Disabled', offline_desc:'You are offline. To avoid misleading outputs, local simulation is disabled. Please reconnect to run. Test cases also require network.', ok:'Got it',
-                metrics_title:'Code Metrics', metrics_desc:'Analyze the current code for size and potential complexity. Heuristic only, not a precise parser.', metrics_refresh:'Refresh', metrics_copy:'Copy Report', metrics_copied:'Copied', metrics_placeholder:'(Click “Refresh” or edit code to update)'
+                metrics_title:'Code Metrics', metrics_desc:'Analyze the current code for size and potential complexity. Heuristic only, not a precise parser.', metrics_refresh:'Refresh', metrics_copy:'Copy Report', metrics_copied:'Copied', metrics_placeholder:'(Click “Refresh” or edit code to update)',
+                save_as:'Save As', theme:'Theme', theme_light:'Light', theme_dark:'Dark', stdin_placeholder:'Enter stdin (optional), then click Run', stdout_placeholder:'Program output will appear here...', expected_placeholder:'Expected output (optional)',
+                close:'Close', collapse:'Collapse',
+                cmd_palette:'Command Palette', cmd_close:'Close', cmd_no_match:'No matching command', cmd_hint_open:'Ctrl/Cmd+Shift+P to open', cmd_hint_close:'Esc to close', cmd_filter_placeholder:'Type keywords to filter (e.g. run / format)'
             }
         };
         function getLang(){ try{ return localStorage.getItem('ui_lang') || 'zh'; }catch(e){ return 'zh'; } }
@@ -663,6 +669,8 @@ int main() {
                 document.getElementById('runBtn').innerHTML = '<i class="fas fa-play"></i> '+t('run');
                 document.getElementById('openFileBtn').innerHTML = '<i class="fas fa-folder-open"></i> '+t('open');
                 document.getElementById('formatBtnText').textContent = t('format');
+                const saveAsBtnEl=document.getElementById('saveAsBtn'); if(saveAsBtnEl) saveAsBtnEl.innerHTML='<i class="fas fa-download"></i> '+t('save_as');
+                const themeBtnEl=document.getElementById('themeBtn'); if(themeBtnEl) themeBtnEl.innerHTML = (typeof isDark!=='undefined' && isDark) ? '<i class="fas fa-sun"></i> '+t('theme_light') : '<i class="fas fa-moon"></i> '+t('theme_dark');
                 const copyBtnEl=document.getElementById('copyBtn'); copyBtnEl.innerHTML='<i class="fas fa-copy"></i> '+t('copy'); copyBtnEl.title=t('copy');
                 const shareBtnEl=document.getElementById('shareBtn'); shareBtnEl.innerHTML='<i class="fas fa-link"></i> '+t('share'); shareBtnEl.title=t('share');
                 const metricsBtnEl=document.getElementById('metricsBtn'); if(metricsBtnEl){ metricsBtnEl.innerHTML='<i class="fas fa-chart-bar"></i> '+t('metrics'); metricsBtnEl.title=t('metrics'); }
@@ -675,10 +683,14 @@ int main() {
                 const sbTitle=document.getElementById('sbTitle'); if(sbTitle) sbTitle.innerHTML = '<i class="fas fa-terminal"></i> '+t('results');
                 const stdinLbl=document.getElementById('stdinLabel'); if(stdinLbl) stdinLbl.textContent = t('stdin');
                 const stdoutLbl=document.getElementById('stdoutLabel'); if(stdoutLbl) stdoutLbl.textContent = t('stdout');
+                const stdinBox=document.getElementById('stdin'); if(stdinBox) stdinBox.placeholder = t('stdin_placeholder');
+                const stdoutBox=document.getElementById('stdout'); if(stdoutBox){ const s=stdoutBox.textContent||''; if(!s.trim() || s.includes('程序输出将显示在这里') || s.includes('Program output will appear here')) stdoutBox.textContent = t('stdout_placeholder'); }
+                const closeSbEl=document.getElementById('closeSb'); if(closeSbEl) closeSbEl.textContent = t('collapse');
                 const enableBtn=document.getElementById('enableTestsBtn'); if(enableBtn) enableBtn.innerHTML='<i class="fas fa-vial"></i> '+t('enable_tests');
                 const testsTitle=document.getElementById('testsTitle'); if(testsTitle) testsTitle.innerHTML='<i class="fas fa-vial"></i> '+t('tests');
                 const addCaseBtnEl=document.getElementById('addCaseBtn'); if(addCaseBtnEl) addCaseBtnEl.title=t('add_case_title');
                 const runAllBtnEl=document.getElementById('runAllBtn'); if(runAllBtnEl){ runAllBtnEl.title=t('run_all_title'); runAllBtnEl.innerHTML='<i class="fas fa-list-check"></i> '+t('run_all'); }
+                const mobileBtn=document.getElementById('mobilePanelBtn'); if(mobileBtn) mobileBtn.innerHTML = '<i class="fas fa-sliders"></i> '+t('io_toggle');
                 // 网络徽章提示更新（文本部分）
                 try{ const runBtn = document.getElementById('runBtn'); if(runBtn){ runBtn.title = navigator.onLine? t('run_title_on') : t('run_title_off'); } }catch(e){}
                 try{
@@ -689,9 +701,21 @@ int main() {
                 try{
                     const h3 = document.querySelector('#metricsInner h3'); if(h3) h3.innerHTML = '<i class="fas fa-chart-bar"></i> '+t('metrics_title');
                     const desc = document.querySelector('#metricsInner > div:nth-child(2)'); if(desc) desc.textContent = t('metrics_desc');
+                    const close=document.getElementById('metricsClose'); if(close) close.innerHTML='<i class="fas fa-xmark"></i> '+t('close');
                     const refresh=document.getElementById('metricsRefresh'); if(refresh) refresh.innerHTML='<i class="fas fa-rotate"></i> '+t('metrics_refresh');
                     const copy=document.getElementById('metricsCopy'); if(copy) copy.innerHTML='<i class="fas fa-copy"></i> '+t('metrics_copy');
                     const rep=document.getElementById('metricsReport'); if(rep && (!rep.textContent || rep.textContent.includes('点击') || rep.textContent.includes('Click'))) rep.textContent = t('metrics_placeholder');
+                }catch(e){}
+                // 命令面板本地化（若已渲染）
+                try{
+                    const cmdTitle=document.querySelector('#cmdPaletteInner > div > div[style] i.fas.fa-terminal')?.parentElement; // robust selection fallback
+                }catch(e){}
+                try{
+                    const cmdHeader=document.querySelector('#cmdPaletteInner > div:first-child > div');
+                    if(cmdHeader){ cmdHeader.innerHTML='<i class="fas fa-terminal"></i> '+t('cmd_palette'); }
+                    const cmdCloseBtn=document.querySelector('#cmdPaletteInner > div:first-child button.btn.ghost'); if(cmdCloseBtn) cmdCloseBtn.innerHTML='<i class="fas fa-xmark"></i> '+t('cmd_close');
+                    const cmdInput=document.getElementById('cmdInput'); if(cmdInput) cmdInput.placeholder=t('cmd_filter_placeholder');
+                    const cmdFooter=document.querySelector('#cmdPaletteInner > div:last-child'); if(cmdFooter){ cmdFooter.innerHTML='<span>'+t('cmd_hint_open')+'</span><span>'+t('cmd_hint_close')+'</span>'; }
                 }catch(e){}
             }catch(e){}
         }
@@ -1088,7 +1112,7 @@ int main() {
                 const sum=document.createElement('summary'); sum.textContent=c.name||(t('case_name')+(idx+1)); sum.style.cursor='pointer'; wrap.appendChild(sum);
                 const name=document.createElement('input'); name.type='text'; name.placeholder=t('case_name'); name.value=c.name||''; name.style.margin='8px 0';
                 const stdin=document.createElement('textarea'); stdin.rows=2; stdin.placeholder=t('stdin'); stdin.value=c.input||''; stdin.style.marginBottom='6px';
-                const expected=document.createElement('textarea'); expected.rows=2; expected.placeholder='Expected (optional)'; expected.value=c.expected||''; expected.style.marginBottom='8px';
+                const expected=document.createElement('textarea'); expected.rows=2; expected.placeholder=t('expected_placeholder'); expected.value=c.expected||''; expected.style.marginBottom='8px';
                 const actions=document.createElement('div'); actions.style.display='flex'; actions.style.gap='8px';
                 const del=document.createElement('button'); del.className='btn ghost'; del.innerHTML='<i class="fas fa-trash"></i> '+t('delete');
                 const run=document.createElement('button'); run.className='btn ghost'; run.innerHTML='<i class="fas fa-play"></i> '+t('run');
@@ -1175,7 +1199,7 @@ int main() {
         ];
         function openCmdPalette(){ const modal=document.getElementById('cmdPalette'); if(!modal) return; modal.style.display='flex'; requestAnimationFrame(()=>modal.classList.add('open')); const input=document.getElementById('cmdInput'); input.value=''; input.focus(); filterCmd(''); }
         function closeCmdPalette(){ const modal=document.getElementById('cmdPalette'); if(!modal) return; modal.classList.remove('open'); setTimeout(()=>modal.style.display='none',150); }
-        function filterCmd(q){ const list=document.getElementById('cmdList'); if(!list) return; list.innerHTML=''; const s=(q||'').toLowerCase(); commands.filter(c=>c.label.toLowerCase().includes(s)).forEach(c=>{ const li=document.createElement('div'); li.className='cmd-item'; li.textContent=c.label; li.tabIndex=0; li.addEventListener('click',()=>{ closeCmdPalette(); setTimeout(()=>c.action(),50); }); list.appendChild(li); }); if(!list.children.length){ const li=document.createElement('div'); li.className='cmd-item'; li.style.opacity='.7'; li.textContent='无匹配命令'; list.appendChild(li); } }
+    function filterCmd(q){ const list=document.getElementById('cmdList'); if(!list) return; list.innerHTML=''; const s=(q||'').toLowerCase(); commands.filter(c=>c.label.toLowerCase().includes(s)).forEach(c=>{ const li=document.createElement('div'); li.className='cmd-item'; li.textContent=c.label; li.tabIndex=0; li.addEventListener('click',()=>{ closeCmdPalette(); setTimeout(()=>c.action(),50); }); list.appendChild(li); }); if(!list.children.length){ const li=document.createElement('div'); li.className='cmd-item'; li.style.opacity='.7'; li.textContent=t('cmd_no_match'); list.appendChild(li); } }
     window._openCmd = openCmdPalette;
     document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ const m=document.getElementById('cmdPalette'); if(m&&m.classList.contains('open')){ const modal=m; modal.classList.remove('open'); setTimeout(()=>modal.style.display='none',150); } } });
     </script>
