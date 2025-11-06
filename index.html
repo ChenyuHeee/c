@@ -1,4 +1,4 @@
-<!--Version:1.1.13-->
+<!--Version:1.2.2-->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -8,7 +8,6 @@
     <!-- 字体图标和 Monaco 加载器 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.js"></script>
-    <!-- 集成 uncrustify-wasm 版本（自动缩进/格式化 C/C++） -->
     <script src="https://cdn.jsdelivr.net/npm/uncrustify-wasm@2.0.1/dist/uncrustify.js"></script>
 
     <!-- Highlight.js themes (prefetch links; actual enable/disable handled by script) -->
@@ -16,7 +15,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css" id="hljs-theme-light" disabled>
 
     <style>
-        /* 暗黑优先 - 极简 mac 风格 */
         :root{
             --sidebar-width: 380px;
             --bg: #0b0c0d;           /* 页面背景（near black） */
@@ -32,11 +30,15 @@
         .light-theme{
             --bg: #f3f6fb;
             --panel: #ffffff;
-            --muted: #6b7280;
+            --muted: #4b5563;
             --accent: #2563eb;
-            --glass: rgba(0,0,0,0.03);
-            --shadow: 0 10px 30px rgba(16,24,40,0.06);
+            --glass: rgba(0,0,0,0.04);
+            --shadow: 0 4px 16px rgba(0,0,0,0.08);
         }
+        body.light-theme .frame{background:var(--panel)}
+        body.light-theme header{background:linear-gradient(180deg,#ffffff,rgba(255,255,255,0.85))}
+        body.light-theme .toolbar{background:#ffffff;border-top:1px solid rgba(0,0,0,0.08)}
+        body.light-theme .sidebar{background:linear-gradient(180deg,#ffffff,rgba(255,255,255,0.85))}
 
         *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial}
@@ -67,6 +69,8 @@
     .btn{border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--muted);transition:color .3s}
     .btn.primary{background:var(--accent);color:#071022}
     .btn.ghost{border:1px solid rgba(0,0,0,0.06)}
+    /* 按钮禁用视觉状态 */
+    .btn[disabled]{opacity:.45;cursor:not-allowed;filter:grayscale(25%)}
 
     /* 侧栏 */
     /* 侧栏：使用绝对定位以覆盖编辑区，避免被 Monaco canvas 遮挡 */
@@ -88,12 +92,9 @@
         @media (max-width:900px){
             .main{flex-direction:column}
             .sidebar{width:100%;height:34%}
-            .editor-wrap{border-right:0}
-        }
-        /* 使颜色切换更顺滑：对主要面板启用背景/颜色过渡 */
-        .frame, header, .sidebar, .editor-wrap, .toolbar, .output { transition: background-color .45s ease, color .45s ease }
         /* 确保编辑器画布不挡住侧栏：编辑器区域的层级要低于侧栏 */
         #editor{position:relative;z-index:10}
+        }
     </style>
 </head>
 <body>
@@ -101,44 +102,41 @@
         <div class="frame">
         <header>
             <div class="title"><i class="fas fa-code"></i><div>Online C Compiler</div></div>
-            <div class="meta">By C. He from ZJU · <a href="/CHANGELOG.md" target="_blank" rel="noopener" id="versionLink"><span id="versionTag">Version 1.1.14</span></a></div>
         </header>
 
         <div class="main">
             <div class="editor-wrap">
                 <div class="editor-head">
                     <h2><i class="fas fa-file-code"></i> <span id="fileTitle">main.c</span></h2>
-                    <div class="status" id="saveStatus">已保存</div>
-                </div>
-
-                <div id="editor"></div>
-
-                <div class="toolbar">
-                    <button class="btn primary" id="runBtn"><i class="fas fa-play"></i> 运行</button>
-                    <button class="btn ghost" id="openFileBtn"><i class="fas fa-folder-open"></i> 打开文件</button>
-                    <button class="btn ghost" id="saveBtn"><i class="fas fa-save"></i> 保存</button>
-                    <button class="btn ghost" id="resetBtn"><i class="fas fa-undo"></i> 重置</button>
-                    <button class="btn ghost" id="formatBtn" title="自动缩进"><i class="fas fa-indent" id="formatLoadingIcon"></i> <span id="formatBtnText">自动缩进</span></button>
-                    <button class="btn ghost" id="fsBtn" title="全屏"><i class="fas fa-expand"></i></button>
-                    <label style="display:inline-flex;align-items:center;gap:8px;color:var(--muted)">
-                        <input type="checkbox" id="useWasm" style="width:16px;height:16px"> 优先使用 WASM
-                    </label>
+                    <!-- 移除冗余的文字状态提示，仅保留文件名星号表示未保存 -->
                     <div style="flex:1"></div>
                     <button class="btn ghost" id="saveAsBtn"><i class="fas fa-download"></i> 另存为</button>
                     <button class="btn ghost" id="themeBtn"><i class="fas fa-sun"></i> 主题</button>
                 </div>
+                <div id="editor"></div>
             </div>
 
             <aside class="sidebar" id="sidebar">
                 <div class="sb-head"><div><i class="fas fa-terminal"></i> 运行结果</div><button id="closeSb" class="btn ghost">折叠</button></div>
                 <div class="sb-section">
                     <label>输入 (stdin)</label>
-                    <textarea id="stdin" rows="3" placeholder="例如：10 20"></textarea>
+                    <textarea id="stdin" rows="3" placeholder="请先输入再点击运行..."></textarea>
                     <div style="height:12px"></div>
                     <label>输出 (stdout)</label>
                     <div class="output" id="stdout">程序输出将显示在这里...</div>
                 </div>
             </aside>
+        </div>
+        <!-- 底部工具栏：运行 / 打开 / 自动缩进 / 复制 / 撤销 / 重做 / 全屏 / 版权与版本号 -->
+        <div class="toolbar">
+            <button class="btn primary" id="runBtn"><i class="fas fa-play"></i> 运行</button>
+            <button class="btn ghost" id="openFileBtn"><i class="fas fa-folder-open"></i> 打开</button>
+            <button class="btn ghost" id="formatBtn"><i id="formatLoadingIcon" class="fas fa-indent"></i> <span id="formatBtnText">自动缩进</span></button>
+            <button class="btn ghost" id="copyBtn" title="复制"><i class="fas fa-copy"></i> 复制</button>
+            <button class="btn ghost" id="undoBtn" title="撤销" disabled><i class="fas fa-undo"></i></button>
+            <button class="btn ghost" id="redoBtn" title="重做" disabled><i class="fas fa-redo"></i></button>
+            <button class="btn ghost" id="fsBtn"><i class="fas fa-expand"></i> 全屏</button>
+            <a id="versionLink" href="./CHANGELOG.md" target="_blank" style="margin-left:auto;color:var(--muted);font-size:12px;text-decoration:none">By C. He from ZJU | v1.2.2</a>
         </div>
         </div>
     </div>
@@ -178,9 +176,8 @@ int main() {
         let isDirty = false;
 
         // DOM 引用
-        const runBtn = document.getElementById('runBtn');
-        const saveBtn = document.getElementById('saveBtn');
-        const resetBtn = document.getElementById('resetBtn');
+    const runBtn = document.getElementById('runBtn');
+    const copyBtn = document.getElementById('copyBtn');
         const themeBtn = document.getElementById('themeBtn');
         const stdinEl = document.getElementById('stdin');
         const stdoutEl = document.getElementById('stdout');
@@ -202,6 +199,39 @@ int main() {
                 scrollBeyondLastLine: false
             });
 
+            // 撤销/重做自动禁用：基于内容变更事件维护简易历史指针
+            let __histIdx = 0;
+            let __histMax = 0;
+            function updateUndoRedoButtons(){
+                try{
+                    const undoBtn = document.getElementById('undoBtn');
+                    const redoBtn = document.getElementById('redoBtn');
+                    if (undoBtn) undoBtn.disabled = (__histIdx <= 0);
+                    if (redoBtn) redoBtn.disabled = (__histIdx >= __histMax);
+                }catch(e){}
+            }
+            updateUndoRedoButtons();
+
+            try {
+                window.editor.onDidChangeModelContent((e) => {
+                    try{
+                        if (e && e.isUndoing) {
+                            __histIdx = Math.max(0, __histIdx - 1);
+                        } else if (e && e.isRedoing) {
+                            __histIdx = Math.min(__histMax, __histIdx + 1);
+                        } else {
+                            // 新编辑会截断 redo
+                            if (__histIdx < __histMax) {
+                                __histMax = __histIdx;
+                            }
+                            __histIdx += 1;
+                            __histMax = __histIdx;
+                        }
+                    }catch(err){}
+                    updateUndoRedoButtons();
+                });
+            } catch(e) {}
+
             // 应用 body 主题类（持久化）
             try { if (localStorage.getItem('editorTheme') === 'light') document.body.classList.add('light-theme'); } catch (e) {}
 
@@ -212,34 +242,10 @@ int main() {
                 });
             } catch (e) {}
 
-            // 快捷键：Ctrl/Cmd+S 保存
-            window.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-                    e.preventDefault(); saveCode();
-                }
-            });
+            // 移除 Ctrl/Cmd+S 保存快捷键（仅保留另存为功能）
         });
 
     // ----------------- 功能函数 -----------------
-        // 保存当前编辑器内容到 localStorage，并提示状态
-        function saveCode() {
-            if (!window.editor) return;
-            localStorage.setItem('deepseek_saved_c', window.editor.getValue());
-            saveStatus.textContent = '已保存';
-            saveStatus.style.color = '#22c55e';
-            // 保存后取消脏标记
-            setDirty(false);
-            setTimeout(() => { saveStatus.style.color = ''; }, 1200);
-        }
-
-        // 将编辑器内容重置为默认代码（不会清除 localStorage）
-        function resetCode() {
-            if (!window.editor) return;
-            if (!confirm('确定重置代码？未保存的更改将丢失。')) return;
-            window.editor.setValue(DEFAULT_CODE);
-            // 重置后视为未保存（需要用户保存以覆盖 localStorage）
-            setDirty(true);
-        }
 
         // runCode: 优先尝试 Wandbox（真实编译器），若失败尝试加载本地 WASM 运行器（若你已部署）
         // 最后回退到原有的模拟（simulateRun）。Wandbox API: https://wandbox.org
@@ -310,70 +316,19 @@ int main() {
             if (!window.editor) return;
             const code = window.editor.getValue();
             const stdin = (stdinEl.value || '').trim();
-
-            const preferWasm = !!document.getElementById('useWasm') && document.getElementById('useWasm').checked;
-            if (preferWasm) stdoutEl.textContent = '运行中（优先尝试浏览器端 WASM）...';
-            else stdoutEl.textContent = '运行中（优先尝试 Wandbox）...';
-
-            // 两种优先级：WASM 优先或 Wandbox 优先
-            if (preferWasm) {
-                // 1) 尝试 WASM
-                try {
-                    const wasmRes = await tryWasmRun(code, stdin);
-                    let out = '';
-                    if (wasmRes.stdout) out += wasmRes.stdout;
-                    if (wasmRes.stderr) out += '\n[stderr]\n' + wasmRes.stderr;
-                    out += `\n[exit code] ${wasmRes.exitCode ?? 0}`;
-                    stdoutEl.textContent = out.trim();
-                    return;
-                } catch (e) {
-                    console.warn('WASM 运行器不可用：', e);
-                    stdoutEl.textContent = 'WASM 不可用，尝试 Wandbox（若可用）...';
-                }
-
-                // 2) 尝试 Wandbox
-                try {
-                    const res = await tryWandboxCompile(code, stdin);
-                    let out = '';
-                    if (res.stdout) out += res.stdout;
-                    if (res.stderr) out += '\n[stderr]\n' + res.stderr;
-                    out += `\n[exit code] ${res.exitCode ?? 0}`;
-                    stdoutEl.textContent = out.trim();
-                    return;
-                } catch (e) {
-                    console.warn('Wandbox 调用失败：', e);
-                    stdoutEl.textContent = 'Wandbox 不可用或被阻止，回退到本地模拟。';
-                }
-            } else {
-                // Wandbox 优先
-                try {
-                    const res = await tryWandboxCompile(code, stdin);
-                    let out = '';
-                    if (res.stdout) out += res.stdout;
-                    if (res.stderr) out += '\n[stderr]\n' + res.stderr;
-                    out += `\n[exit code] ${res.exitCode ?? 0}`;
-                    stdoutEl.textContent = out.trim();
-                    return;
-                } catch (e) {
-                    console.warn('Wandbox 调用失败：', e);
-                    stdoutEl.textContent = 'Wandbox 不可用或被阻止，尝试 WASM（若已部署）...';
-                }
-
-                try {
-                    const wasmRes = await tryWasmRun(code, stdin);
-                    let out = '';
-                    if (wasmRes.stdout) out += wasmRes.stdout;
-                    if (wasmRes.stderr) out += '\n[stderr]\n' + wasmRes.stderr;
-                    out += `\n[exit code] ${wasmRes.exitCode ?? 0}`;
-                    stdoutEl.textContent = out.trim();
-                    return;
-                } catch (e) {
-                    console.warn('WASM 运行器不可用：', e);
-                    stdoutEl.textContent = '本地 WASM 运行器不可用，回退到本地模拟。';
-                }
+            stdoutEl.textContent = '运行中（Wandbox 优先）...';
+            try {
+                const res = await tryWandboxCompile(code, stdin);
+                let out = '';
+                if (res.stdout) out += res.stdout;
+                if (res.stderr) out += '\n[stderr]\n' + res.stderr;
+                out += `\n[exit code] ${res.exitCode ?? 0}`;
+                stdoutEl.textContent = out.trim();
+                return;
+            } catch (e) {
+                console.warn('Wandbox 调用失败：', e);
+                stdoutEl.textContent = 'Wandbox 不可用，回退到本地模拟...';
             }
-
-            // 最后回退到模拟
             simulateRun(code, stdin);
         }
 
@@ -434,9 +389,27 @@ int main() {
     // ----------------- 事件绑定 -----------------
     // 常规绑定（若此时元素存在）
     try { runBtn && runBtn.addEventListener('click', runCode); } catch (e) {}
-    try { saveBtn && saveBtn.addEventListener('click', saveCode); } catch (e) {}
-    try { resetBtn && resetBtn.addEventListener('click', resetCode); } catch (e) {}
+        try {
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn && copyBtn.addEventListener('click', () => {
+                try {
+                    const code = window.editor ? window.editor.getValue() : '';
+                    navigator.clipboard.writeText(code).then(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                        setTimeout(()=>{copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';},1200);
+                    }).catch(err => { alert('复制失败: ' + err.message); });
+                } catch(e){ alert('复制失败'); }
+            });
+        } catch (e) {}
+    // 保存与重置功能已移除
     try { themeBtn && themeBtn.addEventListener('click', toggleTheme); } catch (e) {}
+    // 撤销/重做按钮绑定（脚本区正确绑定）
+    try {
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        if (undoBtn) undoBtn.addEventListener('click', () => { if (window.editor) window.editor.trigger('toolbar','undo'); });
+        if (redoBtn) redoBtn.addEventListener('click', () => { if (window.editor) window.editor.trigger('toolbar','redo'); });
+    } catch(e) {}
     // 纯 JS 高级 C 代码自动缩进美化
     (function(){
         const formatBtn = document.getElementById('formatBtn');
@@ -451,7 +424,8 @@ int main() {
             let indent = 0;
             let inBlockComment = false, inString = false, stringChar = '';
             let result = [];
-            // 控制流栈，支持多层嵌套
+            // 控制流栈：记录无大括号的单行体（single）与 do...while（do）
+            // 栈元素：{ type: 'single'|'do', applied: boolean }
             let controlStack = [];
             let inSwitch = false, inCase = false, caseIndent = 0;
             const controlRegex = /^(if|for|while|else if|else|do|switch)\b.*\)?\s*$/;
@@ -524,10 +498,6 @@ int main() {
                 let effectiveIndent = indent;
                 if (trimmed.startsWith('}')) effectiveIndent = Math.max(0, indent-1);
                 if (caseOrDefault) effectiveIndent = Math.max(0, effectiveIndent-1);
-                // 控制流栈：多层嵌套无大括号控制流
-                if (isControl && !isDo) {
-                    controlStack.push({idx, indent: effectiveIndent+1});
-                }
                 // else if/else 缩进对齐
                 if (isElse && result.length > 0) {
                     // else/else if 与前一行对齐
@@ -535,9 +505,30 @@ int main() {
                     let prevIndent = prev.match(/^(\s*)/)[1].length/tabSize;
                     effectiveIndent = prevIndent;
                 }
-                // do...while 结构
+                // 计算单行体的额外缩进：当上一行是控制语句且无大括号时，从本行开始额外 +1
+                const controlStart = /^(if|for|while|else|do|switch)\b/;
+                const isSignificantStatement = (s) => {
+                    if (!s) return false;
+                    if (s.startsWith('#')) return false;
+                    if (s.startsWith('{') || s.startsWith('}')) return false;
+                    if (s.startsWith('//')) return false;
+                    if (caseRegex.test(s)) return false; // case/default 标签不算语句
+                    if (controlStart.test(s)) return false; // 控制行本身不作为被控制语句
+                    return true;
+                };
+                // 标记本行是否开始成为某个 single/do 的受控语句
+                for (let k = 0; k < controlStack.length; k++) {
+                    const item = controlStack[k];
+                    if (!item.applied && isSignificantStatement(trimmed)) item.applied = true;
+                }
+                // 应用额外缩进（嵌套 single/do 每个 +1）
+                const extraSingles = controlStack.reduce((acc, it) => acc + (it.applied ? 1 : 0), 0);
+                effectiveIndent += extraSingles;
+                // 入栈：本行若是控制语句（非 do）且不以 { 结束，则登记为 single；do 单独登记为 do
                 if (isDo) {
-                    controlStack.push({idx, indent: effectiveIndent+1, isDo:true});
+                    controlStack.push({ type:'do', applied:false });
+                } else if (isControl) {
+                    controlStack.push({ type:'single', applied:false });
                 }
                 // 输出缩进
                 result.push(tab.repeat(effectiveIndent) + trimmed);
@@ -546,15 +537,19 @@ int main() {
                 if (trimmed.startsWith('}')) indent = Math.max(0, indent);
                 // 控制流栈弹出逻辑
                 if (controlStack.length > 0) {
-                    let top = controlStack[controlStack.length-1];
-                    // do...while 结构，while 行弹出
-                    if (top.isDo && isWhile && trimmed.endsWith(';')) {
-                        controlStack.pop();
-                    } else if (!top.isDo && idx > top.idx) {
-                        // 普通控制流，遇到分号或新控制流或大括号弹出
-                        if (trimmed.endsWith(';') || trimmed.startsWith('if') || trimmed.startsWith('for') || trimmed.startsWith('while') || trimmed.startsWith('switch') || trimmed.startsWith('else') || trimmed.startsWith('do') || trimmed.startsWith('case') || trimmed.startsWith('default:') || trimmed.startsWith('}') || trimmed.startsWith('{')) {
-                            controlStack.pop();
+                    // 若遇到块开始 '{'，说明不是单行体：清理所有未应用的 single/do
+                    if (trimmed.startsWith('{')) {
+                        controlStack = controlStack.filter(it => it.applied);
+                    }
+                    // do...while：在 while(...); 行弹出最近的 do
+                    if (isWhile && trimmed.endsWith(';')) {
+                        for (let p = controlStack.length - 1; p >= 0; p--) {
+                            if (controlStack[p].type === 'do') { controlStack.splice(p,1); break; }
                         }
+                    }
+                    // 单行体：到达语句结束（以 ; 结尾）后弹出所有已应用的 single
+                    if (trimmed.endsWith(';')) {
+                        controlStack = controlStack.filter(it => !(it.type==='single' && it.applied));
                     }
                 }
                 // switch-case 缩进恢复
@@ -653,14 +648,12 @@ int main() {
             sidebarToggle.addEventListener('click', () => { try { adjustSidebarVertical(); window.editor && window.editor.layout(); } catch (e) {} });
         } catch (e) {}
 
-        // 更新脏标记 UI（文件名后显示 '*' 并更新保存状态）
+        // 更新脏标记 UI（仅在文件名后显示 '*'）
         function setDirty(flag) {
             try {
                 isDirty = !!flag;
                 const title = currentFilename || 'main.c';
                 fileTitle.textContent = title + (isDirty ? ' *' : '');
-                saveStatus.textContent = isDirty ? '未保存' : '已保存';
-                saveStatus.style.color = isDirty ? '#f59e0b' : '';
             } catch (e) {}
         }
 
@@ -690,7 +683,6 @@ int main() {
                     // 将文件内容写入编辑器
                     window.editor && window.editor.setValue(text);
                     window.editor && window.editor.focus();
-                    saveStatus.textContent = '已加载本地文件';
                     // 更新当前文件名显示
                     try { currentFilename = f.name || currentFilename; fileTitle.textContent = currentFilename; setDirty(false); } catch (e) {}
                     // 根据扩展设定语言模式（若 Monaco 已就绪）
@@ -726,7 +718,6 @@ int main() {
                 a.click();
                 a.remove();
                 setTimeout(() => URL.revokeObjectURL(url), 5000);
-                saveStatus.textContent = '已下载 ' + name;
                 // 另存为并不改变脏状态
             } catch (e) {
                 console.error('另存为失败', e);
@@ -781,8 +772,7 @@ int main() {
                 }
             } catch (e) {}
 
-            // 确保复选框与其他交互元素可以响应（有时被早期脚本或覆盖元素阻塞）
-            try { const useWasmEl = document.getElementById('useWasm'); if (useWasmEl) useWasmEl.style.pointerEvents = 'auto'; } catch(e) {}
+            // 已移除 WASM 选项
 
             // 主动预热 clang-format wasm，避免首次点击时未加载
             try {
