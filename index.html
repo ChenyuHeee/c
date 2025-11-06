@@ -1,4 +1,4 @@
-<!--Version:1.2.4-->
+<!--Version:1.2.6-->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css" id="hljs-theme-dark" disabled>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css" id="hljs-theme-light" disabled>
 
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#0b0c0d" />
     <style>
         :root{
             --sidebar-width: 380px;
@@ -25,6 +27,9 @@
             --radius: 10px;
             --shadow: 0 8px 30px rgba(0,0,0,0.6);
             --anim-enter: cubic-bezier(.16,.84,.44,1);
+            --anim-duration: .38s;
+            --anim-scale-small: .96;
+            --anim-shadow: 0 12px 34px -6px rgba(0,0,0,.55);
         }
 
         /* 明亮主题覆盖变量（切换时将 body 添加 .light-theme） */
@@ -64,6 +69,8 @@
     .editor-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
     .editor-head h2{font-size:14px;color:#dbe9ff}
     #editor{flex:1;min-height:0;height:100%}
+    /* 手机端侧栏切换按钮（仅小屏显示） */
+    #mobilePanelBtn{display:none}
 
         /* 工具栏 */
         .toolbar{display:flex;gap:8px;padding:10px 14px;align-items:center;flex-wrap:wrap}
@@ -105,6 +112,7 @@
             .sidebar{position:static;width:100%;height:auto;top:auto;bottom:auto;border-top:1px solid rgba(255,255,255,0.06);order:2}
             .main{flex-direction:column}
             #sidebarToggle{display:none !important}
+            #mobilePanelBtn{display:inline-flex}
         }
         @media (max-width:640px){ /* 手机优化：工具栏换行，字号压缩 */
             .btn{padding:6px 8px;font-size:11px}
@@ -130,6 +138,7 @@
                     <h2><i class="fas fa-file-code"></i> <span id="fileTitle">main.c</span></h2>
                     <!-- 移除冗余的文字状态提示，仅保留文件名星号表示未保存 -->
                     <div style="flex:1"></div>
+                    <button class="btn ghost" id="mobilePanelBtn" title="展开输入/输出"><i class="fas fa-sliders"></i> 输入/输出</button>
                     <button class="btn ghost" id="saveAsBtn"><i class="fas fa-download"></i> 另存为</button>
                     <button class="btn ghost" id="themeBtn"><i class="fas fa-sun"></i> 主题</button>
                 </div>
@@ -157,7 +166,7 @@
             <button class="btn ghost" id="redoBtn" title="重做" disabled><i class="fas fa-redo"></i></button>
             <button class="btn ghost" id="fsBtn"><i class="fas fa-expand"></i> 全屏</button>
             <a id="introLink" href="./about.html" target="_blank" style="margin-left:auto;color:var(--muted);font-size:12px;text-decoration:none"><i class="fas fa-circle-info"></i> 简介与帮助</a>
-            <a id="versionLink" href="javascript:void(0)" style="color:var(--muted);font-size:12px;text-decoration:none;padding-left:12px">By C. He from ZJU | v1.2.4</a>
+            <a id="versionLink" href="javascript:void(0)" style="color:var(--muted);font-size:12px;text-decoration:none;padding-left:12px">By C. He from ZJU | v1.2.6</a>
         </div>
         </div>
     </div>
@@ -609,6 +618,7 @@ int main() {
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
         const editorWrap = document.querySelector('.editor-wrap');
+    const mobilePanelBtn = document.getElementById('mobilePanelBtn');
         closeSb.addEventListener('click', () => {
             sidebar.classList.add('collapsed');
             sidebarToggle.style.display = 'flex';
@@ -631,6 +641,20 @@ int main() {
             setTimeout(() => { try { window.editor && window.editor.layout(); } catch (e) {} }, 180);
         });
 
+        // 手机端顶部按钮控制侧栏显示/隐藏
+        mobilePanelBtn && mobilePanelBtn.addEventListener('click', () => {
+            if (!sidebar) return;
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            if (isCollapsed) {
+                sidebar.classList.remove('collapsed');
+                mobilePanelBtn.innerHTML = '<i class="fas fa-sliders"></i> 隐藏 I/O';
+            } else {
+                sidebar.classList.add('collapsed');
+                mobilePanelBtn.innerHTML = '<i class="fas fa-sliders"></i> 输入/输出';
+            }
+            try { window.editor && window.editor.layout(); } catch(e){}
+        });
+
         // 当侧栏过渡结束时，确保编辑器做最终布局（避免动画中 canvas 与侧栏出现错位）
         try {
             sidebar.addEventListener('transitionend', (ev) => {
@@ -648,6 +672,9 @@ int main() {
                     const headerEl = document.querySelector('header');
                     const toolbarEl = document.querySelector('.toolbar');
                     if (!headerEl || !toolbarEl) return;
+                    // 当侧栏在小屏为 static 布局时，不再计算 top/bottom
+                    const pos = getComputedStyle(sidebar).position;
+                    if (pos !== 'absolute') return;
                     const headerRect = headerEl.getBoundingClientRect();
                     const toolbarRect = toolbarEl.getBoundingClientRect();
                     // 计算顶部距离：将侧栏顶边放在 header 底部 + 8px 间隔
@@ -793,7 +820,24 @@ int main() {
                 }
             } catch (e) {}
 
-            // 已移除 WASM 选项
+            // iPad 横竖屏：根据可视尺寸切换布局变量（更宽的侧栏）
+            function applyOrientationLayout(){
+                try{
+                    const landscape = window.innerWidth > window.innerHeight;
+                    document.body.classList.toggle('landscape', landscape);
+                    document.body.classList.toggle('portrait', !landscape);
+                }catch(e){}
+            }
+            applyOrientationLayout();
+            window.addEventListener('resize', applyOrientationLayout);
+
+            // 手机端默认隐藏侧栏（使用 collapsed 类即可复用现有样式）
+            try{
+                const isPhone = (Math.min(window.innerWidth, window.innerHeight) < 600) || (/Android|iPhone/i.test(navigator.userAgent) && !/iPad|Tablet/i.test(navigator.userAgent));
+                if (isPhone && sidebar && !sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.add('collapsed');
+                }
+            }catch(e){}
 
             // 主动预热 clang-format wasm，避免首次点击时未加载
             try {
@@ -809,7 +853,7 @@ int main() {
 
     <!-- 奶茶彩蛋弹窗样式与容器 -->
     <style>
-        #milkTeaModal{position:fixed;right:16px;bottom:60px;background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 18px 14px;width:260px;box-shadow:0 12px 34px -6px rgba(0,0,0,.55);font-size:13px;line-height:1.55;color:var(--muted);z-index:3000;display:none}
+    #milkTeaModal{position:fixed;right:16px;bottom:60px;background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 18px 14px;width:260px;box-shadow:var(--anim-shadow);font-size:13px;line-height:1.55;color:var(--muted);z-index:3000;display:none}
         #milkTeaModal h3{margin:0 0 8px;font-size:15px;color:#fff;display:flex;align-items:center;gap:6px}
         #milkTeaModal img{width:100%;border-radius:10px;margin-top:6px;border:1px solid rgba(255,255,255,0.06)}
         #milkTeaClose{position:absolute;top:8px;right:10px;background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:14px}
@@ -833,7 +877,7 @@ int main() {
     <!-- 手机首次访问提示（仅手机，展示一次） -->
     <style>
         #mobileTip{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:3500}
-        #mobileTip .sheet{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;width:min(420px,90vw);padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.5);color:var(--muted);transform:scale(.96);opacity:0;transition:transform .22s var(--anim-enter),opacity .22s var(--anim-enter)}
+    #mobileTip .sheet{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;width:min(420px,90vw);padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.5);color:var(--muted);transform:scale(var(--anim-scale-small));opacity:0;transition:transform .22s var(--anim-enter),opacity .22s var(--anim-enter)}
         #mobileTip.open .sheet{transform:scale(1);opacity:1}
         #mobileTip h3{margin:0 0 8px;color:#fff;display:flex;align-items:center;gap:8px}
         #mobileTip p{margin:0;line-height:1.7}
@@ -895,6 +939,90 @@ int main() {
                 }
                 ok.addEventListener('click', close);
             }catch(e){}
+        })();
+
+        // 动态生成 favicon 与 PWA 图标（基于“代码”图形，风格与页面一致）
+        (function(){
+            function drawIcon(size){
+                const c = document.createElement('canvas');
+                c.width = c.height = size;
+                const ctx = c.getContext('2d');
+                // 背景
+                const r = Math.round(size*0.22);
+                const pad = Math.round(size*0.08);
+                const w = size, h = size;
+                const bg = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2563eb';
+                ctx.fillStyle = bg;
+                roundRect(ctx, pad, pad, w-2*pad, h-2*pad, r);
+                ctx.fill();
+                // 符号 “< >”
+                ctx.strokeStyle = '#fff';
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = Math.max(2, size*0.09);
+                const cx = w/2, cy = h/2;
+                const dx = size*0.18, dy = size*0.18;
+                // 左 <
+                ctx.beginPath();
+                ctx.moveTo(cx-0.06*size, cy-dy);
+                ctx.lineTo(cx-dx, cy);
+                ctx.lineTo(cx-0.06*size, cy+dy);
+                ctx.stroke();
+                // 右 >
+                ctx.beginPath();
+                ctx.moveTo(cx+0.06*size, cy-dy);
+                ctx.lineTo(cx+dx, cy);
+                ctx.lineTo(cx+0.06*size, cy+dy);
+                ctx.stroke();
+                return c;
+                function roundRect(ctx,x,y,w,h,r){
+                    const rr = Math.min(r, w/2, h/2);
+                    ctx.beginPath();
+                    ctx.moveTo(x+rr,y);
+                    ctx.arcTo(x+w,y,x+w,y+h,rr);
+                    ctx.arcTo(x+w,y+h,x,y+h,rr);
+                    ctx.arcTo(x,y+h,x,y,rr);
+                    ctx.arcTo(x,y,x+w,y,rr);
+                    ctx.closePath();
+                }
+            }
+            function setFavicon(url){
+                let link = document.querySelector('link[rel="icon"]');
+                if(!link){ link = document.createElement('link'); link.rel='icon'; document.head.appendChild(link); }
+                link.type = 'image/png';
+                link.href = url;
+            }
+            function updateManifest(icon192, icon512){
+                let m = document.querySelector('link[rel="manifest"]');
+                if(!m){ m = document.createElement('link'); m.rel='manifest'; document.head.appendChild(m); }
+                const manifest = {
+                    name: '在线 C 编译器',
+                    short_name: 'C编译器',
+                    start_url: './index.html',
+                    display: 'standalone',
+                    background_color: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0b0c0d',
+                    theme_color: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0b0c0d',
+                    lang: 'zh-CN',
+                    icons: [
+                        { src: icon192, sizes: '192x192', type: 'image/png', purpose:'any' },
+                        { src: icon512, sizes: '512x512', type: 'image/png', purpose:'any' }
+                    ]
+                };
+                const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+                m.href = URL.createObjectURL(blob);
+            }
+            try{
+                const c192 = drawIcon(192);
+                const c512 = drawIcon(512);
+                c192.toBlob(b192 => {
+                    const u192 = URL.createObjectURL(b192);
+                    setFavicon(u192);
+                    c512.toBlob(b512 => {
+                        const u512 = URL.createObjectURL(b512);
+                        updateManifest(u192, u512);
+                    });
+                });
+            }catch(e){ /* 忽略失败，沿用静态 manifest */ }
         })();
     </script>
 </body>

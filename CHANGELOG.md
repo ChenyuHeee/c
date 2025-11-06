@@ -1,5 +1,22 @@
 # Changelog
 
+# [1.2.6] - 2025-11-06
+### Added
+- 动态 favicon 与 PWA 图标：在 `index.html` 与 `about.html` 运行时使用 Canvas 生成与页头相同风格的“代码”图标（192/512），自动注入 favicon 与 manifest，免素材也能安装到主屏。
+
+### Notes
+- 静态 `manifest.webmanifest` 仍保留，但页面会在加载后用内存 manifest 覆盖以提供动态图标。
+
+# [1.2.5] - 2025-11-06
+### Added
+- iPad 横竖屏自适应：在窗口尺寸变化时根据 `window.innerHeight < window.innerWidth` 切换 `body.landscape/portrait`，用于控制更宽布局。
+- 手机端默认隐藏侧栏：小屏进入时侧栏默认折叠，并在编辑器头部加入“输入/输出”切换按钮以展开或隐藏侧栏。
+- 动画统一变量：将进入动画的缓动/时长/阴影/scale 抽象为 `:root` 变量，统一应用于弹窗。
+- PWA 支持：新增 `manifest.webmanifest`，`index.html` 引入 manifest 与 `theme-color`，移动端可添加到主屏幕。
+
+### Changed
+- 版本号更新为 `1.2.5`。
+
 # [1.2.4] - 2025-11-06
 ### Added
 - 移动端（手机 + iPad）适配：新增多段响应式断点（1180px/1024px/900px/640px）调整侧栏布局、按钮间距、字号与工具栏换行。

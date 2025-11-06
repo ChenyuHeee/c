@@ -9,6 +9,8 @@
   <meta property="og:description" content="零配置、开箱即用的在线 C 编译器：浏览器内编辑、自动缩进、运行输出、另存为下载、明暗主题切换。" />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#2563eb" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='6' width='52' height='52' rx='12' fill='%232563eb'/%3E%3Cpath d='M30 18 L18 32 L30 46 M34 18 L46 32 L34 46' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" type="image/svg+xml" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root{
@@ -117,6 +119,44 @@
       localStorage.setItem('about_theme', light ? 'light' : 'dark');
       apply();
     });
+    // 动态生成 favicon 与 PWA 图标，使用与首页一致的“代码”图形
+    (function(){
+      function drawIcon(size){
+        const c = document.createElement('canvas');
+        c.width = c.height = size;
+        const ctx = c.getContext('2d');
+        const r = Math.round(size*0.22);
+        const pad = Math.round(size*0.08);
+        const w = size, h = size;
+        const bg = '#2563eb';
+        ctx.fillStyle = bg;
+        roundRect(ctx, pad, pad, w-2*pad, h-2*pad, r); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth = Math.max(2, size*0.09);
+        const cx=w/2, cy=h/2, dx=size*0.18, dy=size*0.18;
+        ctx.beginPath(); ctx.moveTo(cx-0.06*size, cy-dy); ctx.lineTo(cx-dx, cy); ctx.lineTo(cx-0.06*size, cy+dy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx+0.06*size, cy-dy); ctx.lineTo(cx+dx, cy); ctx.lineTo(cx+0.06*size, cy+dy); ctx.stroke();
+        return c;
+        function roundRect(ctx,x,y,w,h,r){
+          const rr=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath();
+        }
+      }
+      function setFavicon(url){
+        let link = document.querySelector('link[rel="icon"]');
+        if(!link){ link=document.createElement('link'); link.rel='icon'; document.head.appendChild(link); }
+        link.type='image/png'; link.href=url;
+      }
+      function updateManifest(icon192, icon512){
+        let m = document.querySelector('link[rel="manifest"]');
+        if(!m){ m=document.createElement('link'); m.rel='manifest'; document.head.appendChild(m); }
+        const manifest = { name:'在线 C 编译器', short_name:'C编译器', start_url:'./index.html', display:'standalone', background_color:'#0b0c0d', theme_color:'#0b0c0d', lang:'zh-CN', icons:[{src:icon192,sizes:'192x192',type:'image/png'},{src:icon512,sizes:'512x512',type:'image/png'}] };
+        const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+        m.href = URL.createObjectURL(blob);
+      }
+      try{
+        const c192 = drawIcon(192), c512 = drawIcon(512);
+        c192.toBlob(b192=>{ const u192 = URL.createObjectURL(b192); setFavicon(u192); c512.toBlob(b512=>{ const u512 = URL.createObjectURL(b512); updateManifest(u192,u512); }); });
+      }catch(e){}
+    })();
   </script>
 </body>
 </html>
