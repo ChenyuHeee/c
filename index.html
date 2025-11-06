@@ -620,7 +620,8 @@ int main() {
             if (window.editor) localStorage.setItem('deepseek_saved_c', window.editor.getValue());
         });
 
-        // 页面加载时：设置编辑器为暗黑主题（若 monaco 已加载则在创建时设置，若晚加载则尝试设置）
+
+        // 页面加载时：设置编辑器为暗黑主题，并预热 clang-format wasm
         window.addEventListener('load', () => {
             try { if (window.monaco) monaco.editor.setTheme('vs-dark'); } catch (e) {}
             // 初始时隐藏侧栏恢复按钮（默认展开）
@@ -650,6 +651,13 @@ int main() {
 
             // 确保复选框与其他交互元素可以响应（有时被早期脚本或覆盖元素阻塞）
             try { const useWasmEl = document.getElementById('useWasm'); if (useWasmEl) useWasmEl.style.pointerEvents = 'auto'; } catch(e) {}
+
+            // 主动预热 clang-format wasm，避免首次点击时未加载
+            try {
+                if (window['clangFormat']) {
+                    window['clangFormat']('int main() {return 0;}', 'c').catch(()=>{});
+                }
+            } catch(e) {}
         });
 
         // 当窗口尺寸变化时，重新布局编辑器以适配容器大小
