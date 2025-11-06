@@ -57,6 +57,14 @@
       <div class="card" id="cardPrivacy"><h3><i class="fas fa-shield-halved"></i> 数据与隐私</h3><p id="privacyDesc">编辑内容保存在浏览器本地（localStorage）。另存为将下载到你的设备；提交到 Wandbox 的代码仅用于编译运行。</p></div>
     </div>
 
+    <div id="versions" class="section">
+      <h2 id="versionTitle"><i class="fas fa-code-branch"></i> 版本信息</h2>
+      <ul class="list">
+        <li id="editorVersionItem"><span id="editorVersionLabel">编辑器版本</span>：<b id="editorVersionValue">v1.3.4</b></li>
+        <li id="competitionVersionItem"><span id="competitionVersionLabel">赛事系统版本</span>：<b id="competitionVersionValue">c0.0.1</b></li>
+      </ul>
+    </div>
+
     <div id="advantages" class="section">
   <h2 id="advTitle"><i class="fas fa-star"></i> 最大优势</h2>
       <ol class="list">
@@ -113,6 +121,16 @@
       </ul>
     </div>
 
+    <div id="contest" class="section">
+      <h2 id="contestTitle"><i class="fas fa-flag-checkered"></i> 每周挑战赛事</h2>
+      <ul class="list">
+        <li class="contestItem" data-i18n-key="contest1">提供每周挑战题与周榜/总榜页面，纯静态适配 GitHub Pages：<code>competition/index.html</code>、<code>competition/1.html</code>、<code>competition/rank/1.html</code>、<code>competition/rank/index.html</code>。</li>
+        <li class="contestItem" data-i18n-key="contest2">排名规则：按代码字节数升序；若相同，按提交时间先后；总榜按全局最佳与参与期数聚合。</li>
+        <li class="contestItem" data-i18n-key="contest3">提交流程：在分享弹窗选择“参赛”，首次填写参赛信息后，打开提交页复制代码并在 GitHub 新建 <code>submissions/week-&lt;n&gt;/&lt;handle&gt;/solution.c</code> 发起 PR；CI 自动更新 JSON 榜单。</li>
+      </ul>
+      <div class="cta"><a class="btn primary" id="contestEntry" href="./competition/index.html"><i class="fas fa-flag-checkered"></i> 进入赛事</a></div>
+    </div>
+
     <div class="section">
   <h2 id="faqTitle"><i class="fas fa-list-check"></i> 常见问题（FAQ）</h2>
       <ul class="list">
@@ -143,6 +161,23 @@
   <button id="themeToggle" class="theme-toggle"><i class="fas fa-moon"></i> 主题</button>
   <button id="langToggle" class="theme-toggle" style="right:160px"><i class="fas fa-globe"></i> EN</button>
   <script>
+    // 引入统一版本脚本（若首页已加载也可从缓存中获取）
+    (function loadVersion(){
+      if(window.__VERSION__) return;
+      var s=document.createElement('script');
+      s.src='./scripts/version.js';
+      s.onload=function(){
+        try{
+          if(window.__VERSION__){
+            var v=window.__VERSION__;
+            // 如 i18n 已准备则覆盖显示值；否则稍后 applyLang 会继续设置
+            var ev=document.getElementById('editorVersionValue'); if(ev) ev.textContent=v.editor;
+            var cv=document.getElementById('competitionVersionValue'); if(cv) cv.textContent=v.competition;
+          }
+        }catch(e){}
+      };
+      document.head.appendChild(s);
+    })();
     const btn = document.getElementById('themeToggle');
     const langBtn = document.getElementById('langToggle');
     const i18n = {
@@ -156,7 +191,10 @@
         moreAdvTitle:'更多优势', madv1:'纯前端 · 零安装：无需登录与插件，打开即用；PWA 支持可安装到桌面，图标为自适应 maskable。', madv2:'离线友好：首次加载后缓存资源；断网仍可编辑与分享，运行会提示不可执行。', madv3:'极速交互：撤销/复制/自动缩进响应迅速。', madv4:'易用细节：文件名脏标记、主题记忆、移动端 I/O 面板、统一动画阴影。', madv5:'可靠最小集：仅运行时才调用远端，不可用回退模拟。', madv6:'可分享与复现：代码压缩进链接，一键还原。',
         helpTitle:'使用帮助', help1:'打开在线编译器，在编辑区域编写 C 代码。', help2:'左侧“输入 (stdin)”填入标准输入（可选）。', help3:'点击“运行”：在线优先 Wandbox；失败回退本地；离线弹窗提示不可运行。', help4:'格式排版用“自动缩进”；复制全部代码用“复制”；下载用“另存为”。', help5:'用“主题”切换明亮/暗色；撤销/重做在可用时自动启用。',
         shortcutTitle:'键盘快捷键', sc1:'运行：Ctrl/Cmd + Enter', sc2:'自动缩进：Ctrl/Cmd + I', sc3:'另存为：Ctrl/Cmd + S', sc4:'切换行注释：Ctrl/Cmd + /', sc5:'命令面板：Ctrl/Cmd + Shift + P（Esc 关闭）',
-        shareTitle:'分享与协作', share1:'支持一键分享：代码压缩进链接 (URL hash)，对方打开即还原。', share2:'分享增强：可选包含输入与测试用例，完整复现环境。', share3:'打开分享链接后自动恢复代码及输入/用例。',
+  shareTitle:'分享与协作', share1:'支持一键分享：代码压缩进链接 (URL hash)，对方打开即还原。', share2:'分享增强：可选包含输入与测试用例，完整复现环境。', share3:'打开分享链接后自动恢复代码及输入/用例。',
+  versionTitle:'版本信息', editorVersionLabel:'编辑器版本', competitionVersionLabel:'赛事系统版本', editorVersionValue:'v1.3.4', competitionVersionValue:'c0.0.1',
+  contestTitle:'每周挑战赛事', contest1:'提供每周挑战题与周榜/总榜页面，纯静态适配 GitHub Pages：competition/index.html、competition/1.html、competition/rank/1.html、competition/rank/index.html。', contest2:'排名规则：按代码字节数升序；若相同，按提交时间先后；总榜按全局最佳与参与期数聚合。', contest3:'提交流程：在分享弹窗选择“参赛”，首次填写参赛信息后，打开提交页复制代码并在 GitHub 新建 submissions/week-<n>/<handle>/solution.c 发起 PR；CI 自动更新 JSON 榜单。', contestEntry:'进入赛事',
+  contest4:'系统会在提交前自动评测样例，若输出不匹配显示 WA 阻止上传；通过后对参赛元数据（handle, bytes, ts）做简单加密并生成提交页。',
         faqTitle:'常见问题（FAQ）', faq1:'Q: 是否支持 C++？ A: 打开 .cpp/.hpp 会启用 C++ 语法高亮；运行暂用 C 编译器。', faq2:'Q: 代码会丢失吗？ A: 保存在 localStorage；建议定期另存为。', faq3:'Q: WASM 运行器可用吗？ A: 预留能力，当前不启用；运行优先 Wandbox。', faq4:'Q: 查看历史更新？ A: 点击底部版本或打开 CHANGELOG.md。',
         sceneTitle:'适用场景', scene1:'课堂/培训演示：免安装、跨平台。', scene2:'题解/算法草稿：快速验证逻辑。', scene3:'示例/文档附代码：一键运行和复制。',
         themeLight:'明亮', themeDark:'暗色', themeLabel:'主题', langToggle:'EN', langToggleZh:'中',
@@ -172,7 +210,10 @@
         moreAdvTitle:'More Advantages', madv1:'Pure front-end: zero install; PWA installable with maskable icon.', madv2:'Offline friendly: cached assets allow editing & sharing (run disabled offline).', madv3:'Responsive interactions: undo/copy/indent are instant.', madv4:'Usability details: file dirty mark, theme memory, mobile I/O toggle, consistent animations.', madv5:'Resilient minimal set: remote only when running; fallback simulation on failure.', madv6:'Share & reproduce: code packed into URL hash.',
         helpTitle:'Usage Help', help1:'Open the compiler and write C code.', help2:'Fill left Input (stdin) if needed.', help3:'Click Run: Wandbox first; fallback simulation if online fails; offline shows a warning.', help4:'Use Format for indentation; Copy for all code; Save As to download.', help5:'Use Theme to switch light/dark; undo/redo auto enable when possible.',
         shortcutTitle:'Keyboard Shortcuts', sc1:'Run: Ctrl/Cmd + Enter', sc2:'Format: Ctrl/Cmd + I', sc3:'Save As: Ctrl/Cmd + S', sc4:'Toggle Line Comment: Ctrl/Cmd + /', sc5:'Command Palette: Ctrl/Cmd + Shift + P (Esc close)',
-        shareTitle:'Sharing & Collaboration', share1:'One-click share: code compressed into URL hash.', share2:'Enhanced share: optionally include stdin & test cases.', share3:'Opening a share link restores code and inputs/cases.',
+  shareTitle:'Sharing & Collaboration', share1:'One-click share: code compressed into URL hash.', share2:'Enhanced share: optionally include stdin & test cases.', share3:'Opening a share link restores code and inputs/cases.',
+  versionTitle:'Versions', editorVersionLabel:'Editor Version', competitionVersionLabel:'Competition Version', editorVersionValue:'v1.3.4', competitionVersionValue:'c0.0.1',
+  contestTitle:'Weekly Challenge', contest1:'Weekly problem and leaderboards, static and Pages-friendly: competition/index.html, competition/1.html, competition/rank/1.html, competition/rank/index.html.', contest2:'Ranking: bytes ascending; tie by earlier submission; overall aggregates best result and participation count.', contest3:'Submission: in Share modal choose "Contest"; on first time fill profile, then open submission page, paste code and create submissions/week-<n>/<handle>/solution.c on GitHub via PR; CI updates JSON.', contestEntry:'Open Competition',
+  contest4:'Before submission the system auto-judges sample tests; WA blocks upload. On AC it encrypts metadata (handle, bytes, ts) and opens the submit page.',
         faqTitle:'FAQ', faq1:'Q: C++ supported? A: Opening .cpp/.hpp enables C++ syntax highlighting; runs currently use C compiler.', faq2:'Q: Will code vanish? A: Stored in localStorage; back up with Save As.', faq3:'Q: WASM runner? A: Reserved capability; Wandbox preferred; fallback simulation.', faq4:'Q: View history? A: Click footer version or open CHANGELOG.md.',
         sceneTitle:'Use Cases', scene1:'Classroom/training demos', scene2:'Algorithm scratch/testing', scene3:'Docs/examples with instant run & copy',
         themeLight:'Light', themeDark:'Dark', themeLabel:'Theme', langToggle:'中', langToggleZh:'EN',
@@ -203,6 +244,29 @@
       document.querySelectorAll('.shortcutItem').forEach(li=>{ const k=li.getAttribute('data-i18n-key'); li.textContent=t(k); });
       document.getElementById('shareTitle').innerHTML='<i class="fas fa-share-nodes"></i> '+t('shareTitle');
       document.querySelectorAll('.shareItem').forEach(li=>{ const k=li.getAttribute('data-i18n-key'); li.innerHTML=t(k); });
+  // versions
+  document.getElementById('versionTitle').innerHTML='<i class="fas fa-code-branch"></i> '+t('versionTitle');
+  document.getElementById('editorVersionLabel').textContent=t('editorVersionLabel');
+  document.getElementById('competitionVersionLabel').textContent=t('competitionVersionLabel');
+  // 若统一版本常量已加载则优先使用它的值，否则回退到 i18n 默认
+  if(window.__VERSION__){
+    document.getElementById('editorVersionValue').textContent=window.__VERSION__.editor;
+    document.getElementById('competitionVersionValue').textContent=window.__VERSION__.competition;
+  }else{
+    document.getElementById('editorVersionValue').textContent=t('editorVersionValue');
+    document.getElementById('competitionVersionValue').textContent=t('competitionVersionValue');
+  }
+  // contest
+  document.getElementById('contestTitle').innerHTML='<i class="fas fa-flag-checkered"></i> '+t('contestTitle');
+  document.querySelectorAll('.contestItem').forEach(li=>{ const k=li.getAttribute('data-i18n-key'); li.innerHTML=t(k); });
+  const contestEntry=document.getElementById('contestEntry'); if(contestEntry) contestEntry.innerHTML='<i class="fas fa-flag-checkered"></i> '+t('contestEntry');
+  // add dynamic item for new rule if missing
+  const contestList=document.querySelectorAll('#contest ul.list, #contest .list');
+  const items=document.querySelectorAll('#contest .contestItem');
+  if(items.length===3){
+    const li=document.createElement('li'); li.className='contestItem'; li.setAttribute('data-i18n-key','contest4'); li.innerHTML=t('contest4');
+    const ul=document.querySelector('#contest ul.list')||document.querySelector('#contest .list'); if(ul) ul.appendChild(li);
+  }
       document.getElementById('faqTitle').innerHTML='<i class="fas fa-list-check"></i> '+t('faqTitle');
       document.querySelectorAll('.faqItem').forEach(li=>{ const k=li.getAttribute('data-i18n-key'); li.innerHTML=t(k); });
       document.getElementById('sceneTitle').innerHTML='<i class="fas fa-bullhorn"></i> '+t('sceneTitle');

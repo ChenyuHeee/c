@@ -1,5 +1,31 @@
 # Changelog
 
+# [1.3.4] - 2025-11-06
+### Fixed
+- 输出前导空格丢失：运行结果区域不再对完整输出调用 `trim()`，保留行首空格，仅收敛结尾多余换行；本地模拟输出同样保留原样，解决“开头是空格则不能正确输出空格”的问题。
+
+### Added
+- 顶部导航新增“赛事/Contest”入口，直达 `competition/index.html`。
+- 分享弹窗新增“参赛”选项：
+	- 输入题目编码（如 `week-1`）生成参赛提交数据。
+	- 首次参赛弹出 `DataCollect.html` 采集参赛人信息，保存到本地后自动继续。
+	- 打开 `competition/submit.html` 预填代码，并提供一键跳转到 GitHub 在 `submissions/week-<n>/<handle>/solution.c` 路径新建文件。
+- 赛事系统（静态方案，适配 GitHub Pages）：
+	- 页面：`competition/index.html`（入口），`competition/1.html`（题面），`competition/rank/1.html`（周榜），`competition/rank/index.html`（总榜），`competition/submit.html`（提交落地页）。
+	- 数据：`competition/data/week-1.json`、`competition/data/total.json`（占位，CI 填充）。
+	- 脚本：`scripts/compute_ranks.mjs`（计算字节数、按提交时间打破并列、生成 JSON），`scripts/compute_rank.js`（JS 包装器）。
+	- 工作流：`.github/workflows/compute-rank.yml`（自动计算并提交榜单）。
+	- 提交说明：`submissions/README.md` 与 `submissions/week-1/README.md`。
+- 题面优化（Week 1）：新增“输入格式/输出格式”小节；示例改为两组并支持“展开/收起”动态折叠；“本地快速测试”改为按钮打开主编辑器新标签页。
+
+### Changed
+- 分享弹窗 UI 扩展，加入参赛编码输入与跳转逻辑；相关文案支持中英文切换。
+- 头部“赛事/Contest”链接文本随语言切换。
+
+### Notes
+- 赛事 Changelog 独立记录于 `competition/CHANGELOG.md`（当前为 0.0.1）。
+- 排名规则：字节数升序；同字节数按提交时间先后；总榜按全局最好成绩与参与期数聚合。
+
 # [1.3.3] - 2025-11-06
 ### Fixed
 - 修复“度量”按钮点击无反应：延迟查询弹窗元素并在点击时绑定，确保按钮可用。

@@ -40,19 +40,28 @@
     <div class="card">
       <h2 id="problemTitle">题目：打印菱形图案</h2>
       <p id="problemDesc">请编写一个 C 程序，从标准输入读取一个正奇数 n (1 <= n <= 99)，输出一个由星号组成的对称菱形图案。行末不要额外空格。输出末尾换行。示例见下。</p>
-      <h3 id="exampleHeader">示例输入与输出</h3>
-      <pre><code id="exampleCode">输入:
-7
-
-输出:
-   *
+      <h3 id="inputFormatTitle">输入格式</h3>
+      <p id="inputFormatDesc">输入一个正奇数 n (1 <= n <= 99)。</p>
+      <h3 id="outputFormatTitle">输出格式</h3>
+      <p id="outputFormatDesc">输出一个由星号组成的对称菱形，每行无尾随空格，并在末尾换行。</p>
+      <h3 id="sampleIn1Title">示例输入1</h3>
+      <pre style="display:none"><code id="sampleIn1">7</code></pre>
+      <h3 id="sampleOut1Title">示例输出1</h3>
+      <pre style="display:none"><code id="sampleOut1">   *
   ***
  *****
 *******
  *****
   ***
-   *
-</code></pre>
+   *</code></pre>
+      <h3 id="sampleIn2Title">示例输入2</h3>
+      <pre style="display:none"><code id="sampleIn2">5</code></pre>
+      <h3 id="sampleOut2Title">示例输出2</h3>
+      <pre style="display:none"><code id="sampleOut2">  *
+ ***
+*****
+ ***
+  *</code></pre>
     </div>
 
     <div class="card">
@@ -76,7 +85,7 @@
 
     <div class="card">
       <h2 id="localTestTitle">本地快速测试</h2>
-      <p id="localTestDesc">你可以在主编辑器页面粘贴代码，输入示例的 n 值并运行。确认输出格式后再提交。</p>
+      <p id="localTestDesc"><a class="btn primary" href="../index.html" target="_blank" rel="noreferrer noopener"><i class="fas fa-code"></i> 打开编辑器（新标签页）</a></p>
     </div>
 
     <div class="card">
@@ -101,17 +110,25 @@
   <script>
     const i18n={
       zh:{ title:'第 1 期 · Week 1', header:'第 1 期 · Week 1', back:'返回列表 List', rank:'排行榜 Rank', total:'总榜 Total',
-        problemTitle:'题目：打印菱形图案', problemDesc:'请编写一个 C 程序，从标准输入读取一个正奇数 n (1 <= n <= 99)，输出一个由星号组成的对称菱形图案。行末不要额外空格。输出末尾换行。示例见下。', exampleHeader:'示例输入与输出',
+        problemTitle:'题目：打印菱形图案', problemDesc:'请编写一个 C 程序，从标准输入读取一个正奇数 n (1 <= n <= 99)，输出一个由星号组成的对称菱形图案。行末不要额外空格。输出末尾换行。示例见下。',
+        input_format_title:'输入格式', input_format_desc:'输入一个正奇数 n (1 <= n <= 99)。',
+        output_format_title:'输出格式', output_format_desc:'输出一个由星号组成的对称菱形，每行无尾随空格，并在末尾换行。',
+        sample_toggle_expand:'展开', sample_toggle_collapse:'收起',
+        sample_in1:'示例输入1', sample_out1:'示例输出1', sample_in2:'示例输入2', sample_out2:'示例输出2',
         rulesTitle:'提交 & 排名规则', rulesList:[ '按最小字节数排序；相同字节数按提交先后。','仅统计单个 .c 文件，文件名不限，必须能在 Wandbox (gcc) 正常编译。','禁止 UB、读写文件、使用非标准库；允许使用标准头文件。','你的代码需从标准输入读取并向标准输出打印。','我们将使用 UTF-8 字节长度 (cat file.c | wc -c)。' ],
         submitGuide:'提交方式（GitHub Pages 方案）：\n1. Fork 本仓库。\n2. 在 submissions/week-1/<你的昵称>/ 目录下添加 solution.c。\n3. 发起 Pull Request。\n4. 合并后 CI 自动更新排行榜 JSON。页面会定时或手动刷新加载最新数据。\n5. 不要修改他人目录；每人只保留一个最新版本（覆盖旧版本即可）。',
-        localTestTitle:'本地快速测试', localTestDesc:'你可以在主编辑器页面粘贴代码，输入示例的 n 值并运行。确认输出格式后再提交。',
+  localTestTitle:'本地快速测试', localTestDesc:'<a class="btn primary" href="../index.html" target="_blank" rel="noreferrer noopener"><i class="fas fa-code"></i> 打开编辑器（新标签页）</a>',
         apiTitle:'数据/排行榜获取', apiDesc:'页面将从 competition/data/week-1.json 获取排行榜 (静态 JSON)。字段：handle, bytes, commitTime, sha。'
       },
       en:{ title:'Week 1 · 第 1 期', header:'Week 1 · 第 1 期', back:'List 返回列表', rank:'Rank 排行榜', total:'Total 总榜',
-        problemTitle:'Problem: Print Diamond Pattern', problemDesc:'Write a C program reading a positive odd n (1 <= n <= 99) from stdin. Output a symmetric diamond of asterisks. No trailing spaces per line. End with a newline.', exampleHeader:'Sample I/O',
+        problemTitle:'Problem: Print Diamond Pattern', problemDesc:'Write a C program reading a positive odd n (1 <= n <= 99) from stdin. Output a symmetric diamond of asterisks. No trailing spaces per line. End with a newline.',
+        input_format_title:'Input Format', input_format_desc:'A positive odd integer n (1 <= n <= 99).',
+        output_format_title:'Output Format', output_format_desc:'A symmetric diamond made of asterisks, no trailing spaces per line, end with a newline.',
+        sample_toggle_expand:'Expand', sample_toggle_collapse:'Collapse',
+        sample_in1:'Sample Input 1', sample_out1:'Sample Output 1', sample_in2:'Sample Input 2', sample_out2:'Sample Output 2',
         rulesTitle:'Submission & Ranking Rules', rulesList:[ 'Sort by smallest byte length; ties by earlier submission time.','Only one .c file counted; any filename; must compile on Wandbox (gcc).','No UB, file I/O, or non-standard libs; standard headers allowed.','Your code must read from stdin and write to stdout.','We use UTF-8 byte length (cat file.c | wc -c).' ],
         submitGuide:'Submission (GitHub Pages flow):\n1. Fork this repo.\n2. Add solution.c under submissions/week-1/<handle>/.\n3. Open a Pull Request.\n4. After merge CI updates leaderboard JSON. Page periodically or manually reloads.\n5. Don\'t touch others\' dirs; keep only one latest version (overwrite).',
-        localTestTitle:'Quick Local Test', localTestDesc:'Paste code in the main editor, provide an n value and run. Verify output before submitting.',
+  localTestTitle:'Quick Local Test', localTestDesc:'<a class="btn primary" href="../index.html" target="_blank" rel="noreferrer noopener"><i class="fas fa-code"></i> Open Editor (new tab)</a>',
         apiTitle:'Data / Leaderboard', apiDesc:'Page fetches competition/data/week-1.json (static). Fields: handle, bytes, commitTime, sha.'
       }
     };
@@ -125,20 +142,63 @@
       btns[0].innerHTML='<i class="fas fa-list"></i> '+t('back');
       btns[1].innerHTML='<i class="fas fa-medal"></i> '+t('rank');
       btns[2].innerHTML='<i class="fas fa-ranking-star"></i> '+t('total');
-      document.getElementById('problemTitle').textContent=t('problemTitle');
-      document.getElementById('problemDesc').textContent=t('problemDesc');
-      document.getElementById('exampleHeader').textContent=t('exampleHeader');
+  document.getElementById('problemTitle').textContent=t('problemTitle');
+  document.getElementById('problemDesc').textContent=t('problemDesc');
+  document.getElementById('inputFormatTitle').textContent=t('input_format_title');
+  document.getElementById('inputFormatDesc').textContent=t('input_format_desc');
+  document.getElementById('outputFormatTitle').textContent=t('output_format_title');
+  document.getElementById('outputFormatDesc').textContent=t('output_format_desc');
+  document.getElementById('sampleIn1Title').textContent=t('sample_in1');
+  document.getElementById('sampleOut1Title').textContent=t('sample_out1');
+  document.getElementById('sampleIn2Title').textContent=t('sample_in2');
+  document.getElementById('sampleOut2Title').textContent=t('sample_out2');
       document.getElementById('rulesTitle').textContent=t('rulesTitle');
       const rl=document.getElementById('rulesList'); rl.innerHTML=''; t('rulesList').forEach(li=>{ const el=document.createElement('li'); el.textContent=li; rl.appendChild(el); });
       document.getElementById('submitGuide').textContent=t('submitGuide');
       document.getElementById('localTestTitle').textContent=t('localTestTitle');
-      document.getElementById('localTestDesc').textContent=t('localTestDesc');
+  document.getElementById('localTestDesc').innerHTML=t('localTestDesc');
       document.getElementById('apiTitle').textContent=t('apiTitle');
       document.getElementById('apiDesc').textContent=t('apiDesc');
       document.getElementById('langBtn').innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中');
     }
-    document.getElementById('langBtn').addEventListener('click',()=>setLang(getLang()==='zh'?'en':'zh'));
+    // —— 样例折叠 ——
+    function setupSampleToggles(){
+      const pairs=[
+        {title:'sampleIn1Title', pre:'sampleIn1'},
+        {title:'sampleOut1Title', pre:'sampleOut1'},
+        {title:'sampleIn2Title', pre:'sampleIn2'},
+        {title:'sampleOut2Title', pre:'sampleOut2'},
+      ];
+      pairs.forEach(({title,pre})=>{
+        const h=document.getElementById(title); const code=document.getElementById(pre);
+        if(!h||!code) return;
+        // ensure wrapper <pre> is the parent of code
+        const preEl=code.parentElement;
+        if(!h.querySelector('.toggle')){
+          const btn=document.createElement('button');
+          btn.className='btn ghost toggle';
+          btn.style.marginLeft='8px'; btn.style.padding='4px 8px'; btn.style.fontSize='12px';
+          const setLabel=()=>{ btn.textContent = (preEl.style.display==='none'||getComputedStyle(preEl).display==='none')? t('sample_toggle_expand') : t('sample_toggle_collapse'); };
+          setLabel();
+          btn.addEventListener('click',()=>{
+            const hidden = (preEl.style.display==='none'||getComputedStyle(preEl).display==='none');
+            preEl.style.display = hidden? 'block':'none';
+            setLabel();
+          });
+          h.appendChild(btn);
+        }
+      });
+    }
+    function updateToggleLabels(){
+      document.querySelectorAll('.toggle').forEach(btn=>{
+        const preEl = btn.closest('h3')?.nextElementSibling;
+        if(!preEl) return;
+        btn.textContent = (preEl.style.display==='none'||getComputedStyle(preEl).display==='none')? t('sample_toggle_expand') : t('sample_toggle_collapse');
+      });
+    }
+    document.getElementById('langBtn').addEventListener('click',()=>{ setLang(getLang()==='zh'?'en':'zh'); updateToggleLabels(); });
     applyLang();
+    setupSampleToggles();
   </script>
 </body>
 </html>

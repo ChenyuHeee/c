@@ -31,7 +31,8 @@
     </header>
 
     <div class="card">
-      <div id="summary" class="muted">解析提交中…</div>
+  <div id="summary" class="muted">解析提交中…</div>
+  <div id="meta" class="muted" style="margin-top:6px"></div>
       <div class="row" style="margin-top:8px">
         <button id="copyBtn" class="btn"><i class="fas fa-copy"></i> 复制代码 Copy Code</button>
         <a id="openGh" class="btn primary" target="_blank" rel="noreferrer"><i class="fas fa-file-circle-plus"></i> 前往 GitHub 新建文件 Create on GitHub</a>
@@ -48,7 +49,9 @@
         return new TextDecoder().decode(bytes);
       }catch(e){ return decodeURIComponent(escape(atob(b64))); }
     }
-    function parseWeek(code){ const m=code.match(/week-(\d+)/i); return m? parseInt(m[1],10): null; }
+  function parseWeek(code){ const m=code.match(/week-(\d+)/i); return m? parseInt(m[1],10): null; }
+  function fromHex(h){ const arr=new Uint8Array(h.length/2); for(let i=0;i<arr.length;i++){ arr[i]=parseInt(h.substr(i*2,2),16); } return arr; }
+  function xorBytes(a,b){ const out=new Uint8Array(a.length); for(let i=0;i<a.length;i++){ out[i]=a[i]^b[i%b.length]; } return out; }
     const OWNER='DanielHe666';
     const REPO='c';
     (function(){
@@ -61,7 +64,16 @@
         const ghNew=`https://github.com/${OWNER}/${REPO}/new/main/${encodeURIComponent(path)}?filename=solution.c`;
         document.getElementById('openGh').href=ghNew;
         document.getElementById('code').value=obj.code||'';
-        document.getElementById('summary').textContent=`选手 ${obj.handle||'anon'} · 题目 ${obj.challenge} · 估算 ${obj.bytes||0} 字节`;
+        document.getElementById('summary').textContent=`选手 ${obj.handle||'anon'} · 题目 ${obj.challenge}`;
+        // 解密元数据（若存在）
+        try{
+          if(obj.enc && obj.key){
+            const metaBytes = xorBytes(fromHex(obj.enc), fromHex(obj.key));
+            const metaStr = new TextDecoder().decode(metaBytes);
+            const meta = JSON.parse(metaStr||'{}');
+            document.getElementById('meta').textContent = `校验通过：bytes=${meta.bytes}, handle=${meta.handle}, ts=${meta.ts}`;
+          }
+        }catch(e){ document.getElementById('meta').textContent='元数据解析失败（非致命）'; }
         document.getElementById('copyBtn').addEventListener('click',()=>{
           navigator.clipboard.writeText(document.getElementById('code').value).then(()=>{
             document.getElementById('copyBtn').innerHTML='<i class="fas fa-check"></i> 已复制 Copied';
