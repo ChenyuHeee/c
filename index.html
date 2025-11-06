@@ -8,8 +8,8 @@
     <!-- 字体图标和 Monaco 加载器 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.js"></script>
-    <!-- 集成 clang-format wasm 版本（自动缩进/格式化 C/C++） -->
-    <script src="https://unpkg.com/@wasm-tool/clang-format@1.7.0/clang-format.js"></script>
+    <!-- 集成 uncrustify-wasm 版本（自动缩进/格式化 C/C++） -->
+    <script src="https://cdn.jsdelivr.net/npm/uncrustify-wasm@2.0.1/dist/uncrustify.js"></script>
 
     <!-- Highlight.js themes (prefetch links; actual enable/disable handled by script) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css" id="hljs-theme-dark" disabled>
@@ -118,7 +118,7 @@
                     <button class="btn ghost" id="openFileBtn"><i class="fas fa-folder-open"></i> 打开文件</button>
                     <button class="btn ghost" id="saveBtn"><i class="fas fa-save"></i> 保存</button>
                     <button class="btn ghost" id="resetBtn"><i class="fas fa-undo"></i> 重置</button>
-                    <button class="btn ghost" id="formatBtn" title="自动缩进"><i class="fas fa-indent"></i> 自动缩进</button>
+                    <button class="btn ghost" id="formatBtn" title="自动缩进"><i class="fas fa-indent" id="formatLoadingIcon"></i> <span id="formatBtnText">自动缩进</span></button>
                     <button class="btn ghost" id="fsBtn" title="全屏"><i class="fas fa-expand"></i></button>
                     <label style="display:inline-flex;align-items:center;gap:8px;color:var(--muted)">
                         <input type="checkbox" id="useWasm" style="width:16px;height:16px"> 优先使用 WASM
@@ -437,25 +437,157 @@ int main() {
     try { saveBtn && saveBtn.addEventListener('click', saveCode); } catch (e) {}
     try { resetBtn && resetBtn.addEventListener('click', resetCode); } catch (e) {}
     try { themeBtn && themeBtn.addEventListener('click', toggleTheme); } catch (e) {}
-    // 自动缩进按钮绑定（集成 clang-format）
-    try {
+    // 纯 JS 高级 C 代码自动缩进美化
+    (function(){
         const formatBtn = document.getElementById('formatBtn');
-        if (formatBtn) {
-            formatBtn.addEventListener('click', async function() {
-                if (window.editor && window['clangFormat']) {
-                    const code = window.editor.getValue();
-                    try {
-                        const formatted = await window['clangFormat'](code, 'c');
-                        if (formatted) window.editor.setValue(formatted);
-                    } catch (err) {
-                        alert('格式化失败：' + (err && err.message));
-                    }
-                } else {
-                    alert('Clang-Format 加载中或不可用');
+        const formatIcon = document.getElementById('formatLoadingIcon');
+        const formatText = document.getElementById('formatBtnText');
+        if (!formatBtn) return;
+        formatBtn.disabled = false;
+        function smartCIndent(code, tabSize) {
+            tabSize = tabSize || 4;
+            const tab = ' '.repeat(tabSize);
+            const lines = code.split(/\r?\n/);
+            let indent = 0;
+            let inBlockComment = false, inString = false, stringChar = '';
+            let result = [];
+            // 控制流栈，支持多层嵌套
+            let controlStack = [];
+            let inSwitch = false, inCase = false, caseIndent = 0;
+            const controlRegex = /^(if|for|while|else if|else|do|switch)\b.*\)?\s*$/;
+            const elseRegex = /^else(\s+if)?\b/;
+            const caseRegex = /^(case |default:)/;
+            for (let idx = 0; idx < lines.length; idx++) {
+                let rawLine = lines[idx];
+                let line = rawLine.trimEnd();
+                let trimmed = line.trim();
+                // 预处理指令 # 开头不缩进
+                if (/^#/.test(trimmed)) {
+                    result.push(trimmed);
+                    continue;
                 }
-            });
+                // 处理多行注释
+                let i = 0, n = line.length, openBraces = 0, closeBraces = 0, caseOrDefault = false;
+                while (i < n) {
+                    let ch = line[i];
+                    // 跳过字符串
+                    if (!inBlockComment && !inString && (ch === '"' || ch === "'")) {
+                        inString = true; stringChar = ch; i++;
+                        continue;
+                    }
+                    if (inString) {
+                        if (ch === '\\' && i+1 < n) { i+=2; continue; }
+                        if (ch === stringChar) { inString = false; stringChar = ''; }
+                        i++;
+                        continue;
+                    }
+                    // 跳过注释
+                    if (!inBlockComment && ch === '/' && i+1 < n && line[i+1] === '*') {
+                        inBlockComment = true; i+=2; continue;
+                    }
+                    if (inBlockComment) {
+                        if (ch === '*' && i+1 < n && line[i+1] === '/') { inBlockComment = false; i+=2; continue; }
+                        i++;
+                        continue;
+                    }
+                    // 单行注释
+                    if (!inString && ch === '/' && i+1 < n && line[i+1] === '/') break;
+                    // 统计大括号
+                    if (!inString && !inBlockComment) {
+                        if (ch === '{') openBraces++;
+                        if (ch === '}') closeBraces++;
+                    }
+                    i++;
+                }
+                // case/default 语句减少一级缩进
+                if (caseRegex.test(trimmed)) caseOrDefault = true;
+                // switch-case 缩进处理
+                if (/^switch\b/.test(trimmed)) {
+                    inSwitch = true;
+                    caseIndent = indent;
+                }
+                if (inSwitch && caseRegex.test(trimmed)) {
+                    inCase = true;
+                }
+                if (inCase && !caseRegex.test(trimmed) && trimmed && !trimmed.startsWith('}') && !trimmed.startsWith('{')) {
+                    // case 内多行语句缩进
+                    indent++;
+                }
+                // 控制流缩进栈处理
+                // 检查是否为控制语句且不以 { 结尾
+                let isControl = controlRegex.test(trimmed) && !trimmed.endsWith('{');
+                // do...while 特殊处理
+                let isDo = /^do\b/.test(trimmed);
+                let isWhile = /^while\b/.test(trimmed);
+                let isElse = elseRegex.test(trimmed);
+                // } 在行首则先减少缩进
+                let effectiveIndent = indent;
+                if (trimmed.startsWith('}')) effectiveIndent = Math.max(0, indent-1);
+                if (caseOrDefault) effectiveIndent = Math.max(0, effectiveIndent-1);
+                // 控制流栈：多层嵌套无大括号控制流
+                if (isControl && !isDo) {
+                    controlStack.push({idx, indent: effectiveIndent+1});
+                }
+                // else if/else 缩进对齐
+                if (isElse && result.length > 0) {
+                    // else/else if 与前一行对齐
+                    let prev = result[result.length-1];
+                    let prevIndent = prev.match(/^(\s*)/)[1].length/tabSize;
+                    effectiveIndent = prevIndent;
+                }
+                // do...while 结构
+                if (isDo) {
+                    controlStack.push({idx, indent: effectiveIndent+1, isDo:true});
+                }
+                // 输出缩进
+                result.push(tab.repeat(effectiveIndent) + trimmed);
+                // 行内 } 多于 {，则减少缩进
+                indent += openBraces - closeBraces;
+                if (trimmed.startsWith('}')) indent = Math.max(0, indent);
+                // 控制流栈弹出逻辑
+                if (controlStack.length > 0) {
+                    let top = controlStack[controlStack.length-1];
+                    // do...while 结构，while 行弹出
+                    if (top.isDo && isWhile && trimmed.endsWith(';')) {
+                        controlStack.pop();
+                    } else if (!top.isDo && idx > top.idx) {
+                        // 普通控制流，遇到分号或新控制流或大括号弹出
+                        if (trimmed.endsWith(';') || trimmed.startsWith('if') || trimmed.startsWith('for') || trimmed.startsWith('while') || trimmed.startsWith('switch') || trimmed.startsWith('else') || trimmed.startsWith('do') || trimmed.startsWith('case') || trimmed.startsWith('default:') || trimmed.startsWith('}') || trimmed.startsWith('{')) {
+                            controlStack.pop();
+                        }
+                    }
+                }
+                // switch-case 缩进恢复
+                if (inCase && (trimmed.endsWith('break;') || trimmed.endsWith('return;') || trimmed.endsWith('continue;') || trimmed.endsWith('goto;') || trimmed.endsWith('}') || trimmed === '')) {
+                    indent = caseIndent;
+                    inCase = false;
+                }
+                // 关闭 switch
+                if (inSwitch && trimmed.startsWith('}')) {
+                    inSwitch = false;
+                    inCase = false;
+                }
+            }
+            return result.join('\n');
         }
-    } catch (e) {}
+        formatBtn.addEventListener('click', function() {
+            if (!window.editor) return;
+            try {
+                formatBtn.disabled = true;
+                if (formatIcon) formatIcon.className = 'fas fa-spinner fa-spin';
+                formatText.textContent = '格式化中...';
+                const code = window.editor.getValue();
+                const formatted = smartCIndent(code, 4);
+                if (formatted) window.editor.setValue(formatted);
+            } catch (err) {
+                alert('格式化失败：' + (err && err.message));
+            } finally {
+                formatBtn.disabled = false;
+                if (formatIcon) formatIcon.className = 'fas fa-indent';
+                formatText.textContent = '自动缩进';
+            }
+        });
+    })();
 
         // 侧栏折叠/展开逻辑：使用 class 'collapsed'，便于动画与恢复
         const sidebar = document.getElementById('sidebar');
