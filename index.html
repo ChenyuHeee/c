@@ -856,16 +856,19 @@ int main() {
             function buildContestPayload(code){
                 const profileRaw = localStorage.getItem('contest_profile');
                 let profile = {}; try{ profile = JSON.parse(profileRaw||'{}'); }catch(e){}
-                const handle = profile.handle || profile.nickname || 'anon';
-                const github = profile.github || '';
-                const email = profile.email || '';
+                const handle = (profile.handle||'').trim();
+                if(!handle){
+                    alert('请先填写昵称 / Handle');
+                    return null;
+                }
                 const source = window.editor? window.editor.getValue() : '';
                 const bytes = new TextEncoder().encode(source).length;
-                return { type:'contest', version:1, challenge:code, handle, github, email, bytes, ts:new Date().toISOString(), code:source };
+                return { type:'contest', version:1, challenge:code, handle, bytes, ts:new Date().toISOString(), code:source };
             }
             function performContestSubmit(code, winRef){
                 const statusEl = document.getElementById('contestJudgeStatus');
                 const payload = buildContestPayload(code);
+                if(!payload){ return; }
                 try{
                     const b64 = encodeBase64(JSON.stringify(payload));
                     const url = 'competition/submit.html#submission=' + b64;
@@ -927,7 +930,8 @@ int main() {
             function secureContestPayload(challenge, source){
                 const profileRaw = localStorage.getItem('contest_profile');
                 let profile={}; try{ profile=JSON.parse(profileRaw||'{}'); }catch(e){}
-                const handle = profile.handle || profile.nickname || 'anon';
+                const handle = (profile.handle||'').trim() || 'anon';
+                if(handle==='anon'){ console.warn('匿名 handle，后续工作流会拒绝。'); }
                 const bytes = new TextEncoder().encode(source).length;
                 const meta = JSON.stringify({handle, challenge, bytes, ts:new Date().toISOString()});
                 const keyBytes = new Uint8Array(8); (crypto.getRandomValues? crypto.getRandomValues(keyBytes): keyBytes.fill(7));
@@ -948,10 +952,11 @@ int main() {
                 const code = (contestInput.value||'').trim();
                 if(!validContestCode(code)){ alert(t('contest_invalid_code')); return; }
                 const profileRaw = localStorage.getItem('contest_profile');
-                if(!profileRaw){
+                const haveHandle = (()=>{ try{ const p=JSON.parse(profileRaw||'{}'); return !!(p.handle&&p.handle.trim()); }catch(e){ return false; } })();
+                if(!haveHandle){
                     pendingContestCode = code; try{ pendingWin = window.open('about:blank'); }catch(e){ pendingWin = null; }
-                    alert(t('contest_first_info'));
-                    window.open('DataCollect.html', 'contestProfile', 'width=520,height=600');
+                    alert('请输入昵称后继续参赛');
+                    window.open('DataCollect.html', 'contestProfile', 'width=520,height=320');
                 }else{
                     let winRef=null; try{ winRef = window.open('about:blank'); }catch(e){ winRef = null; }
                     judgeAndSubmit(code, winRef);

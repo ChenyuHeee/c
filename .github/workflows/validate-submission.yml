@@ -1,0 +1,193 @@
+name: Validate Contest Submission
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gather changed files
+        id: diff
+        run: |
+          base="${{ github.base_ref }}"
+          head="${{ github.head_ref }}"
+          echo "Base: $base Head: $head"
+          git fetch origin "$base" --depth=1 || true
+          CHANGED=$(git diff --name-only "origin/$base"...HEAD)
+          echo "$CHANGED" | sed '/^$/d'
+          printf "files<<EOF\n%s\nEOF" "$CHANGED" >> $GITHUB_OUTPUT
+
+      - name: Validate file set
+        id: validate
+        run: |
+          set -e
+          files="${{ steps.diff.outputs.files }}"
+          if [ -z "$files" ]; then
+            echo "No files changed"; exit 1
+          fi
+          # 只允许 submissions/week-<n>/<handle>/ 下的 .c 或 README.md
+          bad=$(echo "$files" | grep -vE '^submissions/week-[0-9]+/[^/]+/([^/]+\.c|README\.md)$' || true)
+          if [ -n "$bad" ]; then
+            echo "Disallowed files:\n$bad"; echo "::error::提交包含不允许的路径"; exit 1
+          fi
+          cfiles=$(echo "$files" | grep -E '\.c$' || true)
+          count=$(echo "$cfiles" | sed '/^$/d' | wc -l)
+          if [ "$count" -eq 0 ]; then
+            echo "::error::没有 .c 文件"; exit 1
+          fi
+          if [ "$count" -gt 1 ]; then
+            echo "::warning::检测到多个 .c 文件，仅首个按规则计入榜单"
+          fi
+          first=$(echo "$cfiles" | head -n1)
+          echo "primary=$first" >> $GITHUB_OUTPUT
+          # 提取 week 与 handle
+          week=$(echo "$first" | sed -E 's#submissions/week-([0-9]+)/.*#\1#')
+          handle=$(echo "$first" | sed -E 's#submissions/week-[0-9]+/([^/]+)/.*#\1#')
+          if [ "$handle" = "anon" ]; then
+            echo "::error::检测到匿名 handle 'anon'。请使用你的个人 handle 重命名路径，如 submissions/week-${week}/<your_handle>/solution.c";
+            exit 1
+          fi
+          echo "week=$week" >> $GITHUB_OUTPUT
+          echo "handle=$handle" >> $GITHUB_OUTPUT
+
+      - name: Show primary file info
+        run: |
+          echo "Primary file: ${{ steps.validate.outputs.primary }}"
+          wc -c "${{ steps.validate.outputs.primary }}" || true
+
+      - name: Build (compile test)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y build-essential
+          gcc -std=c11 -O2 "${{ steps.validate.outputs.primary }}" -o /tmp/a.out
+          echo "Compile OK"
+          # Optional smoke run (no stdin). Ignore failures.
+          /tmp/a.out || true
+
+      - name: Predict rank
+        id: predict
+        env:
+          WEEK: ${{ steps.validate.outputs.week }}
+        run: |
+          # Run existing ranking script locally (writes JSON but不提交)
+          node --version
+          
+          # Ensure Node is available (setup in previous step)
+          node scripts/compute_ranks.mjs
+          file="competition/data/week-${{ steps.validate.outputs.week }}.json"
+          if [ ! -f "$file" ]; then echo "Missing computed JSON"; exit 1; fi
+          bytes=$(wc -c "${{ steps.validate.outputs.primary }}" | awk '{print $1}')
+          rank=$(node -e 'const f=process.argv[1];const h=process.argv[2];const obj=require("./"+f);const idx=(obj.ranks||[]).findIndex(r=>r.handle===h);process.stdout.write(String(idx>=0?idx+1:"?"));' "${file}" "${{ steps.validate.outputs.handle }}")
+          total=$(node -e 'const f=process.argv[1];const obj=require("./"+f);process.stdout.write(String((obj.ranks||[]).length));' "${file}")
+          echo "rank=$rank" >> $GITHUB_OUTPUT
+          echo "total=$total" >> $GITHUB_OUTPUT
+          echo "bytes=$bytes" >> $GITHUB_OUTPUT
+
+      - name: Comment predicted rank
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const rank = process.env.rank || '?';
+            const total = process.env.total || '?';
+            const bytes = process.env.bytes || '';
+            const week = '${{ steps.validate.outputs.week }}';
+            const handle='${{ steps.validate.outputs.handle }}';
+            const body = `🧪 预测排名 (Week ${week})\n\nHandle: **${handle}**\n字节数(Bytes): **${bytes}**\n预计周榜排名(Predicted Rank): **${rank}/${total}**\n\n说明: 合并后工作流会重新计算正式榜单。若有多个 .c 文件仅首个计入。`;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+        env:
+          rank: ${{ steps.predict.outputs.rank }}
+          total: ${{ steps.predict.outputs.total }}
+          bytes: ${{ steps.predict.outputs.bytes }}
+
+      - name: Setup Node (for predict step)
+        if: always()
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Add ready label (optional)
+        if: ${{ steps.predict.outputs.rank != '' }}
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: ready
+
+      - name: Auto-merge PR (squash)
+        if: ${{ success() }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.issue.number;
+
+            // Only for PRs into main
+            const baseRef = context.payload.pull_request?.base?.ref;
+            if (baseRef !== 'main') {
+              core.info(`Skip auto-merge: base is ${baseRef}`);
+              return;
+            }
+
+            // Respect opt-out labels
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({ owner, repo, issue_number: prNumber });
+            const names = labels.map(l => l.name.toLowerCase());
+            if (names.includes('hold') || names.includes('no-auto-merge')) {
+              core.info('Skip auto-merge: hold/no-auto-merge label present');
+              return;
+            }
+
+            // Fetch PR status
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+            if (pr.state !== 'open') {
+              core.info(`Skip auto-merge: PR state is ${pr.state}`);
+              return;
+            }
+            if (pr.draft) {
+              core.info('Skip auto-merge: PR is draft');
+              return;
+            }
+
+            try {
+              const result = await github.rest.pulls.merge({
+                owner,
+                repo,
+                pull_number: prNumber,
+                merge_method: 'squash',
+                commit_title: `chore: auto-merge contest submission PR #${prNumber}`,
+                commit_message: 'Validated by CI (paths, compile, predicted rank).'
+              });
+              if (result.status === 200 && result.data.merged) {
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: prNumber,
+                  body: '✅ 已自动合并（squash）。排行榜工作流将自动运行并刷新页面数据。'
+                });
+                // Mark as merged
+                try { await github.rest.issues.addLabels({ owner, repo, issue_number: prNumber, labels: ['merged-by-bot'] }); } catch {}
+                return;
+              }
+              core.info(`Merge attempt returned status ${result.status}`);
+            } catch (err) {
+              const msg = (err && err.message) ? err.message : String(err);
+              core.warning(`Auto-merge failed: ${msg}`);
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: prNumber,
+                body: `ℹ️ 自动合并未完成：${msg}\n\n可能原因：受保护分支策略需人工 Review、需要通过更多检查或仓库未开启自动合并。维护者可审核后手动合并。`
+              });
+            }
+

@@ -23,14 +23,8 @@
   <div class="wrap">
     <h1><i class="fas fa-id-card"></i> 参赛信息登记 · Contest Profile</h1>
     <div class="card">
-      <label>昵称 / Handle
+      <label>昵称 / Handle（每次提交必填）
         <input id="handle" placeholder="如 alice" />
-      </label>
-      <label>GitHub 用户名 / GitHub Username
-        <input id="github" placeholder="如 alice" />
-      </label>
-      <label>邮箱 / Email (可选 Optional)
-        <input id="email" placeholder="example@domain.com" />
       </label>
       <div class="row">
         <button id="cancel"><i class="fas fa-xmark"></i> 取消 Cancel</button>
@@ -41,11 +35,8 @@
   <script>
     function save(){
       const handle=document.getElementById('handle').value.trim();
-      const github=document.getElementById('github').value.trim();
-      const email=document.getElementById('email').value.trim();
       if(!handle){ alert('请输入昵称 / Handle'); return; }
-      if(!github){ alert('请输入 GitHub 用户名'); return; }
-      const obj={ handle, github, email };
+      const obj={ handle };
       try{ localStorage.setItem('contest_profile', JSON.stringify(obj)); }catch(e){}
       try{ window.opener && window.opener.postMessage({type:'contest_profile_saved'}, '*'); }catch(e){}
       setTimeout(()=>{ window.close(); }, 120);
@@ -54,7 +45,7 @@
     document.getElementById('cancel').addEventListener('click', ()=>window.close());
     // 预填已有
     try{
-      const raw=localStorage.getItem('contest_profile'); if(raw){ const p=JSON.parse(raw); handle.value=p.handle||''; github.value=p.github||''; email.value=p.email||''; }
+      const raw=localStorage.getItem('contest_profile'); if(raw){ const p=JSON.parse(raw); handle.value=p.handle||''; }
     }catch(e){}
   </script>
 </body>
