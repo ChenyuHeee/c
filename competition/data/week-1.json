@@ -2,8 +2,15 @@
   "repo": "ChenyuHeee/c",
   "week": 1,
   "branch": "main",
-  "updatedAt": "2025-11-07T12:51:11.790Z",
+  "updatedAt": "2025-11-07T14:29:37.468Z",
   "ranks": [
+    {
+      "handle": "我要拿冠军",
+      "bytes": 277,
+      "commitTime": "2025-11-07T22:29:27+08:00",
+      "sha": "9a13ee31c46c45f8f28047ddcea17f0ad207397e",
+      "path": "submissions/week-1/我要拿冠军/solution.c"
+    },
     {
       "handle": "JackthinTest",
       "bytes": 393,
