@@ -28,6 +28,7 @@
       <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
         <a class="btn" href="../index.html"><i class="fas fa-flag-checkered"></i> 每周挑战 Weekly</a>
         <a class="btn" href="../../index.html"><i class="fas fa-code"></i> 编辑器 Editor</a>
+        <button id="refreshBtn" class="btn"><i class="fas fa-arrows-rotate"></i> 强制刷新</button>
         <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
       </div>
     </header>
@@ -52,9 +53,9 @@
   </div>
   <script>
     const i18n={
-      zh:{ title:'第 1 期排行榜 · Week 1 Leaderboard', header:'第 1 期排行榜 · Week 1 Leaderboard', weekly:'每周挑战 Weekly', editor:'编辑器 Editor',
+      zh:{ title:'第 1 期排行榜 · Week 1 Leaderboard', header:'第 1 期排行榜 · Week 1 Leaderboard', weekly:'每周挑战 Weekly', editor:'编辑器 Editor', refresh:'强制刷新',
         desc:'数据来自 competition/data/week-1.json。按字节数升序排序；相同字节数按提交时间先后。', handle:'选手 Handle', bytes:'字节数 Bytes', time:'提交时间 Time', sha:'提交 SHA', loading:'加载中 Loading…' },
-      en:{ title:'Week 1 Leaderboard · 第 1 期排行榜', header:'Week 1 Leaderboard · 第 1 期排行榜', weekly:'Weekly 每周挑战', editor:'Editor 编辑器',
+      en:{ title:'Week 1 Leaderboard · 第 1 期排行榜', header:'Week 1 Leaderboard · 第 1 期排行榜', weekly:'Weekly 每周挑战', editor:'Editor 编辑器', refresh:'Force Refresh',
         desc:'Data from competition/data/week-1.json. Sorted by bytes ascending; ties by earlier submission time.', handle:'Handle 选手', bytes:'Bytes 字节数', time:'Time 提交时间', sha:'Commit SHA 提交', loading:'Loading 加载中…' }
     };
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
@@ -66,7 +67,9 @@
       const btns=document.querySelectorAll('header .row a.btn');
       btns[0].innerHTML='<i class="fas fa-flag-checkered"></i> '+t('weekly');
       btns[1].innerHTML='<i class="fas fa-code"></i> '+t('editor');
-      document.getElementById('desc').textContent=t('desc');
+  document.getElementById('desc').textContent=t('desc');
+  const rbtn=document.getElementById('refreshBtn');
+  if(rbtn) rbtn.innerHTML='<i class="fas fa-arrows-rotate"></i> '+t('refresh');
       document.getElementById('th_handle').textContent=t('handle');
       document.getElementById('th_bytes').textContent=t('bytes');
       document.getElementById('th_time').textContent=t('time');
@@ -74,7 +77,26 @@
       document.getElementById('langBtn').innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中');
     }
     document.getElementById('langBtn').addEventListener('click',()=>setLang(getLang()==='zh'?'en':'zh'));
+    document.getElementById('refreshBtn').addEventListener('click', hardRefresh);
     applyLang();
+
+    async function hardRefresh(){
+      const btn=document.getElementById('refreshBtn');
+      if(btn){ btn.disabled=true; btn.innerHTML='<i class="fas fa-arrows-rotate fa-spin"></i> '+t('refresh'); }
+      try{
+        if('caches' in window){
+          const keys=await caches.keys();
+          await Promise.all(keys.map(k=>caches.delete(k).catch(()=>{})));
+        }
+        if('serviceWorker' in navigator){
+          const regs=await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(r=>r.unregister().catch(()=>{})));
+        }
+      }catch(e){ }
+      const url=new URL(location.href);
+      url.searchParams.set('fresh', Date.now().toString());
+      location.replace(url.toString());
+    }
 
     async function load(){
       const tbody=document.getElementById('tbody');

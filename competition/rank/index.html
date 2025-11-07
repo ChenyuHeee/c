@@ -28,6 +28,7 @@
       <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
         <a class="btn" href="../index.html"><i class="fas fa-flag-checkered"></i> 每周挑战 Weekly</a>
         <a class="btn" href="../../index.html"><i class="fas fa-code"></i> 编辑器 Editor</a>
+        <button id="refreshBtn" class="btn"><i class="fas fa-arrows-rotate"></i> 强制刷新</button>
         <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
       </div>
     </header>
@@ -51,9 +52,9 @@
   </div>
   <script>
     const i18n={
-      zh:{ title:'总排行榜 · Overall Leaderboard', header:'总榜 · Overall Leaderboard', weekly:'每周挑战 Weekly', editor:'编辑器 Editor',
+      zh:{ title:'总排行榜 · Overall Leaderboard', header:'总榜 · Overall Leaderboard', weekly:'每周挑战 Weekly', editor:'编辑器 Editor', refresh:'强制刷新',
         desc:'按累计最好成绩（字节数越小越好）进行积分或排名。以下数据来自 competition/data/total.json。', handle:'选手 Handle', weeks:'参与期数 Weeks', best:'最好成绩 Best', loading:'加载中 Loading…' },
-      en:{ title:'Overall Leaderboard · 总排行榜', header:'Overall Leaderboard · 总榜', weekly:'Weekly 每周挑战', editor:'Editor 编辑器',
+      en:{ title:'Overall Leaderboard · 总排行榜', header:'Overall Leaderboard · 总榜', weekly:'Weekly 每周挑战', editor:'Editor 编辑器', refresh:'Force Refresh',
         desc:'Rank by aggregate best results (shorter is better). Data from competition/data/total.json.', handle:'Handle 选手', weeks:'Weeks 参与期数', best:'Best 最好成绩', loading:'Loading 加载中…' }
     };
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
@@ -65,14 +66,38 @@
       const btns=document.querySelectorAll('header .row a.btn');
       btns[0].innerHTML='<i class="fas fa-flag-checkered"></i> '+t('weekly');
       btns[1].innerHTML='<i class="fas fa-code"></i> '+t('editor');
-      document.getElementById('desc').textContent=t('desc');
+  document.getElementById('desc').textContent=t('desc');
+  const rbtn=document.getElementById('refreshBtn');
+  if(rbtn) rbtn.innerHTML='<i class="fas fa-arrows-rotate"></i> '+t('refresh');
       document.getElementById('th_handle').textContent=t('handle');
       document.getElementById('th_weeks').textContent=t('weeks');
       document.getElementById('th_best').textContent=t('best');
       document.getElementById('langBtn').innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中');
     }
     document.getElementById('langBtn').addEventListener('click',()=>setLang(getLang()==='zh'?'en':'zh'));
+    document.getElementById('refreshBtn').addEventListener('click', hardRefresh);
     applyLang();
+
+    async function hardRefresh(){
+      const btn=document.getElementById('refreshBtn');
+      if(btn){ btn.disabled=true; btn.innerHTML='<i class="fas fa-arrows-rotate fa-spin"></i> '+t('refresh'); }
+      try{
+        // 1) 清空 CacheStorage
+        if('caches' in window){
+          const keys=await caches.keys();
+          await Promise.all(keys.map(k=>caches.delete(k).catch(()=>{})));
+        }
+        // 2) 注销全部 Service Worker
+        if('serviceWorker' in navigator){
+          const regs=await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(r=>r.unregister().catch(()=>{})));
+        }
+      }catch(e){ /* ignore */ }
+      // 3) 附加 cache-busting 参数强制重新加载
+      const url=new URL(location.href);
+      url.searchParams.set('fresh', Date.now().toString());
+      location.replace(url.toString());
+    }
 
     async function load(){
       const tbody=document.getElementById('tbody');
