@@ -1,0 +1,1771 @@
+<!--Version:1.3.10-->
+<!--hey-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>C Compiler | C. He - ZJU</title>
+    <!-- 字体图标和 Monaco 加载器 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uncrustify-wasm@2.0.1/dist/uncrustify.js"></script>
+
+    <!-- Highlight.js themes (prefetch links; actual enable/disable handled by script) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css" id="hljs-theme-dark" disabled>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css" id="hljs-theme-light" disabled>
+
+    <script src="./scripts/version.js"></script>
+
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#0b0c0d" />
+    <style>
+        :root{
+            --sidebar-width: 380px;
+            --bg: #0b0c0d;           /* 页面背景（near black） */
+            --panel: #0f1113;        /* 卡片 / 主容器背景 */
+            --muted: #9aa4ad;        /* 次要文字 */
+            --accent: #48a0ff;       /* 高亮色（适度） */
+            --glass: rgba(255,255,255,0.02);
+            --radius: 10px;
+            --shadow: 0 8px 30px rgba(0,0,0,0.6);
+            --anim-enter: cubic-bezier(.16,.84,.44,1);
+            --anim-duration: .38s;
+            --anim-scale-small: .96;
+            --anim-shadow: 0 12px 34px -6px rgba(0,0,0,.55);
+        }
+
+        /* 明亮主题覆盖变量（切换时将 body 添加 .light-theme） */
+        .light-theme{
+            --bg: #f3f6fb;
+            --panel: #ffffff;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --glass: rgba(0,0,0,0.04);
+            --shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        body.light-theme .frame{background:var(--panel)}
+        body.light-theme header{background:linear-gradient(180deg,#ffffff,rgba(255,255,255,0.85))}
+        body.light-theme .toolbar{background:#ffffff;border-top:1px solid rgba(0,0,0,0.08)}
+        body.light-theme .sidebar{background:linear-gradient(180deg,#ffffff,rgba(255,255,255,0.85))}
+
+        *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial}
+    body{background:var(--bg);color:var(--muted);transition:background-color .45s ease,color .45s ease}
+
+        /* 应用容器：占满整个视口，类似本地 app 的全屏编辑器 */
+    /* 使用动态视口高度，解决移动端地址栏折叠导致 100vh 计算不准出现黑块与编辑器极小问题 */
+    .app{height:100dvh;height:calc(var(--app-vh, 100vh));width:100%;display:flex;flex-direction:column;align-items:stretch;justify-content:stretch}
+    .frame{max-width:1400px;margin:12px auto;flex:1;background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;transition:background-color .45s ease,box-shadow .45s ease;min-height:0;width:100%}
+
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);transition:background-color .45s ease}
+        header .title{display:flex;align-items:center;gap:10px;font-weight:600}
+        header .title i{color:var(--accent);font-size:18px}
+    header .meta{color:var(--muted);font-size:13px;display:flex;align-items:center;gap:10px}
+    header .meta a{color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+    header .meta a:hover{color:var(--accent);text-decoration:underline}
+    header .meta .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:12px}
+    body.light-theme header .meta .badge{background:rgba(0,0,0,0.06);border-color:rgba(0,0,0,0.08)}
+
+    /* 主区：编辑器 + 侧栏 */
+    .main{flex:1;display:flex;min-height:0;position:relative}
+
+        /* 编辑区 */
+    .editor-wrap{flex:1;display:flex;flex-direction:column;border-right:1px solid rgba(0,0,0,0.06);transition:background-color .4s ease,border-color .4s ease;z-index:5;min-height:0}
+    .editor-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+    .editor-head h2{font-size:14px;color:#dbe9ff}
+    #editor{flex:1;min-height:0;height:100%}
+    /* 手机端侧栏切换按钮（仅小屏显示） */
+    #mobilePanelBtn{display:none}
+
+        /* 工具栏 */
+        .toolbar{display:flex;gap:8px;padding:10px 14px;align-items:center;flex-wrap:wrap}
+    .btn{border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--muted);transition:color .3s}
+    .btn.primary{background:var(--accent);color:#071022}
+    .btn.ghost{border:1px solid rgba(0,0,0,0.06)}
+    /* 按钮禁用视觉状态 */
+    .btn[disabled]{opacity:.45;cursor:not-allowed;filter:grayscale(25%)}
+
+    /* 侧栏 */
+    /* 侧栏：使用绝对定位以覆盖编辑区，避免被 Monaco canvas 遮挡 */
+    /* 侧栏：覆盖式定位，但保留顶部与底部间隔，避免遮挡 header 与 底部工具栏；JS 会在运行时计算精确的 top/bottom */
+    .sidebar{width:var(--sidebar-width);display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);transition:width .28s ease,opacity .28s ease,padding .28s ease;position:absolute;right:0;top:56px;bottom:72px;z-index:1000}
+    /* 折叠侧栏：设置宽度为0并隐藏内边距，编辑器会自动占满剩余空间 */
+    .sidebar.collapsed{width:0;padding:0;opacity:0;pointer-events:none}
+        .sb-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px}
+        .sb-section{padding:12px 14px;flex:1;overflow:auto}
+        textarea,input[type=text]{width:100%;padding:10px;border:1px solid rgba(255,255,255,0.03);border-radius:8px;background:transparent;color:#e6eef6;font-family:monospace}
+        .output{background:var(--glass);color:#dfefff;padding:12px;border-radius:8px;white-space:pre-wrap;height:100%;overflow:auto;font-family:monospace}
+
+    /* 悬浮的侧边栏切换按钮（当侧栏折叠时可恢复） */
+    #sidebarToggle{position:fixed;right:18px;bottom:24px;width:44px;height:44px;border-radius:10px;background:var(--panel);border:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;color:var(--accent);box-shadow:var(--shadow);cursor:pointer;transition:opacity .2s;z-index:2000}
+
+    /* 注意：编辑器保持始终填满宽度，侧栏是覆盖式的但上下有留白以避免遮挡头部与底部控件 */
+
+        /* 小屏适配 */
+        /* iPad 横/竖屏 & 手机适配 */
+        @media (max-width:1180px){
+            :root{--sidebar-width:320px}
+        }
+        @media (max-width:1024px){ /* iPad 竖屏 */
+            :root{--sidebar-width:300px}
+            header{padding:10px 12px}
+            .editor-head{padding:8px 10px}
+            .toolbar{padding:8px 10px}
+            .btn{padding:6px 10px;font-size:12px}
+        }
+        @media (max-width:900px){ /* 大手机/小平板 */
+            .sidebar{position:static;width:100%;height:auto;top:auto;bottom:auto;border-top:1px solid rgba(255,255,255,0.06);order:2}
+            .main{flex-direction:column}
+            #sidebarToggle{display:none !important}
+            #mobilePanelBtn{display:inline-flex}
+        }
+        @media (max-width:640px){ /* 手机优化：工具栏换行，字号压缩 */
+            .btn{padding:6px 8px;font-size:11px}
+            .toolbar{gap:6px}
+            .editor-head h2{font-size:12px}
+            .output{font-size:12px}
+        }
+        /* 奶茶弹窗进入动画 */
+        #milkTeaModal{opacity:0;transform:translateY(12px) scale(.96);transition:opacity .38s var(--anim-enter),transform .38s var(--anim-enter)}
+        #milkTeaModal.show{opacity:1;transform:translateY(0) scale(1)}
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="frame">
+        <header>
+            <div class="title"><i class="fas fa-code"></i><div>Online C Compiler</div></div>
+            <div class="meta">
+                <a id="contestLink" href="./competition/index.html" title="赛事 / Contest"><i class="fas fa-flag-checkered"></i> 赛事</a>
+                <span class="badge" id="netBadge" title="网络状态">在线</span>
+                <span class="badge" id="verBadge" title="版本">v1.3.8</span>
+            </div>
+        </header>
+
+        <div class="main">
+            <div class="editor-wrap">
+                <div class="editor-head">
+                    <h2><i class="fas fa-file-code"></i> <span id="fileTitle">main.c</span></h2>
+                    <!-- 移除冗余的文字状态提示，仅保留文件名星号表示未保存 -->
+                    <div style="flex:1"></div>
+                    <button class="btn ghost" id="mobilePanelBtn" title="展开输入/输出"><i class="fas fa-sliders"></i> 输入/输出</button>
+                    <button class="btn ghost" id="saveAsBtn"><i class="fas fa-download"></i> 另存为</button>
+                    <button class="btn ghost" id="themeBtn"><i class="fas fa-sun"></i> 主题</button>
+                </div>
+                <div id="editor"></div>
+            </div>
+
+            <aside class="sidebar" id="sidebar">
+                <div class="sb-head"><div id="sbTitle"><i class="fas fa-terminal"></i> 运行结果</div><button id="closeSb" class="btn ghost">折叠</button></div>
+                <div class="sb-section" id="ioSection">
+                    <label id="stdinLabel">输入 (stdin)</label>
+                    <textarea id="stdin" rows="3" placeholder="请先输入再点击运行..."></textarea>
+                    <div style="height:12px"></div>
+                    <label id="stdoutLabel">输出 (stdout)</label>
+                    <div class="output" id="stdout">程序输出将显示在这里...</div>
+                    <div style="margin-top:10px;display:flex;justify-content:flex-end">
+                        <button class="btn ghost" id="enableTestsBtn" title="启用测试用例"><i class="fas fa-vial"></i> 测试用例</button>
+                    </div>
+                </div>
+                <div class="sb-section" id="testsSection" style="display:none">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                        <div id="testsTitle"><i class="fas fa-vial"></i> 测试用例</div>
+                        <div style="display:flex;gap:8px">
+                            <button class="btn ghost" id="addCaseBtn" title="新增测试用例"><i class="fas fa-plus"></i></button>
+                            <button class="btn ghost" id="runAllBtn" title="批量运行全部用例"><i class="fas fa-list-check"></i> 批量运行</button>
+                        </div>
+                    </div>
+                    <div id="casesList" style="display:flex;flex-direction:column;gap:8px"></div>
+                    <div id="casesSummary" class="output" style="margin-top:8px;display:none"></div>
+                </div>
+            </aside>
+        </div>
+        <!-- 底部工具栏：运行 / 打开 / 自动缩进 / 复制 / 撤销 / 重做 / 全屏 / 版权与版本号 -->
+        <div class="toolbar">
+            <button class="btn primary" id="runBtn"><i class="fas fa-play"></i> 运行</button>
+            <button class="btn ghost" id="openFileBtn"><i class="fas fa-folder-open"></i> 打开</button>
+            <button class="btn ghost" id="formatBtn"><i id="formatLoadingIcon" class="fas fa-indent"></i> <span id="formatBtnText">自动缩进</span></button>
+            <button class="btn ghost" id="copyBtn" title="复制"><i class="fas fa-copy"></i> 复制</button>
+            <button class="btn ghost" id="shareBtn" title="分享当前代码为链接"><i class="fas fa-link"></i> 分享</button>
+            <button class="btn ghost" id="metricsBtn" title="代码复杂度与度量"><i class="fas fa-chart-bar"></i> 度量</button>
+            <button class="btn ghost" id="langBtn" title="Language / 语言"><i class="fas fa-globe"></i> EN</button>
+            <button class="btn ghost" id="undoBtn" title="撤销" disabled><i class="fas fa-undo"></i></button>
+            <button class="btn ghost" id="redoBtn" title="重做" disabled><i class="fas fa-redo"></i></button>
+            <button class="btn ghost" id="fsBtn"><i class="fas fa-expand"></i> 全屏</button>
+            <a id="introLink" href="./about.html" target="_blank" style="margin-left:auto;color:var(--muted);font-size:12px;text-decoration:none"><i class="fas fa-circle-info"></i> 简介与帮助</a>
+            <a id="versionLink" href="javascript:void(0)" style="color:var(--muted);font-size:12px;text-decoration:none;padding-left:12px">By C. He from ZJU | <span id="footerEditorVersion">v1.3.8</span></a>
+        </div>
+        </div>
+    </div>
+
+    <!-- 折叠后恢复侧栏的悬浮按钮 -->
+    <div id="sidebarToggle" title="打开侧栏"><i class="fas fa-chevron-left"></i></div>
+    <!-- 隐藏的本地文件选择器 -->
+    <input type="file" id="fileInput" accept=".c,.cpp,.h,.hpp,.txt" style="display:none" />
+
+    <!-- Changelog modal (hidden by default) -->
+    <div id="changelogModal" aria-hidden="true" style="display:none">
+        <div class="changelog-sheet" role="dialog" aria-modal="true" aria-labelledby="changelogTitle">
+            <button class="changelog-close" aria-label="关闭更新日志">✕</button>
+            <div id="changelogContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // 修复移动端 100vh 计算：设置 --app-vh 为 window.innerHeight 的像素值
+        (function(){
+            function setVh(){
+                try{ document.documentElement.style.setProperty('--app-vh', window.innerHeight + 'px'); }catch(e){}
+            }
+            setVh();
+            window.addEventListener('resize', setVh);
+            window.addEventListener('orientationchange', setVh);
+        })();
+        /**********************************************************************
+         * 简洁版脚本：功能
+         * - 初始化 Monaco 编辑器
+         * - 本地保存/加载代码（localStorage）
+         * - 简单运行（模拟 scanf/printf）
+         * - 主题切换与 UI 状态更新
+         * 所有注释为中文，便于维护。
+         **********************************************************************/
+
+        // 默认代码（保持与 UI 功能一致的示例）
+        const DEFAULT_CODE = `#include <stdio.h>
+
+int main() {
+    printf("By ZJU C. He");
+    return 0;
+}`;
+
+        // 编辑器脏标记（未保存状态）
+        let isDirty = false;
+
+        // DOM 引用
+    const runBtn = document.getElementById('runBtn');
+    const copyBtn = document.getElementById('copyBtn');
+        const themeBtn = document.getElementById('themeBtn');
+        const stdinEl = document.getElementById('stdin');
+        const stdoutEl = document.getElementById('stdout');
+        const saveStatus = document.getElementById('saveStatus');
+        const closeSb = document.getElementById('closeSb');
+
+        // Monaco 编辑器需要异步加载
+        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            // 尝试从 localStorage 加载之前保存的代码
+            const saved = localStorage.getItem('deepseek_saved_c');
+            window.editor = monaco.editor.create(document.getElementById('editor'), {
+                value: saved || DEFAULT_CODE,
+                language: 'c',
+                theme: (localStorage.getItem('editorTheme') === 'light') ? 'vs-light' : 'vs-dark',
+                automaticLayout: true,
+                minimap: { enabled: false },
+                fontSize: 13,
+                scrollBeyondLastLine: false
+            });
+
+            // 撤销/重做自动禁用：基于内容变更事件维护简易历史指针
+            let __histIdx = 0;
+            let __histMax = 0;
+            function updateUndoRedoButtons(){
+                try{
+                    const undoBtn = document.getElementById('undoBtn');
+                    const redoBtn = document.getElementById('redoBtn');
+                    if (undoBtn) undoBtn.disabled = (__histIdx <= 0);
+                    if (redoBtn) redoBtn.disabled = (__histIdx >= __histMax);
+                }catch(e){}
+            }
+            updateUndoRedoButtons();
+
+            try {
+                window.editor.onDidChangeModelContent((e) => {
+                    try{
+                        if (e && e.isUndoing) {
+                            __histIdx = Math.max(0, __histIdx - 1);
+                        } else if (e && e.isRedoing) {
+                            __histIdx = Math.min(__histMax, __histIdx + 1);
+                        } else {
+                            // 新编辑会截断 redo
+                            if (__histIdx < __histMax) {
+                                __histMax = __histIdx;
+                            }
+                            __histIdx += 1;
+                            __histMax = __histIdx;
+                        }
+                    }catch(err){}
+                    updateUndoRedoButtons();
+                });
+            } catch(e) {}
+
+            // 应用 body 主题类（持久化）
+            try { if (localStorage.getItem('editorTheme') === 'light') document.body.classList.add('light-theme'); } catch (e) {}
+
+            // 编辑器内容改变时标记为未保存（添加 '*'）
+            try {
+                window.editor.onDidChangeModelContent(() => {
+                    if (!isDirty) setDirty(true);
+                });
+            } catch (e) {}
+
+            // 移除 Ctrl/Cmd+S 保存快捷键（仅保留另存为功能）
+        });
+
+    // ----------------- 功能函数 -----------------
+
+    // runCode: 优先尝试 Wandbox（真实编译器），失败后回退本地模拟（已移除旧的前端 WASM 占位逻辑）
+        // 最后回退到原有的模拟（simulateRun）。Wandbox API: https://wandbox.org
+        async function tryWandboxCompile(code, stdin) {
+            const wandboxUrl = 'https://wandbox.org/api/compile.json';
+            const payload = {
+                code,
+                compiler: 'gcc-head', // 可改为 clang-head 或其他
+                stdin: stdin || undefined,
+                save: false
+            };
+
+            const fetchWithTimeout = (url, opts, timeout = 8000) => {
+                return Promise.race([
+                    fetch(url, opts),
+                    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), timeout))
+                ]);
+            };
+
+            const resp = await fetchWithTimeout(wandboxUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }, 10000);
+
+            if (!resp.ok) throw new Error('Wandbox 返回 ' + resp.status);
+            const json = await resp.json();
+
+            // Wandbox 返回字段不总是固定，常见有: program_output / program_error / compiler_output
+            const out = (json.program_output || json.program_stdout || json.program || json.result || '') || '';
+            const err = (json.program_error || json.program_stderr || json.compiler_error || json.compiler_output || '') || '';
+            const status = json.status ?? 0;
+            return { stdout: out, stderr: err, exitCode: status };
+        }
+
+        // （已移除前端 WASM 占位加载逻辑：不再尝试 /wasm/tcc_runner.js，减少额外请求与配置负担）
+
+        async function runCode() {
+            if (!window.editor) return;
+            const code = window.editor.getValue();
+            const stdin = (stdinEl.value || '').trim();
+            if (!navigator.onLine) {
+                try { showOfflineModal && showOfflineModal(); } catch(e){}
+                stdoutEl.textContent = '离线：当前不执行模拟，请连接网络再运行。';
+                return;
+            }
+            stdoutEl.textContent = '运行中（Wandbox 优先）...';
+            try {
+                const res = await tryWandboxCompile(code, stdin);
+                let out = '';
+                if (res.stdout) out += res.stdout;
+                if (res.stderr) out += '\n[stderr]\n' + res.stderr;
+                out += `\n[exit code] ${res.exitCode ?? 0}`;
+                // 不再 trim，以免开头空格被裁掉；仅去除末尾多余换行
+                stdoutEl.textContent = out.replace(/\n+$/,'');
+                return;
+            } catch (e) {
+                console.warn('Wandbox 调用失败：', e);
+                stdoutEl.textContent = 'Wandbox 不可用，回退到本地模拟...';
+            }
+            simulateRun(code, stdin);
+        }
+
+        // 本地回退：简单模拟 scanf/printf 行为（仅作演示）
+        function simulateRun(code, input) {
+            stdoutEl.textContent = '本地模拟运行...';
+            setTimeout(() => {
+                // 保留模拟结果原始前导空格：不使用 trim
+                const sim = simulateRunOutput(code, input);
+                stdoutEl.textContent = sim;
+            }, 300);
+        }
+        function simulateRunOutput(code, input){
+            if (/scanf\s*\(/.test(code) && (!input || input.trim() === '')) return '错误：程序需要输入但未提供 stdin。';
+            if (!input || input.trim() === '') return '提示：请正确输入';
+            const parts = input.split(/\s+/).map(s => parseInt(s, 10));
+            if (parts.length >= 2 && parts.every(n => Number.isFinite(n))) {
+                const [a, b] = parts; return `两数之和为：${a + b}`;
+            }
+            return '错误：输入格式不正确';
+        }
+
+        // 切换主题（轻/暗），默认暗黑。我们通过 body 的 .light-theme 类切换 CSS 变量
+        // 主题持久化到 localStorage: 'editorTheme' = 'dark' | 'light'
+        let isDark = true;
+        // 读取持久化主题（若存在）
+        try {
+            const stored = localStorage.getItem('editorTheme');
+            if (stored) isDark = stored === 'dark';
+        } catch (e) {}
+
+        function applyThemeImmediately() {
+            document.body.classList.toggle('light-theme', !isDark);
+            try { if (window.monaco) monaco.editor.setTheme(isDark ? 'vs-dark' : 'vs-light'); } catch (e) {}
+            try{ const tb=document.getElementById('themeBtn'); if(tb) tb.innerHTML = isDark ? '<i class="fas fa-sun"></i> '+t('theme_light') : '<i class="fas fa-moon"></i> '+t('theme_dark'); }catch(e){}
+        }
+
+        function toggleTheme() {
+            isDark = !isDark;
+            // 持久化
+            try { localStorage.setItem('editorTheme', isDark ? 'dark' : 'light'); } catch (e) {}
+            // 添加/移除全局类以切换 CSS 变量（平滑过渡）
+            document.body.classList.toggle('light-theme', !isDark);
+            // 更新按钮文案并在短延迟后切换 Monaco 主题，避免强烈反差
+            try{ const tb=document.getElementById('themeBtn'); if(tb) tb.innerHTML = isDark ? '<i class="fas fa-sun"></i> '+t('theme_light') : '<i class="fas fa-moon"></i> '+t('theme_dark'); }catch(e){}
+            try {
+                setTimeout(() => {
+                    monaco.editor.setTheme(isDark ? 'vs-dark' : 'vs-light');
+                }, 180);
+            } catch (e) {}
+        }
+
+    // ----------------- 事件绑定 -----------------
+    // 常规绑定（若此时元素存在）
+    try { runBtn && runBtn.addEventListener('click', runCode); } catch (e) {}
+        try {
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn && copyBtn.addEventListener('click', () => {
+                try {
+                    const code = window.editor ? window.editor.getValue() : '';
+                    navigator.clipboard.writeText(code).then(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                        setTimeout(()=>{copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';},1200);
+                    }).catch(err => { alert('复制失败: ' + err.message); });
+                } catch(e){ alert('复制失败'); }
+            });
+        } catch (e) {}
+    // 保存与重置功能已移除
+    try { themeBtn && themeBtn.addEventListener('click', toggleTheme); } catch (e) {}
+    // 撤销/重做按钮绑定（脚本区正确绑定）
+    try {
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        if (undoBtn) undoBtn.addEventListener('click', () => { if (window.editor) window.editor.trigger('toolbar','undo'); });
+        if (redoBtn) redoBtn.addEventListener('click', () => { if (window.editor) window.editor.trigger('toolbar','redo'); });
+    } catch(e) {}
+    // 纯 JS 高级 C 代码自动缩进美化
+    (function(){
+        const formatBtn = document.getElementById('formatBtn');
+        const formatIcon = document.getElementById('formatLoadingIcon');
+        const formatText = document.getElementById('formatBtnText');
+        if (!formatBtn) return;
+        formatBtn.disabled = false;
+        function smartCIndent(code, tabSize) {
+            tabSize = tabSize || 4;
+            const tab = ' '.repeat(tabSize);
+            const lines = code.split(/\r?\n/);
+            let indent = 0;
+            let inBlockComment = false, inString = false, stringChar = '';
+            let result = [];
+            // 控制流栈：记录无大括号的单行体（single）与 do...while（do）
+            // 栈元素：{ type: 'single'|'do', applied: boolean }
+            let controlStack = [];
+            let inSwitch = false, inCase = false, caseIndent = 0;
+            const controlRegex = /^(if|for|while|else if|else|do|switch)\b.*\)?\s*$/;
+            const elseRegex = /^else(\s+if)?\b/;
+            const caseRegex = /^(case |default:)/;
+            for (let idx = 0; idx < lines.length; idx++) {
+                let rawLine = lines[idx];
+                let line = rawLine.trimEnd();
+                let trimmed = line.trim();
+                // 预处理指令 # 开头不缩进
+                if (/^#/.test(trimmed)) {
+                    result.push(trimmed);
+                    continue;
+                }
+                // 处理多行注释
+                let i = 0, n = line.length, openBraces = 0, closeBraces = 0, caseOrDefault = false;
+                while (i < n) {
+                    let ch = line[i];
+                    // 跳过字符串
+                    if (!inBlockComment && !inString && (ch === '"' || ch === "'")) {
+                        inString = true; stringChar = ch; i++;
+                        continue;
+                    }
+                    if (inString) {
+                        if (ch === '\\' && i+1 < n) { i+=2; continue; }
+                        if (ch === stringChar) { inString = false; stringChar = ''; }
+                        i++;
+                        continue;
+                    }
+                    // 跳过注释
+                    if (!inBlockComment && ch === '/' && i+1 < n && line[i+1] === '*') {
+                        inBlockComment = true; i+=2; continue;
+                    }
+                    if (inBlockComment) {
+                        if (ch === '*' && i+1 < n && line[i+1] === '/') { inBlockComment = false; i+=2; continue; }
+                        i++;
+                        continue;
+                    }
+                    // 单行注释
+                    if (!inString && ch === '/' && i+1 < n && line[i+1] === '/') break;
+                    // 统计大括号
+                    if (!inString && !inBlockComment) {
+                        if (ch === '{') openBraces++;
+                        if (ch === '}') closeBraces++;
+                    }
+                    i++;
+                }
+                // case/default 语句减少一级缩进
+                if (caseRegex.test(trimmed)) caseOrDefault = true;
+                // switch-case 缩进处理
+                if (/^switch\b/.test(trimmed)) {
+                    inSwitch = true;
+                    caseIndent = indent;
+                }
+                if (inSwitch && caseRegex.test(trimmed)) {
+                    inCase = true;
+                }
+                if (inCase && !caseRegex.test(trimmed) && trimmed && !trimmed.startsWith('}') && !trimmed.startsWith('{')) {
+                    // case 内多行语句缩进
+                    indent++;
+                }
+                // 控制流缩进栈处理
+                // 检查是否为控制语句且不以 { 结尾
+                let isControl = controlRegex.test(trimmed) && !trimmed.endsWith('{');
+                // do...while 特殊处理
+                let isDo = /^do\b/.test(trimmed);
+                let isWhile = /^while\b/.test(trimmed);
+                let isElse = elseRegex.test(trimmed);
+                // } 在行首则先减少缩进
+                let effectiveIndent = indent;
+                if (trimmed.startsWith('}')) effectiveIndent = Math.max(0, indent-1);
+                if (caseOrDefault) effectiveIndent = Math.max(0, effectiveIndent-1);
+                // else if/else 缩进对齐
+                if (isElse && result.length > 0) {
+                    // else/else if 与前一行对齐
+                    let prev = result[result.length-1];
+                    let prevIndent = prev.match(/^(\s*)/)[1].length/tabSize;
+                    effectiveIndent = prevIndent;
+                }
+                // 计算单行体的额外缩进：当上一行是控制语句且无大括号时，从本行开始额外 +1
+                const controlStart = /^(if|for|while|else|do|switch)\b/;
+                const isSignificantStatement = (s) => {
+                    if (!s) return false;
+                    if (s.startsWith('#')) return false;
+                    if (s.startsWith('{') || s.startsWith('}')) return false;
+                    if (s.startsWith('//')) return false;
+                    if (caseRegex.test(s)) return false; // case/default 标签不算语句
+                    if (controlStart.test(s)) return false; // 控制行本身不作为被控制语句
+                    return true;
+                };
+                // 标记本行是否开始成为某个 single/do 的受控语句
+                for (let k = 0; k < controlStack.length; k++) {
+                    const item = controlStack[k];
+                    if (!item.applied && isSignificantStatement(trimmed)) item.applied = true;
+                }
+                // 应用额外缩进（嵌套 single/do 每个 +1）
+                const extraSingles = controlStack.reduce((acc, it) => acc + (it.applied ? 1 : 0), 0);
+                effectiveIndent += extraSingles;
+                // 入栈：本行若是控制语句（非 do）且不以 { 结束，则登记为 single；do 单独登记为 do
+                if (isDo) {
+                    controlStack.push({ type:'do', applied:false });
+                } else if (isControl) {
+                    controlStack.push({ type:'single', applied:false });
+                }
+                // 输出缩进
+                result.push(tab.repeat(effectiveIndent) + trimmed);
+                // 行内 } 多于 {，则减少缩进
+                indent += openBraces - closeBraces;
+                if (trimmed.startsWith('}')) indent = Math.max(0, indent);
+                // 控制流栈弹出逻辑
+                if (controlStack.length > 0) {
+                    // 若遇到块开始 '{'，说明不是单行体：清理所有未应用的 single/do
+                    if (trimmed.startsWith('{')) {
+                        controlStack = controlStack.filter(it => it.applied);
+                    }
+                    // do...while：在 while(...); 行弹出最近的 do
+                    if (isWhile && trimmed.endsWith(';')) {
+                        for (let p = controlStack.length - 1; p >= 0; p--) {
+                            if (controlStack[p].type === 'do') { controlStack.splice(p,1); break; }
+                        }
+                    }
+                    // 单行体：到达语句结束（以 ; 结尾）后弹出所有已应用的 single
+                    if (trimmed.endsWith(';')) {
+                        controlStack = controlStack.filter(it => !(it.type==='single' && it.applied));
+                    }
+                }
+                // switch-case 缩进恢复
+                if (inCase && (trimmed.endsWith('break;') || trimmed.endsWith('return;') || trimmed.endsWith('continue;') || trimmed.endsWith('goto;') || trimmed.endsWith('}') || trimmed === '')) {
+                    indent = caseIndent;
+                    inCase = false;
+                }
+                // 关闭 switch
+                if (inSwitch && trimmed.startsWith('}')) {
+                    inSwitch = false;
+                    inCase = false;
+                }
+            }
+            return result.join('\n');
+        }
+        formatBtn.addEventListener('click', function() {
+            if (!window.editor) return;
+            try {
+                formatBtn.disabled = true;
+                if (formatIcon) formatIcon.className = 'fas fa-spinner fa-spin';
+                formatText.textContent = '格式化中...';
+                const code = window.editor.getValue();
+                const formatted = smartCIndent(code, 4);
+                if (formatted) window.editor.setValue(formatted);
+            } catch (err) {
+                alert('格式化失败：' + (err && err.message));
+            } finally {
+                formatBtn.disabled = false;
+                if (formatIcon) formatIcon.className = 'fas fa-indent';
+                formatText.textContent = '自动缩进';
+            }
+        });
+    })();
+
+        // —— 语言与本地化 ——
+        const i18n = {
+            zh: {
+                run:'运行', open:'打开', format:'自动缩进', copy:'复制', copied:'已复制', share:'分享', share_copy:'复制链接', metrics:'度量', undo:'撤销', redo:'重做', fullscreen:'全屏',
+                about:'简介与帮助', results:'运行结果', stdin:'输入 (stdin)', stdout:'输出 (stdout)', tests:'测试用例', enable_tests:'测试用例', add_case_title:'新增测试用例', run_all:'批量运行', run_all_title:'批量运行全部用例',
+                online:'在线', offline:'离线模式', run_title_on:'运行 (Ctrl/Cmd+Enter)', run_title_off:'离线：请连接网络后再运行', io_toggle:'输入/输出', hide_io:'隐藏 I/O',
+                cases_empty:'暂无用例，点击 + 新建。', case_name:'用例', delete:'删除',
+                share_title:'生成分享链接', share_desc:'可选择包含以下内容以便对方完整复现：', include_stdin:'包含输入 (stdin)', include_cases:'包含测试用例',
+                contest_nav:'赛事',
+                contest:'参赛', contest_desc:'参与每周挑战：输入题目编码（例如 week-1），生成参赛提交数据。首次将弹出信息登记。', contest_code_placeholder:'题目编码，如 week-1', contest_submit:'参赛提交', contest_first_info:'首次参赛，请填写信息后自动继续提交...', contest_profile_copied:'参赛提交信息已复制，请按比赛 README 发起 PR。', contest_invalid_code:'题目编码不正确，请检查。',
+                offline_title:'离线不可运行', offline_desc:'当前处于离线状态，暂不进行本地模拟运行，以避免结果不一致。请恢复网络后再点击“运行”。测试用例批量/单个运行也需要网络。', ok:'知道了',
+                metrics_title:'代码复杂度与度量', metrics_desc:'实时分析当前编辑器内容，帮助了解规模与潜在复杂度。复杂度为近似估算（启发式），非精确解析。', metrics_refresh:'刷新度量', metrics_copy:'复制报告', metrics_copied:'已复制', metrics_placeholder:'(点击“刷新度量”或编辑代码后查看)',
+                save_as:'另存为', theme:'主题', theme_light:'明亮', theme_dark:'暗色', stdin_placeholder:'请先输入再点击运行...', stdout_placeholder:'程序输出将显示在这里...', expected_placeholder:'期望输出 (可留空)',
+                close:'关闭', collapse:'折叠',
+                cmd_palette:'命令面板', cmd_close:'关闭', cmd_input_placeholder:'输入关键字过滤，如 run / format', cmd_no_match:'无匹配命令', cmd_hint_open:'Ctrl/Cmd+Shift+P 打开', cmd_hint_close:'Esc 关闭',
+                metric_total:'总行数', metric_nonempty:'非空行', metric_comment:'注释行', metric_funcs:'函数数量(估算)', metric_complexity:'圈复杂度(近似)', metric_nesting:'最大大括号嵌套', metric_avg_func:'平均函数行数(估算)', metric_decisions:'决策点计数', metric_fail:'度量失败'
+            },
+            en: {
+                run:'Run', open:'Open', format:'Format', copy:'Copy', copied:'Copied', share:'Share', share_copy:'Copy Link', metrics:'Metrics', undo:'Undo', redo:'Redo', fullscreen:'Fullscreen',
+                about:'About & Help', results:'Results', stdin:'Input (stdin)', stdout:'Output (stdout)', tests:'Test Cases', enable_tests:'Test Cases', add_case_title:'Add Test Case', run_all:'Run All', run_all_title:'Run all cases',
+                online:'Online', offline:'Offline', run_title_on:'Run (Ctrl/Cmd+Enter)', run_title_off:'Offline: connect network to run', io_toggle:'I/O Panel', hide_io:'Hide I/O',
+                cases_empty:'No cases yet, click + to add.', case_name:'Case', delete:'Delete',
+                share_title:'Create Share Link', share_desc:'Select items to include for full reproduction:', include_stdin:'Include stdin', include_cases:'Include test cases',
+                contest_nav:'Contest',
+                contest:'Contest', contest_desc:'Participate in weekly challenge: enter problem code (e.g. week-1) to generate submission payload. First time will prompt info.', contest_code_placeholder:'Problem code, e.g. week-1', contest_submit:'Submit Contest', contest_first_info:'First time participation: collecting profile then auto submit...', contest_profile_copied:'Contest submission copied. Follow README to open PR.', contest_invalid_code:'Invalid problem code.',
+                offline_title:'Offline - Execution Disabled', offline_desc:'You are offline. To avoid misleading outputs, local simulation is disabled. Please reconnect to run. Test cases also require network.', ok:'Got it',
+                metrics_title:'Code Metrics', metrics_desc:'Analyze the current code for size and potential complexity. Heuristic only, not a precise parser.', metrics_refresh:'Refresh', metrics_copy:'Copy Report', metrics_copied:'Copied', metrics_placeholder:'(Click “Refresh” or edit code to update)',
+                save_as:'Save As', theme:'Theme', theme_light:'Light', theme_dark:'Dark', stdin_placeholder:'Enter stdin (optional), then click Run', stdout_placeholder:'Program output will appear here...', expected_placeholder:'Expected output (optional)',
+                close:'Close', collapse:'Collapse',
+                cmd_palette:'Command Palette', cmd_close:'Close', cmd_input_placeholder:'Type keywords to filter, e.g. run / format', cmd_no_match:'No matching command', cmd_hint_open:'Ctrl/Cmd+Shift+P to open', cmd_hint_close:'Esc to close',
+                metric_total:'Total Lines', metric_nonempty:'Non-empty Lines', metric_comment:'Comment Lines', metric_funcs:'Function Count (approx)', metric_complexity:'Cyclomatic (approx)', metric_nesting:'Max Brace Nesting', metric_avg_func:'Avg Lines per Func (approx)', metric_decisions:'Decision Points', metric_fail:'Metrics failed'
+            }
+        };
+        function getLang(){ try{ return localStorage.getItem('ui_lang') || 'zh'; }catch(e){ return 'zh'; } }
+        function setLang(lang){ try{ localStorage.setItem('ui_lang', lang); }catch(e){} applyLang(); }
+        function t(k){ const lang=getLang(); return (i18n[lang] && i18n[lang][k]) || (i18n.zh[k]||k); }
+        function applyLang(){
+            try{
+                const lang = getLang();
+                // 顶部与工具栏
+                document.getElementById('runBtn').innerHTML = '<i class="fas fa-play"></i> '+t('run');
+                document.getElementById('openFileBtn').innerHTML = '<i class="fas fa-folder-open"></i> '+t('open');
+                document.getElementById('formatBtnText').textContent = t('format');
+                const saveAsBtnEl=document.getElementById('saveAsBtn'); if(saveAsBtnEl) saveAsBtnEl.innerHTML='<i class="fas fa-download"></i> '+t('save_as');
+                const themeBtnEl=document.getElementById('themeBtn'); if(themeBtnEl) themeBtnEl.innerHTML = (typeof isDark!=='undefined' && isDark) ? '<i class="fas fa-sun"></i> '+t('theme_light') : '<i class="fas fa-moon"></i> '+t('theme_dark');
+                const copyBtnEl=document.getElementById('copyBtn'); copyBtnEl.innerHTML='<i class="fas fa-copy"></i> '+t('copy'); copyBtnEl.title=t('copy');
+                const shareBtnEl=document.getElementById('shareBtn'); shareBtnEl.innerHTML='<i class="fas fa-link"></i> '+t('share'); shareBtnEl.title=t('share');
+                const metricsBtnEl=document.getElementById('metricsBtn'); if(metricsBtnEl){ metricsBtnEl.innerHTML='<i class="fas fa-chart-bar"></i> '+t('metrics'); metricsBtnEl.title=t('metrics'); }
+                const undoBtnEl=document.getElementById('undoBtn'); if(undoBtnEl) undoBtnEl.title=t('undo');
+                const redoBtnEl=document.getElementById('redoBtn'); if(redoBtnEl) redoBtnEl.title=t('redo');
+                document.getElementById('fsBtn').innerHTML = '<i class="fas fa-expand"></i> '+t('fullscreen');
+                const intro=document.getElementById('introLink'); if(intro) intro.innerHTML = '<i class="fas fa-circle-info"></i> '+t('about');
+                const contestLink=document.getElementById('contestLink'); if(contestLink) contestLink.innerHTML='<i class="fas fa-flag-checkered"></i> '+t('contest_nav');
+                const langBtn=document.getElementById('langBtn'); if(langBtn) langBtn.innerHTML = '<i class="fas fa-globe"></i> ' + (lang==='zh'?'EN':'中');
+                // 侧栏标题与标签
+                const sbTitle=document.getElementById('sbTitle'); if(sbTitle) sbTitle.innerHTML = '<i class="fas fa-terminal"></i> '+t('results');
+                const stdinLbl=document.getElementById('stdinLabel'); if(stdinLbl) stdinLbl.textContent = t('stdin');
+                const stdoutLbl=document.getElementById('stdoutLabel'); if(stdoutLbl) stdoutLbl.textContent = t('stdout');
+                const stdinBox=document.getElementById('stdin'); if(stdinBox) stdinBox.placeholder = t('stdin_placeholder');
+                const stdoutBox=document.getElementById('stdout'); if(stdoutBox){ const s=stdoutBox.textContent||''; if(!s.trim() || s.includes('程序输出将显示在这里') || s.includes('Program output will appear here')) stdoutBox.textContent = t('stdout_placeholder'); }
+                const closeSbEl=document.getElementById('closeSb'); if(closeSbEl) closeSbEl.textContent = t('collapse');
+                const enableBtn=document.getElementById('enableTestsBtn'); if(enableBtn) enableBtn.innerHTML='<i class="fas fa-vial"></i> '+t('enable_tests');
+                const testsTitle=document.getElementById('testsTitle'); if(testsTitle) testsTitle.innerHTML='<i class="fas fa-vial"></i> '+t('tests');
+                const addCaseBtnEl=document.getElementById('addCaseBtn'); if(addCaseBtnEl) addCaseBtnEl.title=t('add_case_title');
+                const runAllBtnEl=document.getElementById('runAllBtn'); if(runAllBtnEl){ runAllBtnEl.title=t('run_all_title'); runAllBtnEl.innerHTML='<i class="fas fa-list-check"></i> '+t('run_all'); }
+                const mobileBtn=document.getElementById('mobilePanelBtn'); if(mobileBtn) mobileBtn.innerHTML = '<i class="fas fa-sliders"></i> '+t('io_toggle');
+                // 网络徽章提示更新（文本部分）
+                try{ const runBtn = document.getElementById('runBtn'); if(runBtn){ runBtn.title = navigator.onLine? t('run_title_on') : t('run_title_off'); } }catch(e){}
+                try{
+                    const netBadge = document.getElementById('netBadge');
+                    if(netBadge){ netBadge.textContent = navigator.onLine ? t('online') : t('offline'); }
+                }catch(e){}
+                // 度量弹窗标题/按钮
+                try{
+                    const h3 = document.querySelector('#metricsInner h3'); if(h3) h3.innerHTML = '<i class="fas fa-chart-bar"></i> '+t('metrics_title');
+                    const desc = document.querySelector('#metricsInner > div:nth-child(2)'); if(desc) desc.textContent = t('metrics_desc');
+                    const close=document.getElementById('metricsClose'); if(close) close.innerHTML='<i class="fas fa-xmark"></i> '+t('close');
+                    const refresh=document.getElementById('metricsRefresh'); if(refresh) refresh.innerHTML='<i class="fas fa-rotate"></i> '+t('metrics_refresh');
+                    const copy=document.getElementById('metricsCopy'); if(copy) copy.innerHTML='<i class="fas fa-copy"></i> '+t('metrics_copy');
+                    const rep=document.getElementById('metricsReport'); if(rep && (!rep.textContent || rep.textContent.includes('点击') || rep.textContent.includes('Click'))) rep.textContent = t('metrics_placeholder');
+                    // 命令面板文本
+                    try{
+                        const cmdTitle=document.getElementById('cmdTitle'); if(cmdTitle) cmdTitle.innerHTML='<i class="fas fa-terminal"></i> '+t('cmd_palette');
+                        const cmdClose=document.getElementById('cmdClose'); if(cmdClose) cmdClose.innerHTML='<i class="fas fa-xmark"></i> '+t('cmd_close');
+                        const cmdInput=document.getElementById('cmdInput'); if(cmdInput) cmdInput.placeholder=t('cmd_input_placeholder');
+                        const cmdHintOpen=document.getElementById('cmdHintOpen'); if(cmdHintOpen) cmdHintOpen.textContent=t('cmd_hint_open');
+                        const cmdHintClose=document.getElementById('cmdHintClose'); if(cmdHintClose) cmdHintClose.textContent=t('cmd_hint_close');
+                    }catch(e){}
+                }catch(e){}
+            }catch(e){}
+        }
+
+        // —— 分享链接功能（增强） ——
+    const shareBtn = document.getElementById('shareBtn');
+    function encodeBase64(str){
+        try{
+            const enc = new TextEncoder();
+            const bytes = enc.encode(str);
+            let bin = '';
+            for (let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+            return btoa(bin);
+        }catch(e){ return btoa(unescape(encodeURIComponent(str))); }
+    }
+    function decodeBase64(b64){
+        try{
+            const bin = atob(b64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+            return new TextDecoder().decode(bytes);
+        }catch(e){ return decodeURIComponent(escape(atob(b64))); }
+    }
+    function buildShareUrl(opts){
+        const code = window.editor ? window.editor.getValue() : '';
+        const base = location.origin + location.pathname;
+        const includeStdin = !!(opts && opts.stdin);
+        const includeCases = !!(opts && opts.cases);
+        if (!includeStdin && !includeCases) {
+            // 兼容旧格式：仅代码
+            const b64 = encodeBase64(code);
+            return base + '#code=' + b64;
+        }
+        const payload = { code };
+        try{ if(includeStdin){ payload.stdin = (stdinEl.value||''); } }catch(e){}
+        try{ if(includeCases){ payload.cases = Array.isArray(cases)? cases : []; } }catch(e){}
+        try{ if(currentFilename){ payload.name = currentFilename; } }catch(e){}
+        const b64 = encodeBase64(JSON.stringify(payload));
+        return base + '#share=' + b64;
+    }
+    function applyHashIfAny(){
+        const h = location.hash || '';
+        if (!h) return;
+        try{
+            if (h.startsWith('#code=')){
+                const b64 = h.slice(6);
+                const code = decodeBase64(b64);
+                if (window.editor && code) {
+                    window.editor.setValue(code);
+                    currentFilename = 'shared.c';
+                    fileTitle.textContent = currentFilename;
+                    setDirty(false);
+                }
+                return;
+            }
+            if (h.startsWith('#share=')){
+                const b64 = h.slice(7);
+                const obj = JSON.parse(decodeBase64(b64) || '{}');
+                if (obj && obj.code && window.editor){
+                    window.editor.setValue(obj.code);
+                    currentFilename = (obj.name || 'shared.c');
+                    fileTitle.textContent = currentFilename;
+                    setDirty(false);
+                }
+                if (obj && typeof obj.stdin === 'string'){
+                    try{ stdinEl.value = obj.stdin; }catch(e){}
+                }
+                if (obj && Array.isArray(obj.cases)){
+                    try{
+                        localStorage.setItem('test_cases_v1', JSON.stringify(obj.cases));
+                        if (typeof loadCases==='function'){
+                            loadCases();
+                            if (typeof enterTestMode==='function') enterTestMode();
+                            if (typeof renderCases==='function') renderCases();
+                        }
+                    }catch(e){}
+                }
+                return;
+            }
+        }catch(e){ console.warn('解析分享链接失败', e); }
+    }
+    // 分享弹窗（可选择包含 stdin/测试用例）
+    (function(){
+        if(!shareBtn) return;
+        let modal;
+        function open(){
+            if(!modal){
+                modal = document.createElement('div');
+                modal.id = 'shareModal';
+                modal.style.position='fixed'; modal.style.inset='0'; modal.style.display='flex'; modal.style.alignItems='center'; modal.style.justifyContent='center'; modal.style.background='rgba(0,0,0,.45)'; modal.style.zIndex='4500';
+            }
+            // 依据语言生成内容（加入参赛选项）
+            modal.innerHTML = '<div style="width:min(520px,92vw);background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;box-shadow:0 18px 50px -10px rgba(0,0,0,.55);padding:16px;transform:translateY(12px) scale(.96);opacity:0;transition:.28s var(--anim-enter)"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-weight:600;color:#fff"><i class=\'fas fa-share-nodes\'></i> '+t('share_title')+'</div><button id="shareClose" class="btn ghost"><i class=\'fas fa-xmark\'></i> '+t('ok')+'</button></div><div style="margin-top:12px;color:var(--muted);font-size:13px;line-height:1.7">'+t('share_desc')+'</div><div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;color:var(--muted)"><label style="display:flex;align-items:center;gap:8px"><input id="optStdin" type="checkbox"/> '+t('include_stdin')+'</label><label style="display:flex;align-items:center;gap:8px"><input id="optCases" type="checkbox"/> '+t('include_cases')+'</label></div><div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px"><div style="font-weight:600;color:#fff;font-size:13px"><i class=\'fas fa-trophy\'></i> '+t('contest')+'</div><div style="color:var(--muted);font-size:12px;line-height:1.6">'+t('contest_desc')+'</div><input id="contestCodeInput" placeholder="'+t('contest_code_placeholder')+'" style="margin-top:6px;background:#161a1e;border:1px solid #222;border-radius:8px;padding:6px 8px;color:#eee;font-size:12px"/></div><div id="contestJudgeStatus" style="margin-top:8px;font-size:12px;color:#8aa3b7;min-height:18px"></div><div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button id="contestSubmitBtn" class="btn" style="background:#9146ff;color:#fff"><i class=\'fas fa-medal\'></i> '+t('contest_submit')+'</button><button id="shareCopy" class="btn primary" style="background:var(--accent);color:#071022"><i class=\'fas fa-link\'></i> '+t('share_copy')+'</button></div></div>';
+                document.body.appendChild(modal);
+            modal.style.display='flex';
+            requestAnimationFrame(()=>{ const inner=modal.firstElementChild; inner.style.opacity='1'; inner.style.transform='translateY(0) scale(1)'; });
+            const closeBtn = modal.querySelector('#shareClose');
+            const copyBtn = modal.querySelector('#shareCopy');
+            const optStdin = modal.querySelector('#optStdin');
+            const optCases = modal.querySelector('#optCases');
+            function close(){ const inner=modal.firstElementChild; inner.style.opacity='0'; inner.style.transform='translateY(12px) scale(.96)'; setTimeout(()=>modal.style.display='none',180); }
+            closeBtn.onclick = close; modal.addEventListener('click',(e)=>{ if(e.target===modal) close(); });
+            copyBtn.onclick = ()=>{
+                const url = buildShareUrl({ stdin: optStdin.checked, cases: optCases.checked });
+                navigator.clipboard.writeText(url).then(()=>{
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> '+t('copied');
+                    setTimeout(()=>{ copyBtn.innerHTML = '<i class="fas fa-link"></i> '+t('share_copy'); }, 1200);
+                }).catch(()=>{ prompt('复制失败，请手动复制：', url); });
+            };
+            // —— 参赛提交逻辑 ——
+            const contestBtn = modal.querySelector('#contestSubmitBtn');
+            const contestInput = modal.querySelector('#contestCodeInput');
+            let pendingContestCode = null; let pendingWin = null;
+            function validContestCode(code){ return /^week-\d+$/i.test(code.trim()); }
+            function buildContestPayload(code){
+                const profileRaw = localStorage.getItem('contest_profile');
+                let profile = {}; try{ profile = JSON.parse(profileRaw||'{}'); }catch(e){}
+                const handle = (profile.handle||'').trim();
+                if(!handle){
+                    alert('请先填写昵称 / Handle');
+                    return null;
+                }
+                const source = window.editor? window.editor.getValue() : '';
+                const bytes = new TextEncoder().encode(source).length;
+                return { type:'contest', version:1, challenge:code, handle, bytes, ts:new Date().toISOString(), code:source };
+            }
+            function performContestSubmit(code, winRef){
+                const statusEl = document.getElementById('contestJudgeStatus');
+                const payload = buildContestPayload(code);
+                if(!payload){ return; }
+                try{
+                    const b64 = encodeBase64(JSON.stringify(payload));
+                    const url = 'competition/submit.html#submission=' + b64;
+                    let opened=false;
+                    try{ if(winRef && !winRef.closed){ winRef.location.href = url; opened=true; } }catch(e){ opened=false; }
+                    if(!opened){
+                        const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noreferrer'; a.textContent='打开提交页 / Open Submit Page';
+                        const btn=document.createElement('button'); btn.className='btn'; btn.style.marginLeft='8px'; btn.innerHTML='<i class="fas fa-copy"></i> 复制链接';
+                        btn.addEventListener('click',()=>{ navigator.clipboard.writeText(url).then(()=>{ btn.innerHTML='<i class="fas fa-check"></i> 已复制'; setTimeout(()=>{ btn.innerHTML='<i class="fas fa-copy"></i> 复制链接'; }, 1200); }); });
+                        statusEl.innerHTML='已生成提交链接（如未自动打开，请点击）：';
+                        statusEl.appendChild(a); statusEl.appendChild(btn);
+                    }
+                }catch(e){ alert('Contest submit failed: '+ (e&&e.message)); }
+            }
+            // ---- 评测与加密新增逻辑 ----
+            async function judgeAndSubmit(challenge, winRef){
+                const statusEl = document.getElementById('contestJudgeStatus');
+                if(!window.editor){ alert('编辑器尚未就绪'); return; }
+                const source = window.editor.getValue();
+                statusEl.textContent='评测中 / Judging...';
+                function genDiamond(n){ const lines=[]; const mid=(n-1)/2; for(let r=0;r<n;r++){ const dist=Math.abs(mid-r); const stars=n-2*dist; const spaces=dist; lines.push(' '.repeat(spaces)+('*'.repeat(stars))); } return lines.join('\n'); }
+                let tests=[];
+                if(/^week-1$/i.test(challenge)){
+                    try{
+                        const resp = await fetch('./competition/data/tests/week-1.json',{cache:'no-store'});
+                        if(resp.ok){ tests = await resp.json(); }
+                    }catch(e){ /* ignore */ }
+                    if(!Array.isArray(tests) || !tests.length){ tests=[1,3,5].map(n=>({stdin:String(n)+'\n', expected: genDiamond(n)})); }
+                }
+                if(!tests.length){ statusEl.textContent='未知题目，跳过评测 / Unknown challenge, skip judge.'; return performContestSubmit(challenge, winRef); }
+                let allPass=true;
+                for(const tc of tests){
+                    try{
+                        const res = await tryWandboxCompile(source, tc.stdin);
+                        let out=(res.stdout||'').replace(/\n+$/,'');
+                        const expect = (tc.expect||tc.expected||'').replace(/\n+$/,'');
+                        if(out!==expect){ allPass=false; break; }
+                    }catch(e){ allPass=false; break; }
+                }
+                if(!allPass){ statusEl.style.color='#ff6b6b'; statusEl.textContent='WA：输出不匹配，阻止上传 / Wrong Answer blocked.'; try{ if(winRef && !winRef.closed) winRef.close(); }catch(e){} return; }
+                statusEl.style.color='#56d364'; statusEl.textContent='通过 | Accepted，生成提交数据...';
+                let encPayload = secureContestPayload(challenge, source);
+                // v4 secureContestPayload 返回 Promise
+                if (encPayload && typeof encPayload.then === 'function') {
+                    encPayload = await encPayload;
+                }
+                // 优先尝试一键提交（若配置了服务端）
+                try{
+                    const ep = (window.__CONFIG__ && window.__CONFIG__.submitEndpoint) || '';
+                    if(ep){
+                        statusEl.textContent='通过 | Accepted，正在一键提交...';
+                        const resp = await fetch(ep, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(encPayload), mode:'cors' });
+                        if(resp.ok){
+                            let data={}; try{ data=await resp.json(); }catch(_){ data={}; }
+                            const pr = data.prUrl || data.url || '';
+                            statusEl.innerHTML = '✅ 已提交成功，等待审核入榜。';
+                            if(pr){
+                                const a=document.createElement('a'); a.href=pr; a.target='_blank'; a.rel='noreferrer'; a.textContent='查看 PR / View PR'; a.style.marginLeft='8px';
+                                statusEl.appendChild(a);
+                                try{ if(winRef && !winRef.closed){ winRef.location.href = pr; } }catch(_){ }
+                            }
+                            return; // 一键提交成功则结束
+                        }
+                    }
+                }catch(_){ /* 忽略，回退到手动页 */ }
+                // 回退到手动提交页
+                try{
+                    const b64 = encodeBase64(JSON.stringify(encPayload));
+                    const url = 'competition/submit.html#submission=' + b64;
+                    let opened=false;
+                    try{
+                        if(winRef && !winRef.closed){ winRef.location.href = url; opened=true; }
+                    }catch(e){ opened=false; }
+                    if(!opened){
+                        const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noreferrer'; a.textContent='打开提交页 / Open Submit Page';
+                        const btn=document.createElement('button'); btn.className='btn'; btn.style.marginLeft='8px'; btn.innerHTML='<i class="fas fa-copy"></i> 复制链接';
+                        btn.addEventListener('click',()=>{ navigator.clipboard.writeText(url).then(()=>{ btn.innerHTML='<i class="fas fa-check"></i> 已复制'; setTimeout(()=>{ btn.innerHTML='<i class="fas fa-copy"></i> 复制链接'; }, 1200); }); });
+                        statusEl.innerHTML='已生成提交链接（如未自动打开，请点击）：';
+                        statusEl.appendChild(a); statusEl.appendChild(btn);
+                    }
+                }catch(e){ alert('提交生成失败: '+(e&&e.message)); }
+            }
+            function secureContestPayload(challenge, source){
+                const profileRaw = localStorage.getItem('contest_profile');
+                let profile={}; try{ profile=JSON.parse(profileRaw||'{}'); }catch(e){}
+                const handle = (profile.handle||'').trim() || 'anon';
+                if(handle==='anon'){ console.warn('匿名 handle，后续工作流会拒绝。'); }
+                const enc = new TextEncoder();
+                // v4: AES-GCM + RSA-OAEP(公钥包裹)；若未配置公钥则回退 v3
+                const pubPem = (window.__CONFIG__ && window.__CONFIG__.submitPublicKey) || '';
+                if (pubPem && typeof window.crypto?.subtle?.importKey === 'function'){
+                    return (async ()=>{
+                        const meta = {handle, challenge, bytes: enc.encode(source).length, ts:new Date().toISOString()};
+                        const bundle = JSON.stringify({ meta, code: source });
+
+                        // helpers
+                        const pemToArrayBuffer = (pem)=>{
+                            const b64 = pem.replace(/-----BEGIN [^-]+-----/g,'').replace(/-----END [^-]+-----/g,'').replace(/\s+/g,'');
+                            const bin = atob(b64); const buf = new Uint8Array(bin.length);
+                            for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i); return buf.buffer;
+                        };
+                        const bytesToB64 = (buf)=>{
+                            const b = new Uint8Array(buf); let s=''; for(let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s);
+                        };
+
+                        // 1) 生成 AES-256-GCM 密钥与随机 IV(12B)
+                        const aesKey = await crypto.subtle.generateKey({name:'AES-GCM', length:256}, true, ['encrypt']);
+                        const iv = crypto.getRandomValues(new Uint8Array(12));
+                        // 2) 加密 bundle
+                        const encBundle = await crypto.subtle.encrypt({name:'AES-GCM', iv}, aesKey, enc.encode(bundle));
+                        // 3) 导出原始对称密钥并用 RSA-OAEP(SHA-256) 包裹
+                        const rawAes = await crypto.subtle.exportKey('raw', aesKey);
+                        const spki = pemToArrayBuffer(pubPem);
+                        const publicKey = await crypto.subtle.importKey('spki', spki, {name:'RSA-OAEP', hash:'SHA-256'}, false, ['encrypt']);
+                        const keyWrap = await crypto.subtle.encrypt({name:'RSA-OAEP'}, publicKey, rawAes);
+
+                        return {
+                            type: 'contest',
+                            version: 4,
+                            challenge,
+                            alg: 'aes-256-gcm',
+                            iv: bytesToB64(iv),
+                            keyWrap: bytesToB64(keyWrap),
+                            encBundle: bytesToB64(encBundle)
+                        };
+                    })();
+                }
+                // 回退到 v3（XOR-8B），保持与现有流程兼容
+                const bytes = enc.encode(source).length;
+                const meta = JSON.stringify({handle, challenge, bytes, ts:new Date().toISOString()});
+                const keyBytes = new Uint8Array(8); (crypto.getRandomValues? crypto.getRandomValues(keyBytes): keyBytes.fill(7));
+                const metaBytes = enc.encode(meta);
+                const metaOut = new Uint8Array(metaBytes.length);
+                for(let i=0;i<metaBytes.length;i++){ metaOut[i] = metaBytes[i] ^ keyBytes[i % keyBytes.length]; }
+                const codeBytes = enc.encode(source);
+                const codeOut = new Uint8Array(codeBytes.length);
+                for(let i=0;i<codeBytes.length;i++){ codeOut[i] = codeBytes[i] ^ keyBytes[i % keyBytes.length]; }
+                const toHex = buf => Array.from(buf).map(b=>b.toString(16).padStart(2,'0')).join('');
+                return { type:'contest', version:3, challenge, enc: toHex(metaOut), encCode: toHex(codeOut), key: toHex(keyBytes) };
+            }
+            window.addEventListener('message', (ev)=>{
+                if(ev && ev.data && ev.data.type==='contest_profile_saved' && pendingContestCode){
+                    const code = pendingContestCode; pendingContestCode = null;
+                    const winRef = pendingWin; pendingWin = null;
+                    setTimeout(()=>judgeAndSubmit(code, winRef), 150);
+                }
+            }, { once:false });
+            contestBtn.onclick = ()=>{
+                const code = (contestInput.value||'').trim();
+                if(!validContestCode(code)){ alert(t('contest_invalid_code')); return; }
+                const profileRaw = localStorage.getItem('contest_profile');
+                const haveHandle = (()=>{ try{ const p=JSON.parse(profileRaw||'{}'); return !!(p.handle&&p.handle.trim()); }catch(e){ return false; } })();
+                if(!haveHandle){
+                    pendingContestCode = code; try{ pendingWin = window.open('about:blank'); }catch(e){ pendingWin = null; }
+                    alert('请输入昵称后继续参赛');
+                    window.open('DataCollect.html', 'contestProfile', 'width=520,height=320');
+                }else{
+                    let winRef=null; try{ winRef = window.open('about:blank'); }catch(e){ winRef = null; }
+                    judgeAndSubmit(code, winRef);
+                }
+            };
+            document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){ close(); document.removeEventListener('keydown', esc);} });
+        }
+        shareBtn.addEventListener('click', open);
+    })();
+
+        // 侧栏折叠/展开逻辑：使用 class 'collapsed'，便于动画与恢复
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const editorWrap = document.querySelector('.editor-wrap');
+    const mobilePanelBtn = document.getElementById('mobilePanelBtn');
+        closeSb.addEventListener('click', () => {
+            sidebar.classList.add('collapsed');
+            sidebarToggle.style.display = 'flex';
+            // 折叠侧栏时不改变编辑器宽度（编辑器始终填满宽度），仅触发布局
+            try { editorWrap && editorWrap.classList.add('full'); } catch (e) {}
+            setTimeout(() => { try { window.editor && window.editor.layout(); } catch (e) {} }, 320);
+        });
+        sidebarToggle.addEventListener('click', () => {
+            // 展开侧栏：先移除 collapsed，使其恢复到正常宽度
+            sidebar.classList.remove('collapsed');
+            // 强制一次重排以确保浏览器应用宽度变化（防止 Monaco 的 canvas 覆盖侧栏）
+            // 读取 offsetWidth 会触发回流
+            try { void sidebar.offsetWidth; } catch (e) {}
+            // 隐藏恢复按钮
+            sidebarToggle.style.display = 'none';
+            // 恢复侧栏显示后只需触发布局，编辑器仍保持填满宽度
+            try { editorWrap && editorWrap.classList.remove('full'); } catch (e) {}
+            // 立即触发一次布局以快速响应，稍后 transitionend 会触发最终布局
+            try { window.editor && window.editor.layout(); } catch (e) {}
+            setTimeout(() => { try { window.editor && window.editor.layout(); } catch (e) {} }, 180);
+        });
+
+        // 手机端顶部按钮控制侧栏显示/隐藏
+        mobilePanelBtn && mobilePanelBtn.addEventListener('click', () => {
+            if (!sidebar) return;
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            if (isCollapsed) {
+                sidebar.classList.remove('collapsed');
+                mobilePanelBtn.innerHTML = '<i class="fas fa-sliders"></i> ' + t('hide_io');
+            } else {
+                sidebar.classList.add('collapsed');
+                mobilePanelBtn.innerHTML = '<i class="fas fa-sliders"></i> ' + t('io_toggle');
+            }
+            try { window.editor && window.editor.layout(); } catch(e){}
+        });
+
+        // 当侧栏过渡结束时，确保编辑器做最终布局（避免动画中 canvas 与侧栏出现错位）
+        try {
+            sidebar.addEventListener('transitionend', (ev) => {
+                const prop = (ev && ev.propertyName) || '';
+                if (prop.includes('width') || prop.includes('margin') || prop.includes('right') || prop.includes('opacity')) {
+                    try { window.editor && window.editor.layout(); } catch (e) {}
+                }
+            });
+        } catch (e) {}
+
+        // 监听侧栏的折叠/展开和窗口尺寸以动态调整侧栏的上下边界，保证不遮挡头部与底部控件
+        try {
+            function adjustSidebarVertical() {
+                try {
+                    const headerEl = document.querySelector('header');
+                    const toolbarEl = document.querySelector('.toolbar');
+                    if (!headerEl || !toolbarEl) return;
+                    // 当侧栏在小屏为 static 布局时，不再计算 top/bottom
+                    const pos = getComputedStyle(sidebar).position;
+                    if (pos !== 'absolute') return;
+                    const headerRect = headerEl.getBoundingClientRect();
+                    const toolbarRect = toolbarEl.getBoundingClientRect();
+                    // 计算顶部距离：将侧栏顶边放在 header 底部 + 8px 间隔
+                    const topPx = Math.max(8, Math.round(headerRect.bottom + 8));
+                    // 计算底部距离：将侧栏底边放在 toolbar 顶部 - 8px 间隔
+                    const bottomPx = Math.max(8, Math.round(window.innerHeight - toolbarRect.top + 8));
+                    sidebar.style.top = topPx + 'px';
+                    sidebar.style.bottom = bottomPx + 'px';
+                } catch (e) {}
+            }
+            // 初始调整
+            adjustSidebarVertical();
+            // 在窗口调整时重新计算
+            window.addEventListener('resize', adjustSidebarVertical);
+            // 在侧栏折叠/展开后也调整（transitionend 也会触发 editor.layout）
+            sidebar.addEventListener('transitionend', adjustSidebarVertical);
+            // 当用户点击折叠/展开按钮后立即调整并触发布局
+            closeSb.addEventListener('click', () => { try { adjustSidebarVertical(); window.editor && window.editor.layout(); } catch (e) {} });
+            sidebarToggle.addEventListener('click', () => { try { adjustSidebarVertical(); window.editor && window.editor.layout(); } catch (e) {} });
+        } catch (e) {}
+
+        // 更新脏标记 UI（仅在文件名后显示 '*'）
+        function setDirty(flag) {
+            try {
+                isDirty = !!flag;
+                const title = currentFilename || 'main.c';
+                fileTitle.textContent = title + (isDirty ? ' *' : '');
+            } catch (e) {}
+        }
+
+    // 打开本地文件：触发隐藏的 file input，读取文本并替换编辑器内容
+    const openFileBtn = document.getElementById('openFileBtn');
+    const fileInput = document.getElementById('fileInput');
+    const fileTitle = document.getElementById('fileTitle');
+    const saveAsBtn = document.getElementById('saveAsBtn');
+    let currentFilename = 'main.c';
+        openFileBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (ev) => {
+            const f = ev.target.files && ev.target.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                // 如果当前编辑器内容与已保存的不一致，提醒用户
+                try {
+                    const current = window.editor ? window.editor.getValue() : '';
+                    const saved = localStorage.getItem('deepseek_saved_c') || '';
+                    if (current !== saved) {
+                        const ok = confirm('当前编辑器中有未保存的更改，打开本地文件将覆盖它，继续吗？');
+                        if (!ok) return;
+                    }
+                } catch (e) {}
+                try {
+                    // 将文件内容写入编辑器
+                    window.editor && window.editor.setValue(text);
+                    window.editor && window.editor.focus();
+                    // 更新当前文件名显示
+                    try { currentFilename = f.name || currentFilename; fileTitle.textContent = currentFilename; setDirty(false); } catch (e) {}
+                    // 根据扩展设定语言模式（若 Monaco 已就绪）
+                    try {
+                        const name = f.name || '';
+                        const ext = name.split('.').pop().toLowerCase();
+                        let lang = 'plaintext';
+                        if (ext === 'c' || ext === 'h') lang = 'c';
+                        else if (ext === 'cpp' || ext === 'cxx' || ext === 'hpp' || ext === 'hxx') lang = 'cpp';
+                        else lang = 'plaintext';
+                        if (window.monaco && window.editor && window.editor.getModel) {
+                            monaco.editor.setModelLanguage(window.editor.getModel(), lang);
+                        }
+                    } catch (e) {}
+                } catch (e) {}
+                // 清空选择以便再次打开同一文件
+                fileInput.value = '';
+            };
+            reader.readAsText(f);
+        });
+
+        // 另存为：下载当前编辑器内容为文件
+        function saveAsFile() {
+            try {
+                const content = window.editor ? window.editor.getValue() : '';
+                const name = currentFilename || 'main.c';
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = name;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+                // 另存为并不改变脏状态
+            } catch (e) {
+                console.error('另存为失败', e);
+                alert('另存为失败：' + (e && e.message));
+            }
+        }
+        saveAsBtn.addEventListener('click', saveAsFile);
+
+        // 全屏按钮（修复：提供回退以防 .frame 未定义）
+        const fsBtn = document.getElementById('fsBtn');
+        fsBtn.addEventListener('click', () => {
+            // 首选 .frame，其次回退到 .app，再回退到 documentElement
+            const el = document.querySelector('.frame') || document.querySelector('.app') || document.documentElement;
+            if (!document.fullscreenElement) {
+                el.requestFullscreen?.();
+            } else {
+                document.exitFullscreen?.();
+            }
+        });
+
+        // 页面卸载时自动保存（可选）
+        window.addEventListener('beforeunload', () => {
+            if (window.editor) localStorage.setItem('deepseek_saved_c', window.editor.getValue());
+        });
+
+
+        // 页面加载时：设置编辑器为暗黑主题，并预热 clang-format wasm
+        window.addEventListener('load', () => {
+            try { if (window.monaco) monaco.editor.setTheme('vs-dark'); } catch (e) {}
+            // 初始时隐藏侧栏恢复按钮（默认展开）
+            document.getElementById('sidebarToggle').style.display = 'none';
+
+            // 调整侧栏上下边界以避免遮挡头部和底部工具条
+            try { /* 调整将在下面的调整函数中完成 */ } catch (e) {}
+
+            // 确保 Monaco 布局正确——在某些浏览器/布局中首次渲染时需要手动触发 layout
+            try { window.editor && window.editor.layout(); } catch (e) {}
+
+            // 绑定全屏按钮（容错）：如果之前绑定失败，这里再绑定一次
+            try {
+                const fs = document.getElementById('fsBtn');
+                if (fs && !fs.dataset._fsBound) {
+                    fs.addEventListener('click', () => {
+                        const el = document.querySelector('.frame') || document.querySelector('.app') || document.documentElement;
+                        if (!document.fullscreenElement) {
+                            el.requestFullscreen?.();
+                        } else {
+                            document.exitFullscreen?.();
+                        }
+                    });
+                    fs.dataset._fsBound = '1';
+                }
+            } catch (e) {}
+
+            // iPad 横竖屏：根据可视尺寸切换布局变量（更宽的侧栏）
+            function applyOrientationLayout(){
+                try{
+                    const landscape = window.innerWidth > window.innerHeight;
+                    document.body.classList.toggle('landscape', landscape);
+                    document.body.classList.toggle('portrait', !landscape);
+                }catch(e){}
+            }
+            applyOrientationLayout();
+            window.addEventListener('resize', applyOrientationLayout);
+
+            // 手机端默认隐藏侧栏（使用 collapsed 类即可复用现有样式）
+            try{
+                const isPhone = (Math.min(window.innerWidth, window.innerHeight) < 600) || (/Android|iPhone/i.test(navigator.userAgent) && !/iPad|Tablet/i.test(navigator.userAgent));
+                if (isPhone && sidebar && !sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.add('collapsed');
+                }
+            }catch(e){}
+
+            // 主动预热 clang-format wasm，避免首次点击时未加载
+            try {
+                if (window['clangFormat']) {
+                    window['clangFormat']('int main() {return 0;}', 'c').catch(()=>{});
+                }
+            } catch(e) {}
+            // 分享链接还原（支持 #code= 旧格式与 #share= 增强格式）
+            try { applyHashIfAny && applyHashIfAny(); } catch(e){}
+            // 应用界面语言
+            try{
+                applyLang();
+                const langBtn=document.getElementById('langBtn');
+                langBtn && langBtn.addEventListener('click', ()=>{ const next = (getLang()==='zh')?'en':'zh'; setLang(next); });
+                // 统一设置版本显示（页眉徽章与页脚链接）
+                try{
+                        if(window.__VERSION__){
+                            var vb=document.getElementById('verBadge');
+                            if(vb){ vb.textContent = window.__VERSION__.version; }
+                            var fev=document.getElementById('footerEditorVersion'); if(fev) fev.textContent = window.__VERSION__.version;
+                        }
+                }catch(e){}
+            }catch(e){}
+            // 注册 Service Worker
+            try{ if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js'); } }catch(e){}
+            // 网络状态徽章
+            try{
+                const netBadge = document.getElementById('netBadge');
+                function updateNet(){
+                    const on = navigator.onLine;
+                    if(netBadge){
+                        netBadge.textContent = on ? t('online') : t('offline');
+                        netBadge.style.background = on ? 'rgba(34,197,94,.15)' : 'rgba(249,115,22,.15)';
+                        netBadge.style.borderColor = on ? 'rgba(34,197,94,.25)' : 'rgba(249,115,22,.25)';
+                        netBadge.style.color = on ? '#86efac' : '#fdba74';
+                    }
+                    try{ const runBtn = document.getElementById('runBtn'); if(runBtn){ runBtn.disabled = false; runBtn.title = on? t('run_title_on') : t('run_title_off'); } }catch(e){}
+                }
+                updateNet();
+                window.addEventListener('online', ()=>{ updateNet(); applyLang(); });
+                window.addEventListener('offline', ()=>{ updateNet(); applyLang(); });
+            }catch(e){}
+        });
+
+        // 当窗口尺寸变化时，重新布局编辑器以适配容器大小
+        window.addEventListener('resize', () => { try { window.editor && window.editor.layout(); } catch (e) {} });
+        // —— 测试用例管理 ——
+        const casesKey = 'test_cases_v1';
+        let cases = [];
+        function loadCases(){ try{ cases = JSON.parse(localStorage.getItem(casesKey)) || []; }catch(e){ cases=[]; } }
+        function saveCases(){ try{ localStorage.setItem(casesKey, JSON.stringify(cases)); }catch(e){} }
+        function normalize(s){ return (s||'').replace(/\r\n/g,'\n').trim(); }
+        async function runForTest(code, input){
+            if (!navigator.onLine){ return { mode:'offline', output: '' }; }
+            try { const r = await tryWandboxCompile(code, input); const out=((r.stdout||'')+((r.stderr&&r.stderr.trim())?'\n[stderr]\n'+r.stderr:'' )).trim(); return { mode:'wandbox', output: out }; }
+            catch(e){ return { mode:'simulate', output: simulateRunOutput(code, input) }; }
+        }
+        function renderCases(){
+            const list = document.getElementById('casesList'); if(!list) return;
+            list.innerHTML='';
+            if(!cases.length){ const empty=document.createElement('div'); empty.textContent=t('cases_empty'); empty.style.opacity='.7'; list.appendChild(empty); return; }
+            cases.forEach((c, idx)=>{
+                const wrap=document.createElement('details'); wrap.style.background='var(--glass)'; wrap.style.border='1px solid rgba(255,255,255,0.06)'; wrap.style.borderRadius='8px';
+                const sum=document.createElement('summary'); sum.textContent=c.name||(t('case_name')+(idx+1)); sum.style.cursor='pointer'; wrap.appendChild(sum);
+                const name=document.createElement('input'); name.type='text'; name.placeholder=t('case_name'); name.value=c.name||''; name.style.margin='8px 0';
+                const stdin=document.createElement('textarea'); stdin.rows=2; stdin.placeholder=t('stdin'); stdin.value=c.input||''; stdin.style.marginBottom='6px';
+                const expected=document.createElement('textarea'); expected.rows=2; expected.placeholder=t('expected_placeholder'); expected.value=c.expected||''; expected.style.marginBottom='8px';
+                const actions=document.createElement('div'); actions.style.display='flex'; actions.style.gap='8px';
+                const del=document.createElement('button'); del.className='btn ghost'; del.innerHTML='<i class="fas fa-trash"></i> '+t('delete');
+                const run=document.createElement('button'); run.className='btn ghost'; run.innerHTML='<i class="fas fa-play"></i> '+t('run');
+                actions.appendChild(run); actions.appendChild(del);
+                wrap.appendChild(name); wrap.appendChild(stdin); wrap.appendChild(expected); wrap.appendChild(actions);
+                list.appendChild(wrap);
+                function commit(){ c.name=name.value; c.input=stdin.value; c.expected=expected.value; saveCases(); }
+                name.addEventListener('input', commit); stdin.addEventListener('input', commit); expected.addEventListener('input', commit);
+                del.addEventListener('click', ()=>{ cases.splice(idx,1); saveCases(); renderCases(); if(cases.length<=1){ try{ exitTestMode && exitTestMode(); }catch(e){} } });
+                run.addEventListener('click', async ()=>{
+                    if(!navigator.onLine){ try{ showOfflineModal && showOfflineModal(); }catch(e){} return; }
+                    const code = window.editor? window.editor.getValue():'';
+                    const res = await runForTest(code, stdin.value);
+                    const exp = expected.value || '';
+                    const ok = normalize(res.output) === normalize(exp);
+                    const baseName = c.name || (t('case_name') + (idx+1));
+                    const passText = ok ? (getLang()==='zh'?' 通过':' PASS') : (getLang()==='zh'?' 失败':' FAIL');
+                    const expectLabel = getLang()==='zh'?'期望':'Expected';
+                    const actualLabel = getLang()==='zh'?'实际':'Actual';
+                    const outputLabel = getLang()==='zh'?'输出':'Output';
+                    alert(baseName + passText + (exp? `\n${expectLabel}: ${exp}\n${actualLabel}: ${res.output}` : `\n${outputLabel}: ${res.output}`));
+                });
+            });
+        }
+        const addCaseBtn = document.getElementById('addCaseBtn');
+        const runAllBtn = document.getElementById('runAllBtn');
+        const testsSection = document.getElementById('testsSection');
+        const enableTestsBtn = document.getElementById('enableTestsBtn');
+        const ioSection = document.getElementById('ioSection');
+        let testMode = false;
+        function enterTestMode(){
+            if(testMode) return; testMode = true;
+            try{ testsSection.style.display='block'; }catch(e){}
+            try{ enableTestsBtn.style.display='none'; }catch(e){}
+            if(!cases.length){ cases.push({name:(t('case_name')+'1'), input: stdinEl.value || '', expected:''}); saveCases(); }
+            renderCases();
+        }
+        function exitTestMode(){
+            testMode = false;
+            try{ testsSection.style.display='none'; }catch(e){}
+            try{ enableTestsBtn.style.display='inline-flex'; }catch(e){}
+            if(cases.length===1){ try{ stdinEl.value = cases[0].input || ''; }catch(e){} }
+            cases = []; saveCases(); renderCases();
+        }
+        enableTestsBtn && enableTestsBtn.addEventListener('click', ()=>{ enterTestMode(); });
+        addCaseBtn && addCaseBtn.addEventListener('click', ()=>{ if(!testMode) enterTestMode(); cases.push({name:'',input:'',expected:''}); saveCases(); renderCases(); });
+        runAllBtn && runAllBtn.addEventListener('click', async ()=>{
+            if(!navigator.onLine){ try{ showOfflineModal && showOfflineModal(); }catch(e){} return; }
+            if(!cases.length){ alert(getLang()==='zh'? '请先添加用例':'Please add test cases first'); return; }
+            const code = window.editor? window.editor.getValue():'';
+            const summaryEl = document.getElementById('casesSummary'); summaryEl.style.display='block'; summaryEl.textContent= getLang()==='zh'? '批量运行中...':'Running all cases...';
+            let pass=0, fail=0; const lines=[];
+            for(let i=0;i<cases.length;i++){
+                const c = cases[i];
+                const r = await runForTest(code, c.input||'');
+                const got = normalize(r.output);
+                const exp = normalize(c.expected);
+                const ok = (exp? got===exp : got.length>0);
+                const labelName = c.name || (t('case_name') + (i+1));
+                if(ok){ pass++; lines.push(`✔ ${labelName} (${r.mode})`); }
+                else { fail++; lines.push(`✘ ${labelName} (${r.mode})`); lines.push(`  ${(getLang()==='zh'?'期望':'Expected')}: ${c.expected}`); lines.push(`  ${(getLang()==='zh'?'实际':'Actual')}: ${r.output}`); }
+            }
+            if(getLang()==='zh'){
+                summaryEl.textContent = `结果：通过 ${pass}/${cases.length}${fail?`，失败 ${fail}`:''}\n\n` + lines.join('\n');
+            }else{
+                summaryEl.textContent = `Result: Passed ${pass}/${cases.length}${fail?`, Failed ${fail}`:''}\n\n` + lines.join('\n');
+            }
+        });
+        loadCases(); if(cases.length){ enterTestMode(); } renderCases();
+
+        // —— 快捷键 ——
+        document.addEventListener('keydown', (e)=>{
+            const ctrl = e.ctrlKey || e.metaKey;
+            if(!ctrl) return;
+            if(e.key.toLowerCase()==='s'){ e.preventDefault(); saveAsFile(); }
+            if(e.key==='Enter'){ e.preventDefault(); runCode(); }
+            if(e.key.toLowerCase()==='i'){ e.preventDefault(); document.getElementById('formatBtn')?.click(); }
+            if(e.key==='/'){ e.preventDefault(); try{ window.editor && window.editor.trigger('kb','editor.action.commentLine'); }catch(err){} }
+            if(e.shiftKey && e.key.toLowerCase()==='p'){ e.preventDefault(); openCmdPalette(); }
+        });
+
+        // —— 命令面板 ——
+        const commands=[
+            {id:'run',label:()=> t('run')+' (Ctrl/Cmd+Enter)',action:runCode},
+            {id:'format',label:()=> t('format')+' (Ctrl/Cmd+I)',action:()=>document.getElementById('formatBtn')?.click()},
+            {id:'save',label:()=> t('save_as')+' (Ctrl/Cmd+S)',action:saveAsFile},
+            {id:'copy',label:()=> t('copy'),action:()=>document.getElementById('copyBtn')?.click()},
+            {id:'share',label:()=> t('share_title'),action:()=>document.getElementById('shareBtn')?.click()},
+            {id:'metrics',label:()=> t('metrics_title'),action:()=>document.getElementById('metricsBtn')?.click()},
+            {id:'theme',label:()=> t('theme'),action:()=>document.getElementById('themeBtn')?.click()},
+            {id:'open',label:()=> t('open'),action:()=>document.getElementById('openFileBtn')?.click()},
+            {id:'addcase',label:()=> t('enable_tests')+' / +',action:()=>{ try{ enterTestMode(); document.getElementById('addCaseBtn')?.click(); }catch(e){} }},
+            {id:'runall',label:()=> t('run_all_title'),action:()=>document.getElementById('runAllBtn')?.click()}
+        ];
+        function openCmdPalette(){ const modal=document.getElementById('cmdPalette'); if(!modal) return; modal.style.display='flex'; requestAnimationFrame(()=>modal.classList.add('open')); const input=document.getElementById('cmdInput'); input.value=''; input.focus(); filterCmd(''); }
+        function closeCmdPalette(){ const modal=document.getElementById('cmdPalette'); if(!modal) return; modal.classList.remove('open'); setTimeout(()=>modal.style.display='none',150); }
+    function filterCmd(q){ const list=document.getElementById('cmdList'); if(!list) return; list.innerHTML=''; const s=(q||'').toLowerCase(); commands.filter(c=> (typeof c.label==='function'? c.label():c.label).toLowerCase().includes(s)).forEach(c=>{ const li=document.createElement('div'); li.className='cmd-item'; li.textContent=(typeof c.label==='function'? c.label():c.label); li.tabIndex=0; li.addEventListener('click',()=>{ closeCmdPalette(); setTimeout(()=>c.action(),50); }); list.appendChild(li); }); if(!list.children.length){ const li=document.createElement('div'); li.className='cmd-item'; li.style.opacity='.7'; li.textContent=t('cmd_no_match'); list.appendChild(li); } }
+    window._openCmd = openCmdPalette;
+    document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ const m=document.getElementById('cmdPalette'); if(m&&m.classList.contains('open')){ const modal=m; modal.classList.remove('open'); setTimeout(()=>modal.style.display='none',150); } } });
+    </script>
+    <script>
+        /* 离线提示弹窗（i18n） */
+        function showOfflineModal(){
+            let wrap=document.getElementById('offlineModal');
+            if(!wrap){
+                wrap=document.createElement('div'); wrap.id='offlineModal'; wrap.style.position='fixed'; wrap.style.inset='0'; wrap.style.display='flex'; wrap.style.alignItems='center'; wrap.style.justifyContent='center'; wrap.style.background='rgba(0,0,0,.55)'; wrap.style.zIndex='5000';
+                document.body.appendChild(wrap);
+            }
+            wrap.innerHTML = '<div style="width:min(440px,92vw);background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;box-shadow:0 20px 55px -8px rgba(0,0,0,.6);transform:translateY(12px) scale(.96);opacity:0;transition:.32s var(--anim-enter)"><h3 style="margin:0 0 12px;display:flex;align-items:center;gap:8px;color:#fff;font-size:16px"><i class=\"fas fa-wifi\"></i> '+t('offline_title')+'</h3><p style="margin:0 0 12px;line-height:1.65;font-size:13px;color:var(--muted)">'+t('offline_desc')+'</p><div style="display:flex;gap:10px;justify-content:flex-end"><button id="offlineClose" class="btn primary" style="background:var(--accent);color:#071022;padding:8px 14px;border-radius:10px;font-weight:600">'+t('ok')+'</button></div></div>';
+            requestAnimationFrame(()=>{ const inner=wrap.firstElementChild; inner.style.opacity='1'; inner.style.transform='translateY(0) scale(1)'; wrap.classList.add('open'); });
+            wrap.addEventListener('click', (e)=>{ if(e.target===wrap) close(); });
+            function close(){ wrap.classList.remove('open'); const inner=wrap.firstElementChild; inner.style.opacity='0'; inner.style.transform='translateY(12px) scale(.96)'; setTimeout(()=>{ wrap.style.display='none'; },240); }
+            document.getElementById('offlineClose').addEventListener('click', close);
+            document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){ close(); document.removeEventListener('keydown', esc);} });
+        }
+    </script>
+    <script>
+        // 代码度量逻辑：启发式统计
+        (function(){
+            const btn = document.getElementById('metricsBtn');
+            function open(){
+                const modal = document.getElementById('metricsModal');
+                const inner = document.getElementById('metricsInner');
+                const closeBtn = document.getElementById('metricsClose');
+                const refreshBtn = document.getElementById('metricsRefresh');
+                const copyBtn = document.getElementById('metricsCopy');
+                const reportEl = document.getElementById('metricsReport');
+                if(!modal || !inner) return;
+                // 应用当前语言
+                applyLang();
+                modal.style.display='flex'; requestAnimationFrame(()=>modal.classList.add('open'));
+                function close(){ modal.classList.remove('open'); setTimeout(()=>modal.style.display='none',180); }
+                if(closeBtn){ closeBtn.onclick = close; }
+                modal.addEventListener('click',(e)=>{ if(e.target===modal) close(); });
+                document.addEventListener('keydown',(e)=>{ if(e.key==='Escape' && modal.classList.contains('open')) close(); });
+                generate(reportEl);
+                refreshBtn && refreshBtn.addEventListener('click', ()=>generate(reportEl));
+                copyBtn && copyBtn.addEventListener('click', ()=>{
+                    try{ navigator.clipboard.writeText(reportEl.textContent||''); copyBtn.innerHTML='<i class="fas fa-check"></i> '+t('metrics_copied'); setTimeout(()=>{copyBtn.innerHTML='<i class="fas fa-copy"></i> '+t('metrics_copy');},1200); }catch(e){ alert('复制失败'); }
+                });
+                // 编辑时若度量已打开则自动刷新（节流）
+                let pending=false; function autoRefresh(){ if(!modal.classList.contains('open')) return; if(pending) return; pending=true; setTimeout(()=>{ pending=false; generate(reportEl); },400); }
+                try{ window.editor && window.editor.onDidChangeModelContent(autoRefresh); }catch(e){}
+            }
+            btn && btn.addEventListener('click', open);
+            window.__openMetrics = open;
+            function generate(){
+                try{
+                    const code = window.editor? window.editor.getValue():'';
+                    const lines = code.split(/\r?\n/);
+                    const total = lines.length;
+                    const nonEmpty = lines.filter(l=>l.trim()!=='').length;
+                    const commentLines = lines.filter(l=>l.trim().startsWith('//') || l.trim().startsWith('/*') || l.trim().startsWith('*') || l.trim().endsWith('*/')).length;
+                    // 统计函数：匹配类似返回类型 + 名称 + '(' + ')' + '{'
+                    const funcRegex = /\b[A-Za-z_][A-Za-z0-9_\*\s]*\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^;]*?\)\s*\{/g;
+                    let funcCount = 0; let m;
+                    while((m = funcRegex.exec(code))){ funcCount++; }
+                    // 行内复杂度：统计控制流关键字出现次数（approx cyclomatic: decisions + 1）
+                    const decisionKeywords = /(\bif\b|\bfor\b|\bwhile\b|\bcase\b|\b&&\b|\|\||\?)/g;
+                    let decisions = 0; let dm; while((dm = decisionKeywords.exec(code))){ decisions++; }
+                    const complexity = decisions + 1;
+                    // 最大嵌套：基于大括号层级
+                    let level = 0, maxLevel = 0;
+                    for(const ch of code){
+                        if(ch==='{' ){ level++; if(level>maxLevel) maxLevel=level; }
+                        if(ch==='}' ){ level=Math.max(0, level-1); }
+                    }
+                    // 平均函数行数（粗略）：按 '{' '}' 分段
+                    let funcLines=[];{
+                        const funcPattern = /\b[A-Za-z_][A-Za-z0-9_\*\s]*?([A-Za-z_][A-Za-z0-9_]*)\s*\([^;]*?\)\s*\{/g;
+                        let indices=[]; let match;
+                        while((match=funcPattern.exec(code))){ indices.push(match.index); }
+                        indices.sort((a,b)=>a-b);
+                        const bracePositions=[]; for(let i=0;i<code.length;i++){ if(code[i]=='{'||code[i]=='}') bracePositions.push({ch:code[i],i}); }
+                        // 简单栈匹配函数体范围
+                        for(const startIdx of indices){
+                            // 找到从 startIdx 起的第一个 '{'
+                            const braceStart = code.indexOf('{', startIdx);
+                            if(braceStart===-1) continue;
+                            let depth=0; for(let i=braceStart;i<code.length;i++){ if(code[i]=='{') depth++; else if(code[i]=='}'){ depth--; if(depth===0){
+                                        const segment = code.slice(braceStart, i+1);
+                                        const segLines = segment.split(/\r?\n/).length;
+                                        funcLines.push(segLines); break;
+                                    } }
+                            }
+                        }
+                    }
+                    const avgFunc = funcLines.length? (funcLines.reduce((a,b)=>a+b,0)/funcLines.length).toFixed(2): '0';
+                    const report = [
+                            `${t('metric_total')}: ${total}`,
+                            `${t('metric_nonempty')}: ${nonEmpty}`,
+                            `${t('metric_comment')}: ${commentLines}`,
+                            `${t('metric_funcs')}: ${funcCount}`,
+                            `${t('metric_complexity')}: ${complexity}`,
+                            `${t('metric_nesting')}: ${maxLevel}`,
+                            `${t('metric_avg_func')}: ${avgFunc}`,
+                            `${t('metric_decisions')}: ${decisions}`
+                    ].join('\n');
+                    const el = (arguments[0]||document.getElementById('metricsReport'));
+                    if(el) el.textContent = report;
+                    }catch(err){ reportEl.textContent = t('metric_fail')+': '+(err&&err.message); }
+            }
+        })();
+    </script>
+        <!-- 命令面板结构与样式 -->
+        <style>
+        #cmdPalette{position:fixed;inset:0;display:none;align-items:flex-start;justify-content:center;background:rgba(0,0,0,.45);z-index:4000;font-size:14px}
+        #cmdPalette.open #cmdPaletteInner{transform:translateY(0) scale(1);opacity:1}
+        #cmdPaletteInner{margin-top:12vh;width:min(640px,92vw);background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;box-shadow:0 18px 50px -10px rgba(0,0,0,.55);padding:16px;display:flex;flex-direction:column;gap:10px;transform:translateY(12px) scale(.96);opacity:0;transition:.32s var(--anim-enter)}
+        #cmdInput{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:var(--glass);color:#fff;font-size:14px}
+        #cmdList{max-height:50vh;overflow:auto;display:flex;flex-direction:column;gap:6px}
+        .cmd-item{padding:10px 12px;border:1px solid rgba(255,255,255,0.06);border-radius:10px;cursor:pointer;background:var(--glass);color:var(--muted)}
+        .cmd-item:hover{border-color:var(--accent);color:#fff}
+        body.light-theme #cmdPaletteInner{border-color:rgba(0,0,0,0.08)}
+        body.light-theme #cmdInput{border-color:rgba(0,0,0,0.08);color:#0b1220}
+        body.light-theme .cmd-item{border-color:rgba(0,0,0,0.06)}
+        /* 度量弹窗样式 */
+        #metricsModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:4200}
+        #metricsModal.open #metricsInner{transform:translateY(0) scale(1);opacity:1}
+        #metricsInner{width:min(680px,92vw);max-height:80vh;overflow:auto;background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:16px;box-shadow:0 20px 55px -10px rgba(0,0,0,.55);padding:20px;display:flex;flex-direction:column;gap:14px;transform:translateY(16px) scale(.95);opacity:0;transition:.34s var(--anim-enter);font-size:13px;line-height:1.6}
+        #metricsInner h3{margin:0;color:#fff;font-size:16px;display:flex;align-items:center;gap:8px}
+        #metricsReport{white-space:pre-wrap;font-family:monospace;background:var(--glass);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);font-size:12px}
+        body.light-theme #metricsInner{border-color:rgba(0,0,0,0.08)}
+        body.light-theme #metricsReport{border-color:rgba(0,0,0,0.08)}
+        </style>
+        <div id="cmdPalette" aria-hidden="true" role="dialog">
+            <div id="cmdPaletteInner">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px" id="cmdHeader">
+                    <div style="font-weight:600;color:#fff" id="cmdTitle"><i class="fas fa-terminal"></i> 命令面板</div>
+                    <button class="btn ghost" id="cmdClose"><i class="fas fa-xmark"></i> 关闭</button>
+                </div>
+                <input id="cmdInput" placeholder="输入关键字过滤，如 run / format" oninput="filterCmd(this.value)" />
+                <div id="cmdList"></div>
+                <div style="font-size:12px;opacity:.6;display:flex;justify-content:space-between" id="cmdHints"><span id="cmdHintOpen">Ctrl/Cmd+Shift+P 打开</span><span id="cmdHintClose">Esc 关闭</span></div>
+            </div>
+        </div>
+        <!-- 代码度量弹窗 -->
+        <div id="metricsModal" aria-hidden="true" role="dialog">
+            <div id="metricsInner">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                    <h3><i class="fas fa-chart-bar"></i> 代码复杂度与度量</h3>
+                    <button class="btn ghost" id="metricsClose"><i class="fas fa-xmark"></i> 关闭</button>
+                </div>
+                <div style="font-size:12px;opacity:.7">实时分析当前编辑器内容，帮助了解规模与潜在复杂度。复杂度为近似估算（启发式），非精确解析。</div>
+                <div id="metricsReport">(点击“刷新度量”或编辑代码后查看)</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+                    <button class="btn ghost" id="metricsRefresh"><i class="fas fa-rotate"></i> 刷新度量</button>
+                    <button class="btn ghost" id="metricsCopy"><i class="fas fa-copy"></i> 复制报告</button>
+                </div>
+            </div>
+        </div>
+
+    <!-- 奶茶彩蛋弹窗样式与容器 -->
+    <style>
+    #milkTeaModal{position:fixed;right:16px;bottom:60px;background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 18px 14px;width:260px;box-shadow:var(--anim-shadow);font-size:13px;line-height:1.55;color:var(--muted);z-index:3000;display:none}
+        #milkTeaModal h3{margin:0 0 8px;font-size:15px;color:#fff;display:flex;align-items:center;gap:6px}
+        #milkTeaModal img{width:100%;border-radius:10px;margin-top:6px;border:1px solid rgba(255,255,255,0.06)}
+        #milkTeaClose{position:absolute;top:8px;right:10px;background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:14px}
+        #milkTeaActions{margin-top:10px;display:flex;gap:8px}
+        #milkTeaActions button{flex:1;background:var(--accent);border:0;color:#071022;padding:6px 8px;border-radius:8px;cursor:pointer;font-weight:600;font-size:12px}
+        #milkTeaActions a{flex:1;text-align:center;background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--muted);padding:6px 8px;border-radius:8px;text-decoration:none;font-size:12px}
+        body.light-theme #milkTeaModal{border-color:rgba(0,0,0,0.08);box-shadow:0 10px 30px -4px rgba(0,0,0,.18)}
+        body.light-theme #milkTeaModal h3{color:#0b1220}
+        body.light-theme #milkTeaModal img{border-color:rgba(0,0,0,0.08)}
+    </style>
+    <div id="milkTeaModal" aria-hidden="true">
+        <button id="milkTeaClose" aria-label="关闭">✕</button>
+        <h3><i class="fas fa-mug-hot"></i> 请我喝奶茶～</h3>
+        <p>如果这个小工具对你有帮助，欢迎请作者喝一杯奶茶支持持续更新 😄</p>
+        <img src="./img/WeChat.jpeg" alt="微信收款码" />
+        <div id="milkTeaActions">
+            <button id="milkTeaOk">我请！</button>
+            <a href="./CHANGELOG.md" target="_blank">更新日志</a>
+        </div>
+    </div>
+    <!-- 手机首次访问提示（仅手机，展示一次） -->
+    <style>
+        #mobileTip{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:3500}
+    #mobileTip .sheet{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;width:min(420px,90vw);padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.5);color:var(--muted);transform:scale(var(--anim-scale-small));opacity:0;transition:transform .22s var(--anim-enter),opacity .22s var(--anim-enter)}
+        #mobileTip.open .sheet{transform:scale(1);opacity:1}
+        #mobileTip h3{margin:0 0 8px;color:#fff;display:flex;align-items:center;gap:8px}
+        #mobileTip p{margin:0;line-height:1.7}
+        #mobileTip .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+        #mobileTip .actions button{background:var(--accent);border:0;color:#071022;padding:8px 12px;border-radius:10px;font-weight:700;cursor:pointer}
+        body.light-theme #mobileTip .sheet{border-color:rgba(0,0,0,0.08)}
+        body.light-theme #mobileTip h3{color:#0b1220}
+    </style>
+    <div id="mobileTip" aria-hidden="true" role="dialog">
+        <div class="sheet">
+            <h3><i class="fas fa-mobile-screen-button"></i> 建议使用 PC 端</h3>
+            <p>为获得更佳编辑与运行体验，建议在电脑或 iPad 横屏使用。手机可浏览但交互受限。</p>
+            <div class="actions"><button id="mobileTipOk">我知道了</button></div>
+        </div>
+    </div>
+    <script>
+        (function(){
+            const trigger = document.getElementById('versionLink');
+            const modal = document.getElementById('milkTeaModal');
+            const closeBtn = document.getElementById('milkTeaClose');
+            const okBtn = document.getElementById('milkTeaOk');
+            if(!trigger || !modal) return;
+            // 提供一个“强制更新到最新版”的隐藏入口：按住 Alt 点击版本号
+            async function forceUpdate(){
+                try{
+                    // 1) 清除本应用相关缓存
+                    if (window.caches && caches.keys) {
+                        const keys = await caches.keys();
+                        await Promise.all(keys.map(k=>{
+                            if (/^c-compiler-/i.test(k)) return caches.delete(k);
+                            return Promise.resolve(false);
+                        }));
+                    }
+                    // 2) 注销所有 Service Worker
+                    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+                        const regs = await navigator.serviceWorker.getRegistrations();
+                        await Promise.all(regs.map(r=>r.unregister()));
+                    }
+                    // 3) 清理本地动态图标缓存（可选）
+                    try{ localStorage.removeItem('dyn_icons_v1'); localStorage.removeItem('dyn_icons_about_v1'); }catch(e){}
+                    // 4) 使用时间戳参数重新加载，尽量绕过中间缓存
+                    const url = new URL(location.href);
+                    url.searchParams.set('v', Date.now());
+                    location.replace(url.toString());
+                }catch(e){
+                    // 失败则回退普通 reload
+                    location.reload();
+                }
+            }
+            function open(){
+                modal.style.display='block';
+                requestAnimationFrame(()=>modal.classList.add('show'));
+                modal.setAttribute('aria-hidden','false');
+            }
+            function close(){
+                modal.classList.remove('show');
+                setTimeout(()=>{modal.style.display='none';modal.setAttribute('aria-hidden','true');},260);
+            }
+            trigger.addEventListener('click', (e)=>{
+                // 按住 Alt 点击触发强制更新
+                if (e && e.altKey){ e.preventDefault();
+                    if (confirm('强制更新将清理缓存并重载页面，是否继续？')) forceUpdate();
+                    return;
+                }
+                if(modal.style.display==='block'){close();return;}
+                open();
+            });
+            closeBtn && closeBtn.addEventListener('click', close);
+            okBtn && okBtn.addEventListener('click', ()=>{
+                okBtn.textContent='么么哒 ❤';
+                setTimeout(close,1600);
+            });
+        })();
+
+        // 手机首次访问提示
+        (function(){
+            try{
+                const isPhone = (Math.min(window.innerWidth, window.innerHeight) < 600) || (/Android|iPhone/i.test(navigator.userAgent) && !/iPad|Tablet/i.test(navigator.userAgent));
+                if (!isPhone) return;
+                if (localStorage.getItem('mobile_warned') === '1') return;
+                const wrap = document.getElementById('mobileTip');
+                const ok = document.getElementById('mobileTipOk');
+                if (!wrap || !ok) return;
+                wrap.style.display = 'flex';
+                requestAnimationFrame(()=>wrap.classList.add('open'));
+                wrap.setAttribute('aria-hidden','false');
+                function close(){
+                    wrap.classList.remove('open');
+                    setTimeout(()=>{wrap.style.display='none';wrap.setAttribute('aria-hidden','true');},220);
+                    try{localStorage.setItem('mobile_warned','1');}catch(e){}
+                }
+                ok.addEventListener('click', close);
+            }catch(e){}
+        })();
+
+        // 动态生成 favicon 与 PWA 图标（基于“代码”图形，风格与页面一致）
+        (function(){
+            function drawIcon(size){
+                const c = document.createElement('canvas');
+                c.width = c.height = size;
+                const ctx = c.getContext('2d');
+                // 背景
+                const r = Math.round(size*0.22);
+                const pad = Math.round(size*0.08);
+                const w = size, h = size;
+                const bg = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2563eb';
+                ctx.fillStyle = bg;
+                roundRect(ctx, pad, pad, w-2*pad, h-2*pad, r);
+                ctx.fill();
+                // 符号 “< >”
+                ctx.strokeStyle = '#fff';
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = Math.max(2, size*0.09);
+                const cx = w/2, cy = h/2;
+                const dx = size*0.18, dy = size*0.18;
+                // 左 <
+                ctx.beginPath();
+                ctx.moveTo(cx-0.06*size, cy-dy);
+                ctx.lineTo(cx-dx, cy);
+                ctx.lineTo(cx-0.06*size, cy+dy);
+                ctx.stroke();
+                // 右 >
+                ctx.beginPath();
+                ctx.moveTo(cx+0.06*size, cy-dy);
+                ctx.lineTo(cx+dx, cy);
+                ctx.lineTo(cx+0.06*size, cy+dy);
+                ctx.stroke();
+                return c;
+                function roundRect(ctx,x,y,w,h,r){
+                    const rr = Math.min(r, w/2, h/2);
+                    ctx.beginPath();
+                    ctx.moveTo(x+rr,y);
+                    ctx.arcTo(x+w,y,x+w,y+h,rr);
+                    ctx.arcTo(x+w,y+h,x,y+h,rr);
+                    ctx.arcTo(x,y+h,x,y,rr);
+                    ctx.arcTo(x,y,x+w,y,rr);
+                    ctx.closePath();
+                }
+            }
+            function setFavicon(url){
+                let link = document.querySelector('link[rel="icon"]');
+                if(!link){ link = document.createElement('link'); link.rel='icon'; document.head.appendChild(link); }
+                link.type = 'image/png';
+                link.href = url;
+            }
+            function updateManifest(icons){
+                let m = document.querySelector('link[rel="manifest"]');
+                if(!m){ m = document.createElement('link'); m.rel='manifest'; document.head.appendChild(m); }
+                const manifest = {
+                    name: '在线 C 编译器',
+                    short_name: 'C编译器',
+                    start_url: './index.html',
+                    display: 'standalone',
+                    background_color: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0b0c0d',
+                    theme_color: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0b0c0d',
+                    lang: 'zh-CN',
+                    icons
+                };
+                const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+                m.href = URL.createObjectURL(blob);
+            }
+            // 缓存避免重复生成
+            const cacheKey = 'dyn_icons_v1';
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                try {
+                    const data = JSON.parse(cached);
+                    if (data && data.favicon && data.icons) {
+                        setFavicon(data.favicon);
+                        updateManifest(data.icons);
+                        return; // 使用缓存
+                    }
+                } catch(e){}
+            }
+            try {
+                const sizes = [128,192,256,512];
+                const canvases = sizes.map(s => drawIcon(s));
+                const iconBlobsPromises = canvases.map((c,i)=> new Promise(res=> c.toBlob(b=>res({size:sizes[i], blob:b}), 'image/png')));
+                Promise.all(iconBlobsPromises).then(list => {
+                    const urls = list.map(it => ({size:it.size, url:URL.createObjectURL(it.blob)}));
+                    const fav = urls.find(u=>u.size===192) || urls[0];
+                    setFavicon(fav.url);
+                    const icons = urls.map(u => ({ src: u.url, sizes: u.size+'x'+u.size, type:'image/png', purpose: (u.size>=256? 'any maskable':'any') }));
+                    updateManifest(icons);
+                    try { localStorage.setItem(cacheKey, JSON.stringify({ favicon: fav.url, icons })); } catch(e){}
+                });
+            }catch(e){ /* 忽略失败，沿用静态 manifest */ }
+        })();
+    </script>
+</body>
+</html>

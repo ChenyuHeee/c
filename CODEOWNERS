@@ -1,0 +1,4 @@
+# CODEOWNERS maps file patterns to responsible reviewers.
+# Replace <your-teammate> with actual GitHub usernames when known.
+
+*       @ChenyuHeee @your-teammate
