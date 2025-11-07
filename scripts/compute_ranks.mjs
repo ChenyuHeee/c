@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 import {promises as fs} from 'fs';
 import path from 'path';
-import {execSync} from 'child_process';
+import {execSync, execFileSync} from 'child_process';
 
 const ROOT = path.resolve(process.cwd());
 const SUBMISSIONS = path.join(ROOT, 'submissions');
 const DATA_DIR = path.join(ROOT, 'competition', 'data');
 const REPO = process.env.GITHUB_REPOSITORY || '';
+function getCurrentBranch(){
+  try{ return execSync('git rev-parse --abbrev-ref HEAD', {encoding:'utf8'}).trim(); }catch(e){ return 'main'; }
+}
 
 function log(...args){ console.log('[rank]', ...args); }
 
@@ -27,11 +30,16 @@ async function listFiles(dir){
 }
 
 function getCommitMeta(fileAbs){
+  // Use execFileSync to avoid shell-quoting issues (handles spaces in paths like "He Chenyu/")
+  const relPath = path.relative(ROOT, fileAbs).split(path.sep).join('/');
   try{
-    const out = execSync(`git log -1 --format=%H|%cI -- ${JSON.stringify(path.relative(ROOT, fileAbs))}`, {encoding:'utf8'}).trim();
+    // Prefer author date for "提交时间"; switch to %cI if you want committer/merge time
+    const out = execFileSync('git', ['log','-1','--format=%H|%aI','--', relPath], {encoding:'utf8'}).trim();
     const [sha, iso] = out.split('|');
-    return {sha, time: iso};
+    if(sha && iso) return {sha, time: iso};
+    throw new Error('parse-failed');
   }catch(e){
+    // Fallback: HEAD sha + now; indicates history may be shallow or path lookup failed
     let sha='';
     try{ sha = execSync('git rev-parse HEAD', {encoding:'utf8'}).trim(); }catch(_){ sha=''; }
     return {sha, time: new Date().toISOString()};
@@ -52,11 +60,12 @@ async function computeWeek(week){
     const buf = await fs.readFile(fAbs);
     const bytes = Buffer.byteLength(buf);
     const meta = getCommitMeta(fAbs);
-    entries.push({handle, bytes, commitTime: meta.time, sha: meta.sha});
+    const relPosix = ['submissions', `week-${week}`, handle, pick].join('/');
+    entries.push({handle, bytes, commitTime: meta.time, sha: meta.sha, path: relPosix});
   }
   // sort: bytes asc, time asc
   entries.sort((a,b)=> a.bytes!==b.bytes ? a.bytes-b.bytes : (a.commitTime < b.commitTime ? -1 : a.commitTime > b.commitTime ? 1 : 0));
-  const out = { repo: REPO, week, updatedAt: new Date().toISOString(), ranks: entries };
+  const out = { repo: REPO, week, branch: getCurrentBranch(), updatedAt: new Date().toISOString(), ranks: entries };
   await ensureDir(DATA_DIR);
   await fs.writeFile(path.join(DATA_DIR, `week-${week}.json`), JSON.stringify(out, null, 2)+"\n");
   log(`week-${week}: ${entries.length} entries`);

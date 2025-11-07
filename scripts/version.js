@@ -7,7 +7,7 @@
   // Global configuration (editable): set a serverless endpoint to enable one-click submissions (no GitHub account required)
   // Example: 'https://your-worker.example.workers.dev/submit'
   window.__CONFIG__ = window.__CONFIG__ || {
-    submitEndpoint: '',
+    submitEndpoint: 'icy-base-a035.2908172388.workers.dev',
     // Optional: RSA-OAEP public key (PEM, SPKI) for v4 encryption. When provided, the client will use AES-GCM + key wrapping.
     // Example:
     // submitPublicKey: `-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqh...\n-----END PUBLIC KEY-----\n`

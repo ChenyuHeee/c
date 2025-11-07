@@ -35,6 +35,7 @@
 
     <div class="card">
       <div class="muted" id="desc">数据来自 competition/data/week-1.json。按字节数升序排序；相同字节数按提交时间先后。</div>
+      <div class="muted" id="updated" style="margin-top:6px"></div>
       <table>
         <thead>
           <tr>
@@ -42,7 +43,7 @@
             <th id="th_handle">选手 Handle</th>
             <th id="th_bytes">字节数 Bytes</th>
             <th id="th_time">提交时间 Time</th>
-            <th id="th_sha">提交 SHA</th>
+            <th id="th_code">代码 Code</th>
           </tr>
         </thead>
         <tbody id="tbody">
@@ -54,9 +55,9 @@
   <script>
     const i18n={
       zh:{ title:'第 1 期排行榜 · Week 1 Leaderboard', header:'第 1 期排行榜 · Week 1 Leaderboard', weekly:'每周挑战 Weekly', editor:'编辑器 Editor', refresh:'强制刷新',
-        desc:'数据来自 competition/data/week-1.json。按字节数升序排序；相同字节数按提交时间先后。', handle:'选手 Handle', bytes:'字节数 Bytes', time:'提交时间 Time', sha:'提交 SHA', loading:'加载中 Loading…' },
+        desc:'数据来自 competition/data/week-1.json。按字节数升序排序；相同字节数按提交时间先后。', handle:'选手 Handle', bytes:'字节数 Bytes', time:'提交时间 Time', code:'代码 Code', loading:'加载中 Loading…', updated:'更新于' },
       en:{ title:'Week 1 Leaderboard · 第 1 期排行榜', header:'Week 1 Leaderboard · 第 1 期排行榜', weekly:'Weekly 每周挑战', editor:'Editor 编辑器', refresh:'Force Refresh',
-        desc:'Data from competition/data/week-1.json. Sorted by bytes ascending; ties by earlier submission time.', handle:'Handle 选手', bytes:'Bytes 字节数', time:'Time 提交时间', sha:'Commit SHA 提交', loading:'Loading 加载中…' }
+        desc:'Data from competition/data/week-1.json. Sorted by bytes ascending; ties by earlier submission time.', handle:'Handle 选手', bytes:'Bytes 字节数', time:'Time 提交时间', code:'Code 代码', loading:'Loading 加载中…', updated:'Updated at' }
     };
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
     function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); }
@@ -73,7 +74,7 @@
       document.getElementById('th_handle').textContent=t('handle');
       document.getElementById('th_bytes').textContent=t('bytes');
       document.getElementById('th_time').textContent=t('time');
-      document.getElementById('th_sha').textContent=t('sha');
+  document.getElementById('th_code').textContent=t('code');
       document.getElementById('langBtn').innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中');
     }
     document.getElementById('langBtn').addEventListener('click',()=>setLang(getLang()==='zh'?'en':'zh'));
@@ -98,15 +99,29 @@
       location.replace(url.toString());
     }
 
+    function formatTime(iso){
+      try{ const d=new Date(iso); if(!isNaN(d)) return d.toLocaleString(); }catch(e){}
+      return iso||'-';
+    }
+
+    function encodePath(p){
+      return String(p||'').split('/').map(encodeURIComponent).join('/');
+    }
+
     async function load(){
       const tbody=document.getElementById('tbody');
       try{
         const res=await fetch('../data/week-1.json',{cache:'no-store'});
         const data=await res.json();
+        const up=document.getElementById('updated');
+        if(data.updatedAt && up){ up.textContent = `${t('updated')}: ${formatTime(data.updatedAt)}`; }
         tbody.innerHTML='';
         data.ranks.forEach((row,idx)=>{
           const tr=document.createElement('tr');
-          tr.innerHTML=`<td>${idx+1}</td><td>${row.handle}</td><td>${row.bytes}</td><td>${row.commitTime}</td><td><a href="https://github.com/${data.repo}/commit/${row.sha}" target="_blank" rel="noreferrer">${row.sha.slice(0,7)}</a></td>`;
+          const branch = data.branch || 'main';
+          const codeHref = row.path ? `https://github.com/${data.repo}/blob/${encodeURIComponent(branch)}/${encodePath(row.path)}` : '';
+          const codeCell = codeHref ? `<a href="${codeHref}" target="_blank" rel="noreferrer">${t('code')}</a>` : '-';
+          tr.innerHTML=`<td>${idx+1}</td><td>${row.handle}</td><td>${row.bytes}</td><td>${formatTime(row.commitTime)}</td><td>${codeCell}</td>`;
           tbody.appendChild(tr);
         });
         if(!data.ranks||data.ranks.length===0){ tbody.innerHTML=`<tr><td colspan="5" class="muted">${t('loading')}</td></tr>`; }
