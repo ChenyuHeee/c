@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages (with optional WASM build)
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -16,58 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Cache emsdk
-        uses: actions/cache@v4
-        with:
-          path: emsdk
-          key: ${{ runner.os }}-emsdk-v1
-          restore-keys: |
-            ${{ runner.os }}-emsdk-
-
-      - name: Install & build WASM with Emscripten (CI)
-        # Try to use cached emsdk if available. If not present, clone and install.
-        run: |
-          set -euo pipefail
-
-          if [ -f "wasm/build_wasm.sh" ]; then
-            echo "Found wasm/build_wasm.sh — attempting to prepare emsdk and build"
-
-            if [ -d "emsdk" ]; then
-              echo "emsdk directory found (cache hit or previous run). Activating..."
-              pushd emsdk
-              # Ensure latest is installed/activated (no-op if already present)
-              ./emsdk install latest || true
-              ./emsdk activate latest || true
-              source ./emsdk_env.sh
-              popd
-            else
-              echo "emsdk not found — cloning and installing"
-              git clone https://github.com/emscripten-core/emsdk.git emsdk
-              pushd emsdk
-              ./emsdk install latest
-              ./emsdk activate latest
-              source ./emsdk_env.sh
-              popd
-            fi
-
-            # Run the project's build script and show its output
-            chmod +x wasm/build_wasm.sh
-            ./wasm/build_wasm.sh
-          else
-            echo "No wasm/build_wasm.sh found — skipping WASM build"
-          fi
-        shell: bash
-
-      - name: Show wasm/dist contents (for debugging)
-        if: always()
-        run: |
-          echo "Listing wasm/dist (if exists)"
-          if [ -d "wasm/dist" ]; then
-            ls -la wasm/dist
-          else
-            echo "wasm/dist not found"
-          fi
-        shell: bash
+      # Removed legacy optional WASM build (placeholder runner). Static site deploy only.
 
       - name: Deploy to gh-pages branch (peaceiris)
         # Use peaceiris to push built site to gh-pages branch directly and avoid

@@ -138,7 +138,7 @@
             <div class="meta">
                 <a id="contestLink" href="./competition/index.html" title="赛事 / Contest"><i class="fas fa-flag-checkered"></i> 赛事</a>
                 <span class="badge" id="netBadge" title="网络状态">在线</span>
-                <span class="badge" id="verBadge" title="版本">v1.3.7</span>
+                <span class="badge" id="verBadge" title="版本">v1.3.8</span>
             </div>
         </header>
 
@@ -193,7 +193,7 @@
             <button class="btn ghost" id="redoBtn" title="重做" disabled><i class="fas fa-redo"></i></button>
             <button class="btn ghost" id="fsBtn"><i class="fas fa-expand"></i> 全屏</button>
             <a id="introLink" href="./about.html" target="_blank" style="margin-left:auto;color:var(--muted);font-size:12px;text-decoration:none"><i class="fas fa-circle-info"></i> 简介与帮助</a>
-            <a id="versionLink" href="javascript:void(0)" style="color:var(--muted);font-size:12px;text-decoration:none;padding-left:12px">By C. He from ZJU | <span id="footerEditorVersion">v1.3.7</span></a>
+            <a id="versionLink" href="javascript:void(0)" style="color:var(--muted);font-size:12px;text-decoration:none;padding-left:12px">By C. He from ZJU | <span id="footerEditorVersion">v1.3.8</span></a>
         </div>
         </div>
     </div>
@@ -313,7 +313,7 @@ int main() {
 
     // ----------------- 功能函数 -----------------
 
-        // runCode: 优先尝试 Wandbox（真实编译器），若失败尝试加载本地 WASM 运行器（若你已部署）
+    // runCode: 优先尝试 Wandbox（真实编译器），失败后回退本地模拟（已移除旧的前端 WASM 占位逻辑）
         // 最后回退到原有的模拟（simulateRun）。Wandbox API: https://wandbox.org
         async function tryWandboxCompile(code, stdin) {
             const wandboxUrl = 'https://wandbox.org/api/compile.json';
@@ -347,36 +347,7 @@ int main() {
             return { stdout: out, stderr: err, exitCode: status };
         }
 
-        // 动态加载前端 WASM 运行器（如果你在 repo 下放置了 /wasm/tcc_runner.js）
-        function loadScript(url) {
-            return new Promise((resolve, reject) => {
-                const s = document.createElement('script');
-                s.src = url;
-                s.onload = () => resolve();
-                s.onerror = (e) => reject(new Error('加载失败: ' + url));
-                document.head.appendChild(s);
-            });
-        }
-
-        // 如果用户在仓库中放置了一个基于 tcc/clang 的 wasm 运行器并暴露 window.wasmRun(code, stdin)
-        async function tryWasmRun(code, stdin) {
-            // 常用路径：/wasm/tcc_runner.js（你需要把相应的脚本和 wasm 放到该路径）
-            if (typeof window.wasmRun === 'function') {
-                return await window.wasmRun(code, stdin);
-            }
-
-            // 尝试动态加载预期的脚本（如果你已上传）
-            try {
-                await loadScript('/wasm/tcc_runner.js');
-                if (typeof window.wasmRun === 'function') {
-                    return await window.wasmRun(code, stdin);
-                } else {
-                    throw new Error('wasmRun 未在脚本中暴露');
-                }
-            } catch (e) {
-                throw e;
-            }
-        }
+        // （已移除前端 WASM 占位加载逻辑：不再尝试 /wasm/tcc_runner.js，减少额外请求与配置负担）
 
         async function runCode() {
             if (!window.editor) return;

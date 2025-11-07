@@ -1,7 +1,7 @@
 (function(){
-  // Centralized version constants
+  // Centralized version constants (bump when any user-visible behavior or cached asset changes)
   window.__VERSION__ = Object.freeze({
-    version: 'v1.3.7',         // Unified project version (editor + contest)
+    version: 'v1.3.8',         // Unified project version (editor + contest)
     date: '2025-11-07'         // Release/update date (YYYY-MM-DD)
   });
   // Global configuration (editable): set a serverless endpoint to enable one-click submissions (no GitHub account required)

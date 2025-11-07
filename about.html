@@ -60,7 +60,7 @@
     <div id="versions" class="section">
       <h2 id="versionTitle"><i class="fas fa-code-branch"></i> 版本信息</h2>
       <ul class="list">
-        <li id="projectVersionItem"><span id="projectVersionLabel">项目版本</span>：<b id="projectVersionValue">v1.3.7</b></li>
+  <li id="projectVersionItem"><span id="projectVersionLabel">项目版本</span>：<b id="projectVersionValue">v1.3.8</b></li>
       </ul>
     </div>
 
@@ -135,7 +135,6 @@
       <ul class="list">
   <li class="faqItem" data-i18n-key="faq1"><b>Q: 是否支持 C++？</b> A: 目前内置 C 语法高亮，打开 .cpp/.hpp 文件会自动切换至 C++ 模式；运行仍通过 C 的 Wandbox 编译器配置，可后续扩展。</li>
   <li class="faqItem" data-i18n-key="faq2"><b>Q: 我的代码会丢失吗？</b> A: 页面会将你的内容保存在浏览器的 localStorage；建议定期“另存为”进行备份。</li>
-  <li class="faqItem" data-i18n-key="faq3"><b>Q: WASM 运行器可用吗？</b> A: 当前为预留能力，默认不启用；运行优先 Wandbox，不可用时回退模拟。</li>
   <li class="faqItem" data-i18n-key="faq4"><b>Q: 如何查看历史更新？</b> A: 点击页面右下角“By C. He from ZJU | 版本号”，或在此处打开 <a href="./CHANGELOG.md" target="_blank">CHANGELOG.md</a>。</li>
       </ul>
     </div>
@@ -196,7 +195,7 @@
   contest5:'非协作者请先 Fork 仓库，在 Fork 内按路径新建文件并发起 PR；若不便发 PR，可在提交页使用 “Issue 提交” 备用通道。',
   contest7:'提交安全：v3 起参赛通过 (AC) 后前端对昵称/字节数/时间与完整代码做不可见加密并仅提交密文；落地页不再展示明文，防随手篡改。后续可升级 AES-GCM+签名以增强完整性。',
   contest6:'若管理员启用“一键提交”（无需 GitHub 账号），评测通过后会直接上传到服务器并由机器人代为创建 PR/入榜。',
-        faqTitle:'常见问题（FAQ）', faq1:'Q: 是否支持 C++？ A: 打开 .cpp/.hpp 会启用 C++ 语法高亮；运行暂用 C 编译器。', faq2:'Q: 代码会丢失吗？ A: 保存在 localStorage；建议定期另存为。', faq3:'Q: WASM 运行器可用吗？ A: 预留能力，当前不启用；运行优先 Wandbox。', faq4:'Q: 查看历史更新？ A: 点击底部版本或打开 CHANGELOG.md。',
+  faqTitle:'常见问题（FAQ）', faq1:'Q: 是否支持 C++？ A: 打开 .cpp/.hpp 会启用 C++ 语法高亮；运行暂用 C 编译器。', faq2:'Q: 代码会丢失吗？ A: 保存在 localStorage；建议定期另存为。', faq4:'Q: 查看历史更新？ A: 点击底部版本或打开 CHANGELOG.md。', faq3_removed:'(已移除 WASM 占位相关说明)',
         sceneTitle:'适用场景', scene1:'课堂/培训演示：免安装、跨平台。', scene2:'题解/算法草稿：快速验证逻辑。', scene3:'示例/文档附代码：一键运行和复制。',
         themeLight:'明亮', themeDark:'暗色', themeLabel:'主题', langToggle:'EN', langToggleZh:'中',
         pageTitle:'在线 C 编译器 · 使用指南与介绍'
@@ -218,7 +217,7 @@
   contest5:'For non-collaborators: please Fork first, create the file in your fork and open a PR; if PR is inconvenient, use the “Issue submission” fallback on the submit page.',
   contest7:'Submission security: since v3 the client encrypts handle/bytes/timestamp and full code after AC, sending only ciphertext; submit page hides plaintext to reduce casual tampering. Future: upgrade to AES-GCM + signature for stronger integrity.',
   contest6:'If the admin enables "One-click Submit" (no GitHub account needed), your AC submission is sent to a server and a bot will create the PR/ranking for you.',
-        faqTitle:'FAQ', faq1:'Q: C++ supported? A: Opening .cpp/.hpp enables C++ syntax highlighting; runs currently use C compiler.', faq2:'Q: Will code vanish? A: Stored in localStorage; back up with Save As.', faq3:'Q: WASM runner? A: Reserved capability; Wandbox preferred; fallback simulation.', faq4:'Q: View history? A: Click footer version or open CHANGELOG.md.',
+  faqTitle:'FAQ', faq1:'Q: C++ supported? A: Opening .cpp/.hpp enables C++ syntax highlighting; runs currently use C compiler.', faq2:'Q: Will code vanish? A: Stored in localStorage; back up with Save As.', faq4:'Q: View history? A: Click footer version or open CHANGELOG.md.', faq3_removed:'(WASM placeholder note removed)',
         sceneTitle:'Use Cases', scene1:'Classroom/training demos', scene2:'Algorithm scratch/testing', scene3:'Docs/examples with instant run & copy',
         themeLight:'Light', themeDark:'Dark', themeLabel:'Theme', langToggle:'中', langToggleZh:'EN',
         pageTitle:'Online C Compiler · Guide'
@@ -287,7 +286,8 @@
     if(ul){ const li=document.createElement('li'); li.className='contestItem'; li.setAttribute('data-i18n-key','contest6'); li.innerHTML=t('contest6'); ul.appendChild(li); }
   }
       document.getElementById('faqTitle').innerHTML='<i class="fas fa-list-check"></i> '+t('faqTitle');
-      document.querySelectorAll('.faqItem').forEach(li=>{ const k=li.getAttribute('data-i18n-key'); li.innerHTML=t(k); });
+  // Refresh FAQ items (skip removed WASM entry if still in DOM)
+  document.querySelectorAll('.faqItem').forEach(li=>{ const k=li.getAttribute('data-i18n-key'); if(k==='faq3'){ li.remove(); } else { li.innerHTML=t(k); } });
       document.getElementById('sceneTitle').innerHTML='<i class="fas fa-bullhorn"></i> '+t('sceneTitle');
       document.querySelectorAll('.sceneItem').forEach(li=>{ const k=li.getAttribute('data-i18n-key'); li.textContent=t(k); });
       // footer brand remains same (branding not localized per requirement)

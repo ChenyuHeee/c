@@ -1,4 +1,21 @@
 # [1.3.7] - 2025-11-07
+# [1.3.8] - 2025-11-07
+### Removed
+- 移除前端自建编译的 WASM 占位实现与相关集成：删除 `wasm/` 目录（`tcc_runner.js`, `wrapper.c`, `build_wasm.sh`, `README.md`）。
+- 简化 Pages 部署工作流：去掉 Emscripten/emsdk 缓存与可选构建步骤，仅静态部署。
+
+### Changed
+- `index.html`：清除未使用的 WASM 加载与尝试逻辑（不再请求 `/wasm/tcc_runner.js`）。
+- `about.html`：移除“WASM 运行器可用吗？”FAQ 项，避免误导。
+- 统一版本提升为 `v1.3.8`；`scripts/version.js`、`sw.js` 与页面可见版本同步更新。
+
+### Notes
+- 保留第三方组件的 wasm（例如 `uncrustify-wasm` 格式化器），与已删除的“前端编译器占位”无关；运行路径仍为：Wandbox 优先，失败回退本地模拟，离线则提示不可运行。
+
+---
+ 
+ # [1.3.7] - 2025-11-07
+# [1.3.7] - 2025-11-07
 ### Added
 - v4 端到端强加密（可选）：前端在配置 `submitPublicKey` 后启用 AES‑GCM（256 位）加密整包（meta+code），随机对称密钥使用 RSA‑OAEP(SHA‑256) 公钥包裹；提交页对 v4 仅展示占位与加密字段，不再尝试解密；Worker 侧新增 `SUBMIT_PRIVATE_KEY` 支持解包与解密，生成 PR。
 - 管理辅助：`scripts/decrypt_submission.mjs` 增强，新增 v4 解密（需要私钥），保留 v2/v3 解析。

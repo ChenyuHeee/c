@@ -18,7 +18,7 @@ if ! git remote get-url origin >/dev/null 2>&1; then
 fi
 
 # 列出将要提交的文件
-FILES=(.github/workflows/deploy-pages.yml wasm/tcc_runner.js index.html CHANGELOG.md)
+FILES=(.github/workflows/deploy-pages.yml index.html CHANGELOG.md scripts/version.js sw.js about.html)
 
 echo "准备提交以下文件（若存在）："
 for f in "${FILES[@]}"; do
@@ -40,7 +40,7 @@ if [ -z "$(git status --porcelain)" ]; then
   exit 0
 fi
 
-MSG="CI: deploy to gh-pages via peaceiris; cache emsdk; improve loader; bump version 1.1.13"
+MSG="chore: remove deprecated WASM artifacts and steps; simplify Pages deploy; bump version to v1.3.8"
 
 echo "Committing with message: $MSG"
 if git commit -m "$MSG"; then
