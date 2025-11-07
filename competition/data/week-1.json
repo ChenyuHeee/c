@@ -1,25 +1,29 @@
 {
   "repo": "DanielHe666/c",
   "week": 1,
-  "updatedAt": "2025-11-07T08:37:26.017Z",
+  "branch": "main",
+  "updatedAt": "2025-11-07T09:18:48.666Z",
   "ranks": [
     {
       "handle": "Jackthin",
       "bytes": 399,
-      "commitTime": "2025-11-07T08:37:26.011Z",
-      "sha": "503c28dbc1f3e980d38abdf5db75027c8cf07f6c"
+      "commitTime": "2025-11-07T16:14:47+08:00",
+      "sha": "0393cce3dc67c2ea09207e5c2aa5f80d53b0a8ad",
+      "path": "submissions/week-1/Jackthin/solution.c"
     },
     {
       "handle": "He Chenyu",
       "bytes": 480,
-      "commitTime": "2025-11-07T08:37:26.005Z",
-      "sha": "503c28dbc1f3e980d38abdf5db75027c8cf07f6c"
+      "commitTime": "2025-11-07T11:09:41+08:00",
+      "sha": "3e63979549f444989bf7c343c18f4c6b311af45a",
+      "path": "submissions/week-1/He Chenyu/solution.c"
     },
     {
       "handle": "anon",
       "bytes": 708,
-      "commitTime": "2025-11-07T08:37:26.017Z",
-      "sha": "503c28dbc1f3e980d38abdf5db75027c8cf07f6c"
+      "commitTime": "2025-11-07T00:52:08+08:00",
+      "sha": "64fbbe023601c889f2dd10c990a0168e5ec38ba4",
+      "path": "submissions/week-1/anon/solution.c"
     }
   ]
 }
