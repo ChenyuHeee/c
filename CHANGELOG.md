@@ -5,6 +5,12 @@
 - 提交流程回归简化模式：评测通过后前端生成 v3 加密 JSON（包含 `enc`/`encCode`/`key`），选手在 Fork 仓库路径 `submissions/week-<n>/<handle>/solution.c` 中粘贴该密文文件并发 PR。
 - 排行榜代码列不再跳转 GitHub，而是指向站点内部 `competition/view.html` 页面，前端自动解析并解密显示源码。
  - Week 题面采用“两步提交”：AC 前仅显示“评测代码”，AC 后才显示“生成密文”用于粘贴到 fork 的 `solution.c`。
+ - 新增自动复制与粘贴体验（v1.3.12）：
+	 - 题面页（Week 1）在生成密文 JSON 后自动写入剪贴板，并在状态区提示是否成功；失败则仍提供手动复制区。
+	 - “提交页”增加“自动粘贴密文”按钮：无 `#submission=` 哈希时可从剪贴板直接填充并解析 v3 slim JSON，展示校验元数据与路径预览。
+	 - “提交页”指引文案更新，更加面向新手、列出 Fork + 新建文件 + 粘贴 + PR 的步骤编号。
+	 - 提交页统一缓存与复用 DOM 引用，减少重复查询，提升可维护性。
+	 - 版本号提升为 `v1.3.12` 以刷新缓存并标记此 UX 改进。
 
 ### Added
 - 新增 `competition/view.html`：可视化解密页面，支持 v3 密文 JSON 解码展示原始源码与基本元数据（handle, challenge, bytes, ts）。

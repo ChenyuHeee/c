@@ -1,7 +1,7 @@
 (function(){
   // Centralized version constants (bump when any user-visible behavior or cached asset changes)
   window.__VERSION__ = Object.freeze({
-  version: 'v1.3.11',        // Unified project version (editor + contest)
+  version: 'v1.3.12',        // Unified project version (editor + contest)
     date: '2025-11-07'         // Release/update date (YYYY-MM-DD)
   });
   // One-click submission has been disabled (Cloudflare Worker removed / deprecated).

@@ -35,7 +35,8 @@
       <div id="meta" class="muted" style="margin-top:6px"></div>
       <div id="pathInfo" class="muted" style="margin-top:6px"></div>
       <div class="row" style="margin-top:8px">
-  <button id="copyBtn" class="btn"><i class="fas fa-copy"></i> 复制密文 Copy Encrypted</button>
+        <button id="copyBtn" class="btn"><i class="fas fa-copy"></i> 复制密文 Copy Encrypted</button>
+        <button id="pasteBtn" class="btn"><i class="fas fa-clipboard"></i> 自动粘贴密文 Auto Paste</button>
         <a id="forkBtn" class="btn" target="_blank" rel="noreferrer"><i class="fas fa-code-fork"></i> Fork 仓库 Fork Repo</a>
         <a id="openGh" class="btn" target="_blank" rel="noreferrer"><i class="fas fa-file-circle-plus"></i> 在 Fork 中建文件 New File in Fork</a>
         <a id="issueBtn" class="btn primary" target="_blank" rel="noreferrer"><i class="fas fa-exclamation-circle"></i> 备用：Issue 提交 Alt: Issue</a>
@@ -44,11 +45,12 @@
       <textarea id="code"></textarea>
       <div class="muted" style="margin-top:8px" id="flowTips">
         标准流程（推荐 Fork + PR）:<br>
-        1. 点击 Fork（若已 Fork 可忽略）。<br>
-  2. 在你的 Fork 仓库中新建文件路径：<code>submissions/week-&lt;n&gt;/&lt;handle&gt;/solution.c</code>，将下方“密文/内容”完整粘贴进去保存（不要改文件名）。<br>
-  3. 发起 Pull Request 回主仓库（ChenyuHeee/c）。<br>
-        备用流程：无法方便地发 PR 时，可使用 “Issue 提交” 按钮，自动生成包含加密元数据与代码的 Issue；管理员稍后手动归档。<br>
-        提示：此页面仅提供内容，不具备直接写入主仓库权限——参赛者需 Fork 后操作。
+        1) 点击 Fork（若已 Fork 可忽略）。<br>
+        2) 在你的 Fork 仓库中新建文件路径：<code>submissions/week-&lt;n&gt;/&lt;handle&gt;/solution.c</code>。<br>
+        3) 将本页下方“密文/内容”粘贴进去保存（可点“复制密文”，或点“自动粘贴密文”将剪贴板内容填入文本框）。<br>
+        4) 发起 Pull Request 回主仓库（ChenyuHeee/c）。<br>
+        备用流程：无法方便地发 PR 时，使用“Issue 提交”，自动生成包含加密字段的 Issue；管理员稍后手动归档。<br>
+        提示：此页面不具备直接写入主仓库权限——参赛者需在个人 Fork 中完成提交。
       </div>
     </div>
   </div>
@@ -68,18 +70,66 @@
   const OWNER='ChenyuHeee';
   const REPO='c';
     (function(){
-      const h=location.hash||''; if(!h.startsWith('#submission=')){ document.getElementById('summary').textContent='无提交数据 / No submission payload.'; return; }
+      const summaryEl = document.getElementById('summary');
+      const metaEl = document.getElementById('meta');
+      const pathInfoEl = document.getElementById('pathInfo');
+      const codeEl = document.getElementById('code');
+      const copyBtnCode = document.getElementById('copyBtn');
+      const pasteBtn = document.getElementById('pasteBtn');
+      const forkBtn = document.getElementById('forkBtn');
+      const openGhBtn = document.getElementById('openGh');
+      const issueBtn = document.getElementById('issueBtn');
+      const editBtn = document.getElementById('editHandleBtn');
+      // 预设 Fork 链接
+      forkBtn.href = `https://github.com/${OWNER}/${REPO}/fork`;
+
+      const h=location.hash||''; if(!h.startsWith('#submission=')){
+        summaryEl.textContent='无提交数据 / No submission payload. 可点击“自动粘贴密文”从剪贴板填入。';
+        // 手动流：允许从剪贴板填入 slim v3 JSON 并解析路径/元数据
+        pasteBtn.addEventListener('click', async ()=>{
+          try{
+            const txt = await navigator.clipboard.readText();
+            if(!txt){ alert('剪贴板为空'); return; }
+            codeEl.value = txt;
+            try{
+              const slim = JSON.parse(txt);
+              if(slim && slim.version===3 && slim.enc && slim.key){
+                const metaBytes = xorBytes(fromHex(slim.enc), fromHex(slim.key));
+                const metaStr = new TextDecoder().decode(metaBytes);
+                const meta = JSON.parse(metaStr||'{}');
+                const weekLocal = parseWeek(slim.challenge)||1;
+                const displayHandle = meta.handle || 'anon';
+                const safeHandle = toPathHandle(displayHandle);
+                // 展示元数据与路径
+                metaEl.textContent = `校验通过：bytes=${meta.bytes}, handle=${displayHandle}, ts=${meta.ts}`;
+                const fullPath = `submissions/week-${weekLocal}/${safeHandle}/solution.c`;
+                pathInfoEl.innerHTML = `目录名将使用：<code>${fullPath}</code> <span style="margin-left:6px;color:#8aa3b7">当前昵称：<code>${displayHandle}</code></span>`;
+                openGhBtn.href = `https://github.com/${OWNER}/${REPO}/new/main/${encodeURIComponent(`submissions/week-${weekLocal}/${safeHandle}`)}?filename=solution.c`;
+                summaryEl.textContent = `选手 ${displayHandle} · 题目 ${slim.challenge}`;
+              } else {
+                metaEl.textContent = '解析失败：不是有效的 v3 密文 JSON。';
+              }
+            }catch(_){ metaEl.textContent = '解析失败：请确认内容为 JSON。'; }
+          }catch(_){ alert('无法读取剪贴板，请手动粘贴。'); }
+        });
+        // 复制按钮（无论是否有 payload）
+        copyBtnCode.addEventListener('click',()=>{
+          navigator.clipboard.writeText(codeEl.value).then(()=>{
+            copyBtnCode.innerHTML='<i class="fas fa-check"></i> 已复制 Copied';
+            setTimeout(()=>{ copyBtnCode.innerHTML='<i class="fas fa-copy"></i> 复制密文 Copy Encrypted'; }, 1200);
+          });
+        });
+        return;
+      }
       try{
-        const obj=JSON.parse(decodeBase64(h.slice('#submission='.length))||'{}');
-        const week=parseWeek(obj.challenge)||1;
-        // 初始 handle（兼容旧版本 payload），显示与路径分开：显示尽量用原始，路径用安全化
-  let displayHandle = obj.handle || 'anon';
-  let safeHandle = toPathHandle(displayHandle);
-        // Fork 按钮指向固定仓库 fork 页面
-        const forkUrl=`https://github.com/${OWNER}/${REPO}/fork`;
-        document.getElementById('forkBtn').href=forkUrl;
-  const codeEl = document.getElementById('code');
-  codeEl.value = obj.code||'';
+    const obj=JSON.parse(decodeBase64(h.slice('#submission='.length))||'{}');
+    const week=parseWeek(obj.challenge)||1;
+    // 初始 handle（兼容旧版本 payload），显示与路径分开：显示尽量用原始，路径用安全化
+    let displayHandle = obj.handle || 'anon';
+    let safeHandle = toPathHandle(displayHandle);
+    // Fork 按钮指向固定仓库 fork 页面（已在上方设置，可再次确保）
+    forkBtn.href=`https://github.com/${OWNER}/${REPO}/fork`;
+    codeEl.value = obj.code||'';
         // 解密元数据（若存在），优先以解密出的 handle 覆盖显示与路径
         let meta = null;
         try{
@@ -89,11 +139,11 @@
             // 不解密（私钥仅在服务端/管理员环境），从 encBundle 中无法直接读取源码
             if(obj.encBundle && obj.iv && obj.keyWrap){
               // 元数据嵌入在服务端可解密的 bundle 中，这里仅显示占位
-              document.getElementById('meta').textContent = `v4 加密提交：AES-GCM + 公钥包裹。源码与元数据已加密。`;
+              metaEl.textContent = `v4 加密提交：AES-GCM + 公钥包裹。源码与元数据已加密。`;
               codeEl.value = '（v4：本页面不提供一键粘贴内容。请使用“Issue 提交”或管理员通道。）';
               codeEl.readOnly = true;
-              document.getElementById('copyBtn').style.display='none';
-              document.getElementById('openGh').style.display='none';
+              copyBtnCode.style.display='none';
+              openGhBtn.style.display='none';
               // Issue 链接构造仅包含加密字段
               function rebuildIssueLinkV4(){
                 const weekLocal = parseWeek(obj.challenge)||1;
@@ -119,7 +169,7 @@
                   issueBody = issueBody.slice(0,6900) + '\n... (truncated)';
                 }
                 const issueUrl = `https://github.com/${OWNER}/${REPO}/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}`;
-                document.getElementById('issueBtn').href=issueUrl;
+                issueBtn.href=issueUrl;
               }
               rebuildIssueLinkV4();
               // 结束 v4 分支（路径仍基于 safeHandle）
@@ -129,18 +179,18 @@
             const metaStr = new TextDecoder().decode(metaBytes);
             meta = JSON.parse(metaStr||'{}');
             if(meta && meta.handle){ displayHandle = meta.handle; safeHandle = toPathHandle(meta.handle); }
-            document.getElementById('meta').textContent = `校验通过：bytes=${meta.bytes}, handle=${meta.handle}, ts=${meta.ts}`;
+            metaEl.textContent = `校验通过：bytes=${meta.bytes}, handle=${meta.handle}, ts=${meta.ts}`;
             // v3：展示需要粘贴到 solution.c 的密文 JSON 内容
             if(obj.version>=3){
               const slim = { type:'contest', version:3, challenge: obj.challenge, enc: obj.enc, encCode: obj.encCode, key: obj.key };
               codeEl.value = JSON.stringify(slim, null, 2);
               codeEl.readOnly = false;
-              document.getElementById('copyBtn').style.display='inline-flex';
-              document.getElementById('openGh').style.display='inline-flex';
-              document.getElementById('copyBtn').innerHTML='<i class="fas fa-copy"></i> 复制密文 Copy Encrypted';
+      copyBtnCode.style.display='inline-flex';
+      openGhBtn.style.display='inline-flex';
+      copyBtnCode.innerHTML='<i class="fas fa-copy"></i> 复制密文 Copy Encrypted';
             }
           }
-        }catch(e){ document.getElementById('meta').textContent='元数据解析失败（非致命）'; }
+    }catch(e){ metaEl.textContent='元数据解析失败（非致命）'; }
         function rebuildIssueLink(){
           if(obj.version===4){ return; } // v4 分支单独处理
           if(!(obj.enc && obj.key && meta)) return;
@@ -189,14 +239,13 @@
             issueBody = shortLines.join('\n');
           }
           const issueUrl = `https://github.com/${OWNER}/${REPO}/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}`;
-          document.getElementById('issueBtn').href=issueUrl;
+          issueBtn.href=issueUrl;
         }
         // 现在根据最终的 safeHandle 生成“在 Fork 中建文件”的链接，并展示目录名预览
         const path=`submissions/week-${week}/${safeHandle}`;
         const ghNew=`https://github.com/${OWNER}/${REPO}/new/main/${encodeURIComponent(path)}?filename=solution.c`;
-        document.getElementById('openGh').href=ghNew;
-        const fullPath = `${path}/solution.c`;
-        const pathInfoEl = document.getElementById('pathInfo');
+  openGhBtn.href=ghNew;
+  const fullPath = `${path}/solution.c`;
         const same = displayHandle === safeHandle;
         const warn = [];
         if(!same){ warn.push('注意：昵称中包含路径不支持的字符或多余空白，已转换为安全目录名。'); }
@@ -214,10 +263,9 @@
   pathInfoEl.innerHTML = `目录名将使用：<code>${fullPath}</code>` + (warn.length? ` <span style="color:#f59e0b">（${warn.join(' ')}）</span>`: '') + ` <span style="margin-left:6px;color:#8aa3b7">当前昵称：<code>${displayHandle}</code></span>`;
         pathInfoEl.appendChild(copyBtn);
         // 顶部摘要显示原始（未清洗）的 handle，符合用户预期
-        document.getElementById('summary').textContent=`选手 ${displayHandle} · 题目 ${obj.challenge}`;
+  summaryEl.textContent=`选手 ${displayHandle} · 题目 ${obj.challenge}`;
   // 构造 Issue 提交内容（标题与目录名保持一致，用 safeHandle）
   rebuildIssueLink();
-        const copyBtnCode = document.getElementById('copyBtn');
         copyBtnCode.addEventListener('click',()=>{
           navigator.clipboard.writeText(document.getElementById('code').value).then(()=>{
             copyBtnCode.innerHTML='<i class="fas fa-check"></i> 已复制 Copied';
@@ -225,7 +273,6 @@
           });
         });
         // 修改昵称入口：弹出简单对话框，仅更新 localStorage 并刷新自身（不改变已提交的加密数据）
-        const editBtn = document.getElementById('editHandleBtn');
         editBtn.addEventListener('click',()=>{
           const current = displayHandle;
           const next = prompt('修改昵称 / Edit Handle', current);
@@ -235,11 +282,11 @@
           try{ localStorage.setItem('contest_profile', JSON.stringify({ handle: trimmed })); }catch(e){}
           // 更新展示（不改加密 payload，但下次提交会生效）
           displayHandle = trimmed; safeHandle = toPathHandle(trimmed);
-          document.getElementById('summary').textContent=`选手 ${displayHandle} · 题目 ${obj.challenge}`;
+          summaryEl.textContent=`选手 ${displayHandle} · 题目 ${obj.challenge}`;
           // 重建路径预览与“在 Fork 中建文件”链接
           const newDir = `submissions/week-${week}/${safeHandle}`;
           const newGhNew = `https://github.com/${OWNER}/${REPO}/new/main/${encodeURIComponent(newDir)}?filename=solution.c`;
-          document.getElementById('openGh').href=newGhNew;
+          openGhBtn.href=newGhNew;
           const newPath = `${newDir}/solution.c`;
           pathInfoEl.innerHTML = `目录名将使用：<code>${newPath}</code> <span style=\"margin-left:6px;color:#8aa3b7\">当前昵称：<code>${displayHandle}</code></span>`;
           pathInfoEl.appendChild(copyBtn);
@@ -268,7 +315,7 @@
               const issueTitle = `Week-${weekLocal} Submission ${safeHandle}`;
               if(encodeURIComponent(issueBody).length > 7000){ issueBody = issueBody.slice(0,6900)+'\n... (truncated)'; }
               const issueUrl = `https://github.com/${OWNER}/${REPO}/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}`;
-              document.getElementById('issueBtn').href=issueUrl;
+              issueBtn.href=issueUrl;
               return;
             }
             const bytes = (meta && typeof meta.bytes==='number')? meta.bytes : new TextEncoder().encode(obj.code||'').length;
@@ -278,7 +325,7 @@
             obj.enc = toHex(encBytes); // 保持原 key 不变，确保 encCode 可用
             meta = JSON.parse(metaStr);
             // 更新元数据显示
-            document.getElementById('meta').textContent = `校验通过：bytes=${meta.bytes}, handle=${meta.handle}, ts=${meta.ts}`;
+            metaEl.textContent = `校验通过：bytes=${meta.bytes}, handle=${meta.handle}, ts=${meta.ts}`;
           }catch(_){ /* ignore */ }
           // 重建 Issue 链接
           rebuildIssueLink();

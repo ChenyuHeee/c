@@ -73,12 +73,12 @@
         <button id="saveHandleBtn" class="btn"><i class="fas fa-user-check"></i> 保存昵称</button>
       </div>
       <textarea id="codeInput" placeholder="在此粘贴你的 C 代码..." style="width:100%;min-height:240px;background:#161a1e;border:1px solid #222;border-radius:8px;color:#e6eef6;padding:10px 12px;font-family:Menlo,monospace;font-size:13px"></textarea>
-      <div class="row" style="margin-top:8px;gap:10px;flex-wrap:wrap">
-  <button id="judgeBtn" class="btn primary"><i class="fas fa-vial"></i> 评测代码</button>
-  <button id="genPayloadBtn" class="btn" style="display:none;background:#2ea043;border:0;color:#071022"><i class="fas fa-shield-halved"></i> 生成密文</button>
-        <a class="btn" href="./rank/1.html" target="_blank" rel="noreferrer"><i class="fas fa-medal"></i> 查看第1期排行榜</a>
-  <a class="btn" href="./submit.html" target="_blank" rel="noreferrer"><i class="fas fa-share-from-square"></i> 提交页（粘贴密文）</a>
-      </div>
+  <div class="row" style="margin-top:8px;gap:10px;flex-wrap:wrap">
+    <button id="judgeBtn" class="btn primary"><i class="fas fa-vial"></i> 评测代码</button>
+    <button id="genPayloadBtn" class="btn" style="display:none;background:#2ea043;border:0;color:#071022"><i class="fas fa-shield-halved"></i> 生成密文</button>
+    <a class="btn" href="./rank/1.html" target="_blank" rel="noreferrer"><i class="fas fa-medal"></i> 查看第1期排行榜</a>
+    <a id="submitPageBtn" class="btn" href="./submit.html" target="_blank" rel="noreferrer" style="display:none"><i class="fas fa-share-from-square"></i> 提交页（粘贴密文）</a>
+  </div>
       <div id="submitStatus" class="muted" style="margin-top:8px"></div>
     </div>
 
@@ -225,8 +225,9 @@
       const handleInput = document.getElementById('handleInput');
       const saveHandleBtn = document.getElementById('saveHandleBtn');
       const codeInput = document.getElementById('codeInput');
-      const judgeBtn = document.getElementById('judgeBtn');
-      const genBtn = document.getElementById('genPayloadBtn');
+  const judgeBtn = document.getElementById('judgeBtn');
+  const genBtn = document.getElementById('genPayloadBtn');
+  const submitPageBtn = document.getElementById('submitPageBtn');
       const statusEl = document.getElementById('submitStatus');
       // 预填 handle
       try{ const h = window.__ContestSubmit.getHandle(); if(h) handleInput.value = h; }catch(e){}
@@ -271,8 +272,9 @@
         try{
           const pass = await judgeWeek1(source);
           if(!pass){ statusEl.style.color='#ff6b6b'; statusEl.textContent='WA：输出不匹配，未通过。'; return; }
-          statusEl.style.color='#56d364'; statusEl.textContent='通过 | Accepted。现在可生成密文。';
+          statusEl.style.color='#56d364'; statusEl.textContent='通过 | Accepted。现在可生成密文并打开提交页。';
           genBtn.style.display='inline-flex';
+          submitPageBtn.style.display='inline-flex';
           genBtn.focus();
         }catch(e){ statusEl.style.color='#ffb020'; statusEl.textContent='评测失败（网络/服务异常），请稍后再试。'; }
       });
@@ -286,10 +288,23 @@
           const payload = await window.__ContestSubmit.buildPayload('week-1', source);
           const slim = payload.version===3 ? { type:'contest', version:3, challenge: payload.challenge, enc: payload.enc, encCode: payload.encCode, key: payload.key } : payload;
           const jsonStr = JSON.stringify(slim, null, 2);
+          // 记住最近一次生成的密文，供“提交页”按钮点击时兜底复制
+          try{ window.__LAST_SUBMISSION_JSON = jsonStr; }catch(_){ }
           const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
           const url = './submit.html#submission='+b64;
-          statusEl.innerHTML='✅ 已生成密文。<br>1) 打开提交页。<br>2) 在 Fork 里新建/覆盖 solution.c 粘贴下列 JSON：<br><pre style="background:#161a1e;padding:10px;border-radius:8px;overflow:auto;font-size:12px"><code>'+jsonStr.replace(/[&<>]/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[s]))+'</code></pre>';
+          // 尝试自动复制到剪贴板
+          let copied = false;
+          try{
+            await navigator.clipboard.writeText(jsonStr);
+            copied = true;
+          }catch(_){ copied = false; }
+          const copiedTip = copied ? '（已自动复制到剪贴板）' : '（复制失败，请手动复制下方 JSON）';
+          statusEl.innerHTML='✅ 已生成密文 '+copiedTip+'。<br>1) 打开提交页。<br>2) 在 Fork 里新建/覆盖 solution.c 粘贴下列 JSON：<br><pre style="background:#161a1e;padding:10px;border-radius:8px;overflow:auto;font-size:12px"><code>'+jsonStr.replace(/[&<>]/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[s]))+'</code></pre>';
           const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noreferrer'; a.textContent='打开提交页（新标签）'; a.className='btn'; a.style.marginTop='8px'; statusEl.appendChild(a);
+          // 同时给“提交页（粘贴密文）”按钮绑定点击复制兜底
+          submitPageBtn.onclick = async ()=>{
+            if(window.__LAST_SUBMISSION_JSON){ try{ await navigator.clipboard.writeText(window.__LAST_SUBMISSION_JSON); }catch(_){ /* ignore */ } }
+          };
         }catch(e){ statusEl.style.color='#ff6b6b'; statusEl.textContent='生成密文失败：'+(e&&e.message||e); }
         finally{ genBtn.disabled=false; genBtn.innerHTML=old; }
       });
