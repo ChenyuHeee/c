@@ -36,8 +36,8 @@ jobs:
           if [ -z "$files" ]; then
             echo "No files changed"; exit 1
           fi
-          # 只允许 submissions/ 及其子目录下名为 solution.c 的文件，或 week-<n>/<handle>/ 下的 .c 或 README.md
-          bad=$(echo "$files" | grep -vE '^submissions/((week-[0-9]+/[^/]+/([^/]+\.c|README\.md))|(.+/solution\.c))$' || true)
+          # 只允许 submissions/week-<n>/<handle>/ 下名为 solution.c 的文件或 README.md
+          bad=$(echo "$files" | grep -vE '^submissions/week-[0-9]+/[^/]+/(solution\.c|README\.md)$' || true)
           if [ -n "$bad" ]; then
             echo "Disallowed files:\n$bad"; echo "::error::提交包含不允许的路径"; exit 1
           fi
@@ -51,19 +51,11 @@ jobs:
           fi
           first=$(echo "$cfiles" | head -n1)
           echo "primary=$first" >> $GITHUB_OUTPUT
-          # 提取 week 与 handle（支持灵活的路径结构）
-          if echo "$first" | grep -qE '^submissions/week-[0-9]+/[^/]+/'; then
-            # 传统路径格式: submissions/week-<n>/<handle>/...
-            week=$(echo "$first" | sed -E 's#submissions/week-([0-9]+)/.*#\1#')
-            handle=$(echo "$first" | sed -E 's#submissions/week-[0-9]+/([^/]+)/.*#\1#')
-          else
-            # 新格式: submissions/<任意子目录>/solution.c
-            # 从路径中提取第一个子目录作为 handle，默认 week 为 1
-            week="1"
-            handle=$(echo "$first" | sed -E 's#submissions/([^/]+)(/.*)?#\1#')
-          fi
+          # 提取 week 与 handle
+          week=$(echo "$first" | sed -E 's#submissions/week-([0-9]+)/.*#\1#')
+          handle=$(echo "$first" | sed -E 's#submissions/week-[0-9]+/([^/]+)/.*#\1#')
           if [ "$handle" = "anon" ]; then
-            echo "::error::检测到匿名 handle 'anon'。请使用你的个人 handle 重命名路径，如 submissions/<your_handle>/solution.c";
+            echo "::error::检测到匿名 handle 'anon'。请使用你的个人 handle 重命名路径，如 submissions/week-${week}/<your_handle>/solution.c";
             exit 1
           fi
           echo "week=$week" >> $GITHUB_OUTPUT
