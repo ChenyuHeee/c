@@ -71,7 +71,7 @@ jobs:
           file="${{ steps.validate.outputs.primary }}"
           # Check if file contains encrypted JSON format
           # Look for the specific JSON structure: {"type": "contest"
-          if head -n 3 "$file" | grep -q '"type".*:.*"contest"'; then
+          if head -n 3 "$file" | grep -qE '"type"[[:space:]]*:[[:space:]]*"contest"'; then
             echo "Detected encrypted content (contest JSON format). Skipping compilation test."
             echo "File is accepted as-is."
           else
