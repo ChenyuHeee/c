@@ -2,7 +2,7 @@
   "repo": "ChenyuHeee/c",
   "week": 1,
   "branch": "main",
-  "updatedAt": "2025-11-08T03:22:57.078Z",
+  "updatedAt": "2025-11-08T03:23:36.994Z",
   "ranks": [
     {
       "handle": "你们跑不了了",
@@ -19,11 +19,11 @@
       "path": "submissions/week-1/我要拿冠军/solution.c"
     },
     {
-      "handle": "我也要拿冠军",
+      "handle": "He Chenyu",
       "bytes": 277,
-      "commitTime": "2025-11-08T00:06:34+08:00",
-      "sha": "9adee06a78bb4bf15a06fc5029f50eddccd200a5",
-      "path": "submissions/week-1/我也要拿冠军/solution.c"
+      "commitTime": "2025-11-08T11:23:28+08:00",
+      "sha": "d79dbff6bbe1c1b4c9d4e4efa61c8ed919c27e39",
+      "path": "submissions/week-1/He Chenyu/solution.c"
     },
     {
       "handle": "chen",
