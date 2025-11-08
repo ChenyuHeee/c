@@ -69,10 +69,10 @@ jobs:
       - name: Build (compile test)
         run: |
           file="${{ steps.validate.outputs.primary }}"
-          # Check if file contains encrypted JSON format (starts with '{')
-          first_char=$(head -c 1 "$file" | tr -d '[:space:]')
-          if [ "$first_char" = "{" ]; then
-            echo "Detected encrypted content (JSON format). Skipping compilation test."
+          # Check if file contains encrypted JSON format
+          # Look for the specific JSON structure: {"type": "contest"
+          if head -n 3 "$file" | grep -q '"type".*:.*"contest"'; then
+            echo "Detected encrypted content (contest JSON format). Skipping compilation test."
             echo "File is accepted as-is."
           else
             echo "Detected plain C code. Running compilation test."
