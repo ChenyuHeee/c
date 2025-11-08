@@ -2,7 +2,7 @@
   "repo": "ChenyuHeee/c",
   "week": 1,
   "branch": "main",
-  "updatedAt": "2025-11-08T03:20:08.911Z",
+  "updatedAt": "2025-11-08T03:22:36.731Z",
   "ranks": [
     {
       "handle": "你们跑不了了",
@@ -59,13 +59,6 @@
       "commitTime": "2025-11-07T22:48:25+08:00",
       "sha": "8a3a8b10a5b4269679dde01902d1b66c040d3b07",
       "path": "submissions/week-1/hehehe/solution.c"
-    },
-    {
-      "handle": "He Chenyu",
-      "bytes": 480,
-      "commitTime": "2025-11-07T11:09:41+08:00",
-      "sha": "3e63979549f444989bf7c343c18f4c6b311af45a",
-      "path": "submissions/week-1/He Chenyu/solution.c"
     },
     {
       "handle": "zzh",
