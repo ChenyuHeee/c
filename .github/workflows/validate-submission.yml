@@ -36,8 +36,8 @@ jobs:
           if [ -z "$files" ]; then
             echo "No files changed"; exit 1
           fi
-          # 只允许 submissions/week-<n>/<handle>/ 下的 .c 或 README.md
-          bad=$(echo "$files" | grep -vE '^submissions/week-[0-9]+/[^/]+/([^/]+\.c|README\.md)$' || true)
+          # 只允许 submissions/week-<n>/<handle>/ 下名为 solution.c 的文件或 README.md
+          bad=$(echo "$files" | grep -vE '^submissions/week-[0-9]+/[^/]+/(solution\.c|README\.md)$' || true)
           if [ -n "$bad" ]; then
             echo "Disallowed files:\n$bad"; echo "::error::提交包含不允许的路径"; exit 1
           fi
