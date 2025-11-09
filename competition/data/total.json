@@ -1,56 +1,66 @@
 {
   "repo": "ChenyuHeee/c",
-  "updatedAt": "2025-11-09T03:02:54.231Z",
+  "updatedAt": "2025-11-09T03:53:42.726Z",
   "ranks": [
     {
       "handle": "你们跑不了了",
-      "weeks": 1,
-      "best": 179
-    },
-    {
-      "handle": "我要拿冠军",
-      "weeks": 1,
-      "best": 277
+      "rounds": 1,
+      "best": 179,
+      "points": 120
     },
     {
       "handle": "He Chenyu",
-      "weeks": 1,
-      "best": 277
+      "rounds": 1,
+      "best": 277,
+      "points": 78
+    },
+    {
+      "handle": "我要拿冠军",
+      "rounds": 1,
+      "best": 277,
+      "points": 78
     },
     {
       "handle": "chen",
-      "weeks": 1,
-      "best": 330
+      "rounds": 1,
+      "best": 330,
+      "points": 65
     },
     {
       "handle": "JackthinTest",
-      "weeks": 1,
-      "best": 393
+      "rounds": 1,
+      "best": 393,
+      "points": 55
     },
     {
       "handle": "Jackthin",
-      "weeks": 1,
-      "best": 399
+      "rounds": 1,
+      "best": 399,
+      "points": 54
     },
     {
       "handle": "hehehe",
-      "weeks": 1,
-      "best": 425
+      "rounds": 1,
+      "best": 425,
+      "points": 51
     },
     {
       "handle": "zzh",
-      "weeks": 1,
-      "best": 560
+      "rounds": 1,
+      "best": 560,
+      "points": 38
     },
     {
       "handle": "sky-wolf",
-      "weeks": 1,
-      "best": 668
+      "rounds": 1,
+      "best": 668,
+      "points": 32
     },
     {
       "handle": "anon",
-      "weeks": 1,
-      "best": 708
+      "rounds": 1,
+      "best": 708,
+      "points": 30
     }
   ]
 }

@@ -2,77 +2,89 @@
   "repo": "ChenyuHeee/c",
   "week": 1,
   "branch": "main",
-  "updatedAt": "2025-11-09T03:02:54.226Z",
+  "updatedAt": "2025-11-09T03:53:42.721Z",
+  "difficulty": 120,
+  "minBytes": 179,
   "ranks": [
     {
       "handle": "你们跑不了了",
       "bytes": 179,
-      "commitTime": "2025-11-08T09:39:44+08:00",
-      "sha": "42985de32fe470941575725cad20fdeb4389b080",
-      "path": "submissions/week-1/你们跑不了了/solution.c"
-    },
-    {
-      "handle": "我要拿冠军",
-      "bytes": 277,
-      "commitTime": "2025-11-07T22:29:27+08:00",
-      "sha": "9a13ee31c46c45f8f28047ddcea17f0ad207397e",
-      "path": "submissions/week-1/我要拿冠军/solution.c"
+      "commitTime": "2025-11-09T11:53:13+08:00",
+      "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
+      "path": "submissions/1/你们跑不了了/solution.c",
+      "points": 120
     },
     {
       "handle": "He Chenyu",
       "bytes": 277,
-      "commitTime": "2025-11-08T11:23:28+08:00",
-      "sha": "d79dbff6bbe1c1b4c9d4e4efa61c8ed919c27e39",
-      "path": "submissions/week-1/He Chenyu/solution.c"
+      "commitTime": "2025-11-09T11:53:13+08:00",
+      "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
+      "path": "submissions/1/He Chenyu/solution.c",
+      "points": 78
+    },
+    {
+      "handle": "我要拿冠军",
+      "bytes": 277,
+      "commitTime": "2025-11-09T11:53:13+08:00",
+      "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
+      "path": "submissions/1/我要拿冠军/solution.c",
+      "points": 78
     },
     {
       "handle": "chen",
       "bytes": 330,
-      "commitTime": "2025-11-08T11:19:56+08:00",
-      "sha": "90489ec9cd7628670df52ee2367925be9355ea77",
-      "path": "submissions/week-1/chen/solution.c"
+      "commitTime": "2025-11-09T11:53:13+08:00",
+      "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
+      "path": "submissions/1/chen/solution.c",
+      "points": 65
     },
     {
       "handle": "JackthinTest",
       "bytes": 393,
-      "commitTime": "2025-11-07T19:09:06+08:00",
-      "sha": "55f9e6faeca862e13cba54fff402853eebc6dcdd",
-      "path": "submissions/week-1/JackthinTest/solution.c"
+      "commitTime": "2025-11-09T11:53:13+08:00",
+      "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
+      "path": "submissions/1/JackthinTest/solution.c",
+      "points": 55
     },
     {
       "handle": "Jackthin",
       "bytes": 399,
-      "commitTime": "2025-11-07T16:14:47+08:00",
-      "sha": "0393cce3dc67c2ea09207e5c2aa5f80d53b0a8ad",
-      "path": "submissions/week-1/Jackthin/solution.c"
+      "commitTime": "2025-11-09T11:53:13+08:00",
+      "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
+      "path": "submissions/1/Jackthin/solution.c",
+      "points": 54
     },
     {
       "handle": "hehehe",
       "bytes": 425,
-      "commitTime": "2025-11-07T22:48:25+08:00",
-      "sha": "8a3a8b10a5b4269679dde01902d1b66c040d3b07",
-      "path": "submissions/week-1/hehehe/solution.c"
+      "commitTime": "2025-11-09T11:53:13+08:00",
+      "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
+      "path": "submissions/1/hehehe/solution.c",
+      "points": 51
     },
     {
       "handle": "zzh",
       "bytes": 560,
-      "commitTime": "2025-11-07T22:52:52+08:00",
-      "sha": "1344c323f5ef74ea6dd7adb3f069cf5c0e52d98e",
-      "path": "submissions/week-1/zzh/solution.c"
+      "commitTime": "2025-11-09T11:53:13+08:00",
+      "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
+      "path": "submissions/1/zzh/solution.c",
+      "points": 38
     },
     {
       "handle": "sky-wolf",
       "bytes": 668,
-      "commitTime": "2025-11-08T21:54:00+08:00",
-      "sha": "fc4f7c5250a402dc4cef8c2ba2517a13ac8fd468",
-      "path": "submissions/week-1/sky-wolf/solution.c"
+      "commitTime": "2025-11-09T11:53:13+08:00",
+      "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
+      "path": "submissions/1/sky-wolf/solution.c",
+      "points": 32
     },
     {
       "handle": "anon",
       "bytes": 708,
-      "commitTime": "2025-11-07T00:52:08+08:00",
-      "sha": "64fbbe023601c889f2dd10c990a0168e5ec38ba4",
-      "path": "submissions/week-1/anon/solution.c"
+      "commitTime": "2025-11-09T11:53:13+08:00",
+      "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
+      "path": "submissions/1/anon/solution.c",
+      "points": 30
     }
   ]
 }
