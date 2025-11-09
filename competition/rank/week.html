@@ -109,7 +109,11 @@
       const tbody=document.getElementById('tbody');
       try{
         const res=await fetch(`../data/prob-${w}.json`,{cache:'no-store'});
-        if(!res.ok) throw new Error(res.status);
+        if(res.status===404){
+          tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`;
+          return;
+        }
+        if(!res.ok) throw new Error('HTTP '+res.status);
         const data=await res.json();
         const up=document.getElementById('updated');
   if(data.updatedAt && up){ up.textContent = `${t('updated')}: ${formatTime(data.updatedAt)}`; }
@@ -125,7 +129,8 @@
         });
         if(!data.ranks||data.ranks.length===0){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; }
       }catch(e){
-        tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('loading')}</td></tr>`;
+        const msg = (e&&e.message)||String(e)||'';
+        tbody.innerHTML=`<tr><td colspan="6" class="muted">加载失败 Load failed: ${msg} <a href="javascript:location.reload()">重试 Retry</a></td></tr>`;
       }
     }
     load();
