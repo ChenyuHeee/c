@@ -36,8 +36,8 @@ jobs:
           if [ -z "$files" ]; then
             echo "No files changed"; exit 1
           fi
-          # 只允许 submissions/week-<n>/<handle>/ 下名为 solution.c 的文件或 README.md
-          bad=$(echo "$files" | grep -vE '^submissions/week-[0-9]+/[^/]+/(solution\.c|README\.md)$' || true)
+          # 允许 submissions/<n>/<handle>/ 或 submissions/week-<n>/<handle>/ 下的 solution.c 或 README.md
+          bad=$(echo "$files" | grep -vE '^submissions/([0-9]+|week-[0-9]+)/[^/]+/(solution\.c|README\.md)$' || true)
           if [ -n "$bad" ]; then
             echo "Disallowed files:\n$bad"; echo "::error::提交包含不允许的路径"; exit 1
           fi
@@ -51,14 +51,15 @@ jobs:
           fi
           first=$(echo "$cfiles" | head -n1)
           echo "primary=$first" >> $GITHUB_OUTPUT
-          # 提取 week 与 handle
-          week=$(echo "$first" | sed -E 's#submissions/week-([0-9]+)/.*#\1#')
-          handle=$(echo "$first" | sed -E 's#submissions/week-[0-9]+/([^/]+)/.*#\1#')
+          # 提取 problemId（支持 submissions/<n>/ 与 submissions/week-<n>/）与 handle
+          problem=$(echo "$first" | sed -nE 's#submissions/([0-9]+)/.*#\1#p')
+          if [ -z "$problem" ]; then problem=$(echo "$first" | sed -nE 's#submissions/week-([0-9]+)/.*#\1#p'); fi
+          handle=$(echo "$first" | sed -nE 's#submissions/([0-9]+|week-[0-9]+)/([^/]+)/.*#\2#p')
           if [ "$handle" = "anon" ]; then
-            echo "::error::检测到匿名 handle 'anon'。请使用你的个人 handle 重命名路径，如 submissions/week-${week}/<your_handle>/solution.c";
+            echo "::error::检测到匿名 handle 'anon'。请使用你的个人 handle 重命名路径，如 submissions/${problem}/<your_handle>/solution.c（或 legacy: submissions/week-${problem}/...）";
             exit 1
           fi
-          echo "week=$week" >> $GITHUB_OUTPUT
+          echo "problem=$problem" >> $GITHUB_OUTPUT
           echo "handle=$handle" >> $GITHUB_OUTPUT
 
       - name: Show primary file info
@@ -87,14 +88,14 @@ jobs:
       - name: Predict rank
         id: predict
         env:
-          WEEK: ${{ steps.validate.outputs.week }}
+          PROBLEMS: ${{ steps.validate.outputs.problem }}
         run: |
           # Run existing ranking script locally (writes JSON but不提交)
           node --version
           
           # Ensure Node is available (setup in previous step)
           node scripts/compute_ranks.mjs
-          file="competition/data/week-${{ steps.validate.outputs.week }}.json"
+          file="competition/data/prob-${{ steps.validate.outputs.problem }}.json"
           if [ ! -f "$file" ]; then echo "Missing computed JSON"; exit 1; fi
           bytes=$(wc -c "${{ steps.validate.outputs.primary }}" | awk '{print $1}')
           rank=$(node -e 'const f=process.argv[1];const h=process.argv[2];const obj=require("./"+f);const idx=(obj.ranks||[]).findIndex(r=>r.handle===h);process.stdout.write(String(idx>=0?idx+1:"?"));' "${file}" "${{ steps.validate.outputs.handle }}")
@@ -110,9 +111,9 @@ jobs:
             const rank = process.env.rank || '?';
             const total = process.env.total || '?';
             const bytes = process.env.bytes || '';
-            const week = '${{ steps.validate.outputs.week }}';
+            const problem = '${{ steps.validate.outputs.problem }}';
             const handle='${{ steps.validate.outputs.handle }}';
-            const body = `🧪 预测排名 (Week ${week})\n\nHandle: **${handle}**\n字节数(Bytes): **${bytes}**\n预计周榜排名(Predicted Rank): **${rank}/${total}**\n\n说明: 合并后工作流会重新计算正式榜单。若有多个 .c 文件仅首个计入。`;
+            const body = `🧪 预测排名 (Problem ${problem})\n\nHandle: **${handle}**\n字节数(Bytes): **${bytes}**\n预计本题排名(Predicted Rank): **${rank}/${total}**\n\n说明: 合并后工作流会重新计算正式榜单。若有多个 .c 文件仅首个计入。`;
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
