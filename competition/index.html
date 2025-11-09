@@ -89,23 +89,32 @@
         const res=await fetch('./problems.json?fresh='+(Date.now()),{cache:'no-store'});
         if(res.ok) list=await res.json();
       }catch(e){}
-      if(!Array.isArray(list)||list.length===0){
-        list=[{id:1,name_zh:'打印指定图案',name_en:'Print Specified Pattern',difficulty:120,desc:t('week1')}];
+      if(!Array.isArray(list)){
+        list=[];
+      }
+      if (list.length === 0) {
+        container.innerHTML = '<p>暂无题目，请等待管理员添加。No problems available yet, please wait for the administrator to add them.</p>';
+        const firstProblemBtn = document.getElementById('firstProblemBtn');
+        const firstRankBtn = document.getElementById('firstRankBtn');
+        if (firstProblemBtn) firstProblemBtn.style.display = 'none';
+        if (firstRankBtn) firstRankBtn.style.display = 'none';
+        return;
       }
       const L=getLang();
       const first=list[0];
       const fp=document.getElementById('firstProblemBtn');
       const fr=document.getElementById('firstRankBtn');
-      const firstName=L==='zh'?(first.name_zh||first.name_en||('Round '+first.id)):(first.name_en||first.name_zh||('Round '+first.id));
+      const firstName=L==='zh'?(first.short_desc_zh||first.title||('Round '+first.id)):(first.short_desc_en||first.title||('Round '+first.id));
       if(fp){ fp.href=`./${first.id}.html`; fp.innerHTML=`<i class="fas fa-calendar-week"></i> ${first.id}. ${firstName}`; }
-  if(fr){ fr.href=`./rank/week.html?week=${first.id}`; fr.innerHTML=`<i class="fas fa-trophy"></i> ${L==='zh'?('第 '+first.id+' 期榜单'):('Round '+first.id+' Board')}`; }
+      if(fr){ fr.href=`./rank/week.html?week=${first.id}`; fr.innerHTML=`<i class="fas fa-trophy"></i> ${L==='zh'?('第 '+first.id+' 期榜单'):('Round '+first.id+' Board')}`; }
       list.forEach(p=>{
-        const name=L==='zh'?(p.name_zh||p.name_en||('Round '+p.id)):(p.name_en||p.name_zh||('Round '+p.id));
-        const d=(typeof p.difficulty==='number')?p.difficulty: (typeof p.points==='number'?p.points:undefined);
+        const name=L==='zh'?(p.title||('Round '+p.id)):(p.title||('Round '+p.id));
+        const desc=L==='zh'?(p.short_desc_zh||''):(p.short_desc_en||'');
+        const d=(typeof p.difficulty==='number' || (typeof p.difficulty === 'string' && !isNaN(p.difficulty))) ? Number(p.difficulty) : undefined;
         const badge=d!=null?`<span style="font-weight:400;color:#9aa4ad;font-size:12px">D=${d}</span>`:'';
         const card=document.createElement('div'); card.className='card';
         card.innerHTML=`<h3>${p.id}. ${name} ${badge}</h3>
-          <p>${p.desc||''}</p>
+          <p>${desc}</p>
           <div class='row'>
             <a class='btn' href='./${p.id}.html'><i class='fas fa-book-open'></i> ${t('problem')}</a>
             <a class='btn' href='./rank/week.html?week=${p.id}'><i class='fas fa-medal'></i> ${t('rank')}</a>
