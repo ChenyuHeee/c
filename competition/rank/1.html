@@ -34,7 +34,7 @@
     </header>
 
     <div class="card">
-  <div class="muted" id="desc">数据来自 competition/data/week-1.json。按字节数升序；同字节按提交先后。积分：第一名得 D，其余得 round(D * 最小字节数/自身字节数)。</div>
+  <div class="muted" id="desc">数据来自 competition/data/prob-1.json。按字节数升序；同字节按提交先后。积分：第一名得 D，其余得 round(D * 最小字节数/自身字节数)。</div>
   <div class="muted" id="diffBadge" style="margin-top:4px"></div>
       <div class="muted" id="updated" style="margin-top:6px"></div>
       <table>
@@ -57,9 +57,9 @@
   <script>
     const i18n={
   zh:{ title:'C Code Golf · 第 1 期榜单', header:'C Code Golf · 第 1 期榜单', weekly:'C Code Golf', editor:'编辑器 Editor', refresh:'强制刷新',
-  desc:'数据来自 competition/data/week-1.json。按字节数升序；同字节按提交先后。积分：第一名得 D，其余得 round(D * 最小字节数/自身字节数)。', handle:'选手 Handle', bytes:'字节数 Bytes', time:'提交时间 Time', pts:'积分 Points', code:'代码 Code', loading:'加载中 Loading…', empty:'暂无提交 No submissions yet', updated:'更新于', difficulty:'难度 Difficulty' },
+  desc:'数据来自 competition/data/prob-1.json。按字节数升序；同字节按提交先后。积分：第一名得 D，其余得 round(D * 最小字节数/自身字节数)。', handle:'选手 Handle', bytes:'字节数 Bytes', time:'提交时间 Time', pts:'积分 Points', code:'代码 Code', loading:'加载中 Loading…', empty:'暂无提交 No submissions yet', updated:'更新于', difficulty:'难度 Difficulty' },
   en:{ title:'C Code Golf · Round 1 Board', header:'C Code Golf · Round 1 Board', weekly:'C Code Golf', editor:'Editor 编辑器', refresh:'Force Refresh',
-  desc:'Data from competition/data/week-1.json. Sorted by bytes ascending; ties by earlier time. Scoring: 1st gets D, others round(D * minBytes/bytes).', handle:'Handle 选手', bytes:'Bytes 字节数', time:'Time 提交时间', pts:'Points 积分', code:'Code 代码', loading:'Loading 加载中…', empty:'No submissions yet 暂无提交', updated:'Updated at', difficulty:'Difficulty 难度' }
+  desc:'Data from competition/data/prob-1.json. Sorted by bytes ascending; ties by earlier time. Scoring: 1st gets D, others round(D * minBytes/bytes).', handle:'Handle 选手', bytes:'Bytes 字节数', time:'Time 提交时间', pts:'Points 积分', code:'Code 代码', loading:'Loading 加载中…', empty:'No submissions yet 暂无提交', updated:'Updated at', difficulty:'Difficulty 难度' }
     };
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
     function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); }
@@ -114,8 +114,10 @@
     async function load(){
       const tbody=document.getElementById('tbody');
       try{
-        const res=await fetch('../data/week-1.json',{cache:'no-store'});
-        const data=await res.json();
+  const res=await fetch('../data/prob-1.json',{cache:'no-store'});
+  if(res.status===404){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; return; }
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const data=await res.json();
   const up=document.getElementById('updated');
         if(data.updatedAt && up){ up.textContent = `${t('updated')}: ${formatTime(data.updatedAt)}`; }
   const diff=document.getElementById('diffBadge');
@@ -130,7 +132,8 @@
         });
   if(!data.ranks||data.ranks.length===0){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; }
       }catch(e){
-        tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('loading')}</td></tr>`;
+        const msg=(e&&e.message)||String(e)||'';
+        tbody.innerHTML=`<tr><td colspan="6" class="muted">加载失败 Load failed: ${msg} <a href="javascript:location.reload()">重试 Retry</a></td></tr>`;
       }
     }
     load();
