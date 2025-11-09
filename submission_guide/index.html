@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>提交教程 · Submission Guide</title>
+  <meta name="theme-color" content="#0b0c0d" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root{ --bg:#0b0c0d; --panel:#0f1113; --muted:#9aa4ad; --text:#e6eef6; --accent:#48a0ff; --radius:12px; }
+    body{margin:0;background:var(--bg);color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial}
+    .wrap{max-width:960px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;gap:10px;justify-content:space-between}
+    header h1{color:#fff;font-size:20px;margin:0;display:flex;align-items:center;gap:8px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    a.btn,button.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.08);background:var(--panel);color:var(--text);cursor:pointer}
+    a.btn.primary,button.btn.primary{background:var(--accent);color:#071022;border:0}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:16px;margin-top:16px}
+    .content{line-height:1.75;font-size:15px}
+    .content h1,.content h2,.content h3{color:#fff;margin:1.2em 0 .6em}
+    .content p{margin:.6em 0}
+    .content code{background:#161a1e;padding:2px 6px;border-radius:6px;color:#d2e3f7}
+    .content pre{background:#161a1e;padding:12px;border-radius:10px;overflow:auto;font-size:13px}
+    .content img{max-width:100%;height:auto;border-radius:8px;border:1px solid rgba(255,255,255,0.08)}
+    .muted{color:#7e8b97}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1><i class="fas fa-book"></i> 提交教程 · Submission Guide</h1>
+      <div class="row">
+        <a class="btn" href="../competition/submit.html"><i class="fas fa-paper-plane"></i> 返回提交页</a>
+        <a class="btn" href="../competition/index.html"><i class="fas fa-flag-checkered"></i> 每周挑战</a>
+      </div>
+    </header>
+    <div class="card">
+      <div id="md" class="content">正在加载教程…</div>
+      <div id="err" class="muted" style="display:none;margin-top:8px"></div>
+    </div>
+  </div>
+  <script src="../scripts/version.js"></script>
+  <script>
+    (async function(){
+      const mdEl = document.getElementById('md');
+      const errEl = document.getElementById('err');
+      try{
+        const res = await fetch('./index.md', { cache:'no-store' });
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const text = await res.text();
+        // marked 解析为 HTML
+        mdEl.innerHTML = marked.parse(text);
+      }catch(e){
+        errEl.style.display='block';
+        errEl.textContent = '无法加载教程 Markdown：'+(e && e.message || e);
+        mdEl.innerHTML = '<p>你可以改为直接查看原始 Markdown 文件：<a href="./index.md" target="_blank" rel="noreferrer">index.md</a></p>';
+      }
+    })();
+  </script>
+  </body>
+  </html>
