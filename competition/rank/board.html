@@ -64,7 +64,13 @@
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
     function t(k){ const L=getLang(); return (i18n[L]&&i18n[L][k])||i18n.zh[k]||k; }
     function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); load(); }
-    function paramId(){ const u=new URL(location.href); const p=u.searchParams.get('id')||u.searchParams.get('problem')||u.searchParams.get('week'); const n=parseInt(p,10); return Number.isFinite(n)&&n>=0?n:1; }
+    function paramId(){
+      const u=new URL(location.href);
+      const p=u.searchParams.get('id')||u.searchParams.get('problem')||u.searchParams.get('week');
+      if(p===null||p===''){ return 1; }
+      const n=parseInt(p,10);
+      return Number.isFinite(n)&&n>=0?n:1;
+    }
     function applyLang(){ const id=paramId(); document.getElementById('title').textContent=t('title'); document.getElementById('h1').innerHTML='<i class="fas fa-medal"></i> '+t('header').replace(/<n>/g,id); document.getElementById('desc').innerHTML=t('desc').replace(/<n>/g,id); document.getElementById('th_handle').textContent=t('handle'); document.getElementById('th_bytes').textContent=t('bytes'); document.getElementById('th_time').textContent=t('time'); document.getElementById('th_pts').textContent=t('pts'); document.getElementById('th_code').textContent=t('code'); document.getElementById('pid').textContent=id; document.getElementById('langBtn').innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中'); const rbtn=document.getElementById('refreshBtn'); if(rbtn) rbtn.innerHTML='<i class="fas fa-arrows-rotate"></i> '+t('refresh'); }
     document.getElementById('langBtn').addEventListener('click',()=>setLang(getLang()==='zh'?'en':'zh'));
     document.getElementById('refreshBtn').addEventListener('click', async ()=>{ try{ if('caches' in window){ const keys=await caches.keys(); await Promise.all(keys.map(k=>caches.delete(k).catch(()=>{}))); } if('serviceWorker' in navigator){ const regs=await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r=>r.unregister().catch(()=>{}))); } }catch(e){} const u=new URL(location.href); u.searchParams.set('fresh',Date.now().toString()); location.replace(u.toString()); });
@@ -72,10 +78,30 @@
 
     function formatTime(iso){ try{ const d=new Date(iso); if(!isNaN(d)) return d.toLocaleString(); }catch(e){} return iso||'-'; }
 
+    function dataUrl(id){
+      // Build absolute path that works on GitHub Pages under subpath (e.g., /c/)
+      const p = location.pathname; // /c/competition/rank/board.html
+      const root = p.includes('/competition/') ? p.slice(0, p.indexOf('/competition/')) : '';
+      return `${root}/competition/data/prob-${id}.json?fresh=${Date.now()}`;
+    }
+    function rawUrl(id){
+      // Fallback to raw.githubusercontent.com if page branch lacks JSON
+      const owner = (location.hostname.split('.')[0]||'').toLowerCase();
+      const pathSegs = location.pathname.split('/').filter(Boolean); // ["c","competition","rank","board.html"]
+      const repo = pathSegs.length>0 ? pathSegs[0] : 'c';
+      return `https://raw.githubusercontent.com/${owner}/${repo}/main/competition/data/prob-${id}.json?fresh=${Date.now()}`;
+    }
     async function load(){
       const id=paramId(); const tbody=document.getElementById('tbody');
       try{
-        const res=await fetch(`../data/prob-${id}.json?fresh=${Date.now()}`,{cache:'no-store'});
+        const url = dataUrl(id);
+        let res = await fetch(url,{cache:'no-store'});
+        if(res.status===404 || res.status===403){
+          // Try raw fallback
+          const rurl = rawUrl(id);
+          console.warn('[board] local JSON missing, fallback to raw:', rurl);
+          res = await fetch(rurl,{cache:'no-store'});
+        }
         if(res.status===404){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; return; }
         if(!res.ok) throw new Error('HTTP '+res.status);
         const data=await res.json();
@@ -90,7 +116,7 @@
           tbody.appendChild(tr);
         });
         if(!data.ranks||data.ranks.length===0){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; }
-      }catch(e){ const msg=(e&&e.message)||String(e)||''; tbody.innerHTML=`<tr><td colspan="6" class="muted">加载失败 Load failed: ${msg} <a href=\"javascript:location.reload()\">重试 Retry</a></td></tr>`; }
+      }catch(e){ console.error('[board] load failed', e); const msg=(e&&e.message)||String(e)||''; tbody.innerHTML=`<tr><td colspan="6" class="muted">加载失败 Load failed: ${msg} <a href=\"javascript:location.reload()\">重试 Retry</a></td></tr>`; }
     }
     load();
   </script>

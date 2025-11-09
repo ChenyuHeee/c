@@ -113,15 +113,19 @@
 
     async function load(){
       const tbody=document.getElementById('tbody');
+      function dataUrl(){
+        const p=location.pathname; const root=p.includes('/competition/')? p.slice(0,p.indexOf('/competition/')):'';
+        return `${root}/competition/data/prob-1.json?fresh=${Date.now()}`;
+      }
       try{
-  const res=await fetch('../data/prob-1.json?fresh='+Date.now(),{cache:'no-store'});
-  if(res.status===404){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; return; }
-  if(!res.ok) throw new Error('HTTP '+res.status);
-  const data=await res.json();
-  const up=document.getElementById('updated');
+        const res=await fetch(dataUrl(),{cache:'no-store'});
+        if(res.status===404){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; return; }
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const data=await res.json();
+        const up=document.getElementById('updated');
         if(data.updatedAt && up){ up.textContent = `${t('updated')}: ${formatTime(data.updatedAt)}`; }
-  const diff=document.getElementById('diffBadge');
-  if(diff){ const dVal = data.difficulty; if(typeof dVal==='number'){ diff.textContent = `${t('difficulty')}: D = ${dVal}`; } }
+        const diff=document.getElementById('diffBadge');
+        if(diff){ const dVal = data.difficulty; if(typeof dVal==='number'){ diff.textContent = `${t('difficulty')}: D = ${dVal}`; } }
         tbody.innerHTML='';
         data.ranks.forEach((row,idx)=>{
           const tr=document.createElement('tr');
@@ -130,9 +134,10 @@
           tr.innerHTML=`<td>${idx+1}</td><td>${row.handle}</td><td>${row.bytes}</td><td>${formatTime(row.commitTime)}</td><td>${row.points??'-'}</td><td>${codeCell}</td>`;
           tbody.appendChild(tr);
         });
-  if(!data.ranks||data.ranks.length===0){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; }
+        if(!data.ranks||data.ranks.length===0){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; }
       }catch(e){
         const msg=(e&&e.message)||String(e)||'';
+        console.error('[rank 1] load failed', e);
         tbody.innerHTML=`<tr><td colspan="6" class="muted">加载失败 Load failed: ${msg} <a href="javascript:location.reload()">重试 Retry</a></td></tr>`;
       }
     }
