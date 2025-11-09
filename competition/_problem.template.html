@@ -87,8 +87,6 @@
   </div>
   <script src="../scripts/version.js"></script>
   <script src="../scripts/contest_submit.js"></script>
-  <!-- tiny markdown renderer (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     function currentId(){
       const m = location.pathname.match(/(\d+)\.html$/); return m? parseInt(m[1],10): 1;
@@ -102,45 +100,10 @@
       document.getElementById('title').textContent = `${name} · Round ${id}`;
       document.getElementById('problemTitle').textContent = `${id}. ${name}`;
       if(typeof meta?.difficulty==='number'){ document.getElementById('diffTag').textContent = `D=${meta.difficulty}`; }
-      // 如果有 Markdown 源，我们会在 loadProblemMd() 中渲染并覆盖 problemDesc 区域。
       document.getElementById('problemDesc').textContent = meta?.desc || document.getElementById('problemDesc').textContent;
       const rb=document.getElementById('rankBtn'); const rrb=document.getElementById('roundRankBtn');
       if(rb) rb.href = `./rank/week.html?week=${id}`;
       if(rrb) rrb.href = `./rank/week.html?week=${id}`;
-    }
-
-    // 尝试从多种位置加载 problem.md：
-    // 1. 本 repo 下的 ./problems/<id>/problem.md
-    // 2. 在 problems.json 的 meta 中指定 md_url 或 external_base（外部 GitHub Pages 地址）
-    // 3. fallback: 使用 meta.desc 简短描述（已设置）
-    async function loadProblemMd(id, meta){
-      const el = document.getElementById('problemDesc');
-      // helper to try fetch and return text or null
-      async function tryFetch(url){
-        try{
-          const r = await fetch(url, {cache:'no-store'});
-          if(r.ok) return await r.text();
-        }catch(e){}
-        return null;
-      }
-      // 1) try local path
-      const localPath = `./problems/${id}/problem.md`;
-      let md = await tryFetch(localPath);
-      // 2) try meta.md_url if provided
-      if(!md && meta && meta.md_url) md = await tryFetch(meta.md_url+'?fresh='+(Date.now()));
-      // 3) try meta.external_base if provided
-      if(!md && meta && meta.external_base){
-        md = await tryFetch(meta.external_base.replace(/\/$/, '') + `/problem.md`);
-      }
-      // 4) fallback: nothing – keep description
-      if(md){
-        // render markdown into container (marked)
-        try{
-          const html = marked.parse(md);
-          // replace problemDesc content with rendered HTML
-          el.innerHTML = html;
-        }catch(e){ el.textContent = md; }
-      }
     }
 
     // —— 评测逻辑模板（请按题目改写） ——
@@ -153,38 +116,27 @@
       const out=(j.program_output||j.program_stdout||j.program||j.result||'')||'';
       return out.replace(/\n+$/,'');
     }
-    async function loadTestsFor(id, meta){
-      // try multiple locations for tests: local competition/data/tests/week-<id>.json,
-      // ./problems/<id>/tests.json, or meta.tests_url
-      async function tryFetchJson(url){ try{ const r=await fetch(url,{cache:'no-store'}); if(r.ok) return await r.json(); }catch(e){} return null; }
-      let tests = await tryFetchJson(`./data/tests/week-${id}.json`);
-      if(!tests) tests = await tryFetchJson(`./problems/${id}/tests.json`);
-      if(!tests && meta && meta.tests_url) tests = await tryFetchJson(meta.tests_url+'?fresh='+(Date.now()));
-      return Array.isArray(tests) ? tests : null;
-    }
-
     async function judgeTemplate(id, source){
-      // Load tests from known locations; if none found, return false to force author to provide tests
-      const meta = await loadMeta(id);
-      const tests = await loadTestsFor(id, meta);
-      if(!tests || tests.length===0) return false; // require tests to be present
-      for(const tc of tests){
-        const stdin = tc.stdin || tc.input || '';
-        const expected = (tc.expected || tc.expect || tc.output || tc.stdout || '').replace(/\n+$/,'');
-        try{
-          const out = await tryWandbox(source, stdin);
-          if(out !== expected) return false;
-        }catch(e){ return false; }
-      }
-      return true;
+      // TODO: 请为本题实现评测。建议在 competition/data/tests/week-<id>.json 中放置用例数组：{stdin, expected}
+      // 下面示例：若无 tests 文件，则直接判 AC（仅示例，务必替换！）
+      try{
+        const r=await fetch(`./data/tests/week-${id}.json`,{cache:'no-store'});
+        if(r.ok){ const tests=await r.json();
+          for(const tc of (tests||[])){
+            const out = await tryWandbox(source, tc.stdin||'');
+            const exp = (tc.expect||tc.expected||'').replace(/\n+$/,'');
+            if(out!==exp) return false;
+          }
+          return true;
+        }
+      }catch(e){}
+      // Fallback: 默认不通过，提醒实现评测
+      return false;
     }
 
     (function(){
       const id=currentId();
-      loadMeta(id).then(meta=>{
-        setText(id, meta);
-        loadProblemMd(id, meta);
-      });
+      loadMeta(id).then(meta=>setText(id, meta));
       const handleInput=document.getElementById('handleInput');
       const saveHandleBtn=document.getElementById('saveHandleBtn');
       const codeInput=document.getElementById('codeInput');

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>题目出题与同步规范 · Problem Authoring Guide</title>
+  <meta name="theme-color" content="#0b0c0d" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{ --bg:#0b0c0d; --panel:#0f1113; --muted:#9aa4ad; --text:#e6eef6; --accent:#48a0ff; --radius:12px; }
+    body{margin:0;background:var(--bg);color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;line-height:1.6}
+    .wrap{max-width:1000px;margin:0 auto;padding:24px}
+    h1,h2,h3,h4{color:#fff;font-weight:600;line-height:1.3}
+    a{color:var(--accent);text-decoration:none}
+    pre{background:#161a1e;padding:14px;border-radius:10px;overflow:auto;font-size:13px}
+    code{font-family:Menlo,monospace}
+    table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
+    th,td{border:1px solid #222;padding:6px 10px;text-align:left}
+    th{background:#161a1e;color:#fff}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:20px;margin-bottom:20px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.1);color:var(--text);background:#14181c;font-size:13px}
+    .btn.primary{background:var(--accent);color:#071022;border:0}
+    .muted{color:var(--muted)}
+    .toc{background:#161a1e;padding:14px;border-radius:10px;font-size:13px}
+    .toc a{display:block;padding:4px 0}
+    .notice{background:#161a1e;padding:10px 14px;border-radius:8px;font-size:13px}
+    @media (max-width:720px){ .topbar{flex-direction:column;align-items:flex-start;gap:12px} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1><i class="fas fa-feather"></i> 题目出题与同步规范 <span style="font-weight:400;color:#9aa4ad;font-size:14px">Problem Authoring Guide</span></h1>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn" href="../competition/index.html"><i class="fas fa-flag-checkered"></i> 返回赛事</a>
+        <a class="btn" href="../index.html"><i class="fas fa-code"></i> 在线编辑器</a>
+        <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
+      </div>
+    </div>
+
+    <div class="card toc" id="toc"><strong>目录 Table of Contents</strong></div>
+
+    <div class="card" id="content">
+      <!-- Rendered Markdown below (curated HTML snapshot) -->
+      <h2 id="intro">题目出题与同步规范 (Problem Authoring & Sync Guide)</h2>
+      <p>本文件说明如何在题目源仓库 <code>ChenyuHeee/ccodegolf</code> 中编写题目与测试，并通过同步脚本整合到当前展示/排行仓库。</p>
+      <h2 id="flow">总体流程</h2>
+      <ol>
+        <li>在源仓库创建题号目录：<code>&lt;id&gt;/</code>，例如 <code>0/</code>、<code>1/</code>、<code>2/</code>。</li>
+        <li>在该目录下编写 <code>problem.md</code>，使用 YAML Frontmatter 描述元数据与可选测试。</li>
+        <li>（可选）如果测试较多，可放到单独的 <code>tests.json</code> 文件中；或使用 <code>tests_file</code> 字段指向它。</li>
+        <li>同步工作流（手动或定时）在展示仓库运行，抓取并生成：
+          <ul>
+            <li><code>competition/problems.json</code>（题目元数据汇总）</li>
+            <li><code>competition/data/tests/week-&lt;id&gt;.json</code>（测试用例）</li>
+            <li><code>competition/problems/&lt;id&gt;.md</code>（原始题面备份）</li>
+          </ul>
+        </li>
+        <li>前端读取 <code>competition/problems.json</code> 动态渲染题目列表与难度。</li>
+      </ol>
+      <h2 id="format">problem.md 格式示例</h2>
+      <p>使用三条横线 <code>---</code> 包裹 YAML Frontmatter：</p>
+      <pre><code>---
+number: 2
+slug: print-diamond-fast
+title: 打印菱形（优化版）
+short: 打印指定大小的菱形图案
+name_zh: 打印菱形（优化版）
+name_en: Print Diamond (Optimized)
+difficulty: 150
+desc_zh: |
+  给定一个正奇数 n，打印由星号组成的对称菱形图案。
+  要求：
+  1. 无额外尾随空格
+  2. 末尾换行
+desc_en: |
+  Given a positive odd integer n, print a symmetric diamond of asterisks.
+  Requirements:
+  1. No trailing spaces per line
+  2. Final newline at end
+# tests_file: tests.json
+tests_file: tests.json
+updatedAt: 2025-11-09T00:00:00.000Z
+---
+
+# 题面正文（Markdown）
+这里可以继续写更详细的题解、约束、提示、样例、FAQ 等。</code></pre>
+      <h3 id="fields">字段说明</h3>
+      <table>
+        <thead><tr><th>字段</th><th>必需</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>number</td><td>是</td><td>题号（整数）作为 id。</td></tr>
+          <tr><td>slug</td><td>否</td><td>短标识。</td></tr>
+          <tr><td>title / name_zh / name_en</td><td>至少一个</td><td>题目标题（多语言）。</td></tr>
+          <tr><td>short</td><td>否</td><td>一句话简介。</td></tr>
+          <tr><td>difficulty</td><td>是</td><td>难度积分 D。</td></tr>
+          <tr><td>desc_zh / desc_en</td><td>推荐</td><td>长描述（中英文）。</td></tr>
+          <tr><td>desc / description</td><td>兼容</td><td>只有通用描述时使用。</td></tr>
+          <tr><td>tests</td><td>可选</td><td>少量测试可直接写入 frontmatter。</td></tr>
+          <tr><td>tests_file</td><td>可选</td><td>外部测试文件 <code>tests.json</code>。</td></tr>
+          <tr><td>updatedAt</td><td>否</td><td>ISO 时间戳，未提供自动补。</td></tr>
+        </tbody>
+      </table>
+      <h2 id="tests">tests.json 格式</h2>
+      <pre><code>[
+  { "stdin": "5\n", "expected": "  *\n ***\n*****\n ***\n  *\n" },
+  { "stdin": "7\n", "expected": "   *\n  ***\n *****\n*******\n *****\n  ***\n   *\n" }
+]</code></pre>
+      <ul>
+        <li><code>stdin</code>：程序标准输入（含换行）。</li>
+        <li><code>expected</code>：期望标准输出完整文本。</li>
+      </ul>
+      <h2 id="sync">同步脚本行为</h2>
+      <ol>
+        <li>读取 <code>index.json</code> 或扫描 0..MAX_ID。</li>
+        <li>拉取 <code>&lt;id&gt;/problem.md</code>。</li>
+        <li>解析 frontmatter 得到元数据。</li>
+        <li>加载测试（<code>tests_file</code> 或 <code>tests.json</code>）。</li>
+        <li>写入 <code>competition/problems.json</code> 与 <code>competition/data/tests/week-&lt;id&gt;.json</code>。</li>
+        <li>备份原始题面 <code>competition/problems/&lt;id&gt;.md</code>。</li>
+      </ol>
+      <h2 id="usage">展示端使用约定</h2>
+      <ul>
+        <li>入口页用 <code>competition/problems.json</code> 渲染卡片。</li>
+        <li>题面模板根据 id 与语言选取 <code>name_zh/name_en</code>、<code>desc_zh/desc_en</code>。</li>
+        <li>评测读取 <code>competition/data/tests/week-&lt;id&gt;.json</code> 对拍。</li>
+      </ul>
+      <h2 id="difficulty">积分与难度映射</h2>
+      <pre><code>const ROUND_DIFFICULTY = Object.freeze({
+  1: 120,
+  2: 150,
+});</code></pre>
+      <h2 id="notes">出题者注意事项</h2>
+      <ul>
+        <li>frontmatter 用简单 YAML，复杂结构请放 <code>tests.json</code>。</li>
+        <li>测试要覆盖典型与边界。</li>
+        <li>复杂 Markdown / 数学后续可扩展为动态渲染。</li>
+      </ul>
+      <h2 id="faq">常见问题 FAQ</h2>
+      <p><strong>没有 index.json 会怎样？</strong> 扫描 0..MAX_ID，遇连续空缺提前终止。</p>
+      <p><strong>新增题后多久生效？</strong> 等待同步工作流（或手动触发）+ PR 合并。</p>
+      <p><strong>如何修改测试？</strong> 更新源 repo 对应 <code>tests.json</code> 或 frontmatter 引用。</p>
+      <p><strong>多语言长描述？</strong> 使用 <code>desc_zh</code>/<code>desc_en</code>。</p>
+      <p><strong>多文件输入？</strong> 暂不支持，建议题目简化或后续扩展评测。</p>
+      <h2 id="future">后续扩展建议</h2>
+      <ul>
+        <li>index.json 列表减少扫描。</li>
+        <li>引入完整版 YAML 解析。</li>
+        <li>Markdown 正文安全渲染。</li>
+        <li>后端沙箱评测与速率控制。</li>
+        <li>测试分级：快速 vs 深度。</li>
+      </ul>
+      <h2 id="checklist">新增题检查清单</h2>
+      <ol>
+        <li>创建目录与 <code>problem.md</code></li>
+        <li>(可选) 添加 <code>tests.json</code></li>
+        <li>Push 源仓库</li>
+        <li>触发同步 workflow</li>
+        <li>审阅自动 PR</li>
+        <li>更新 <code>ROUND_DIFFICULTY</code></li>
+        <li>验证题面与榜单</li>
+      </ol>
+      <div class="notice">如需更多字段（作者、标签、发布时间等），可扩展 frontmatter 并调整同步脚本。</div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      const toc = document.getElementById('toc');
+      const headings = Array.from(document.querySelectorAll('#content h2, #content h3'));
+      headings.forEach(h=>{ const a=document.createElement('a'); a.href='#'+h.id; a.textContent=h.textContent; toc.appendChild(a); });
+    })();
+    const langBtn=document.getElementById('langBtn'); let lang='zh';
+    langBtn.addEventListener('click',()=>{ lang = (lang==='zh'?'en':'zh'); langBtn.innerHTML='<i class="fas fa-globe"></i> '+(lang==='zh'?'EN':'中'); document.title = lang==='zh'? '题目出题与同步规范 · Problem Authoring Guide':'Problem Authoring Guide · 题目出题与同步规范'; });
+  </script>
+</body>
+</html>

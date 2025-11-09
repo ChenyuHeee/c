@@ -30,6 +30,7 @@
       <div class="row">
         <a class="btn" href="../index.html"><i class="fas fa-code"></i> 编辑器 Editor</a>
   <a class="btn" href="./rank/index.html"><i class="fas fa-ranking-star"></i> 天梯榜 Ladder</a>
+        <a class="btn" href="../submission_guide/problem-authoring.html" target="_blank" rel="noreferrer"><i class="fas fa-feather"></i> 投稿 Author</a>
         <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
       </div>
     </header>
@@ -70,7 +71,8 @@
       const rows=document.querySelectorAll('a.btn');
       // 前两个固定按钮
       if(rows[0]) rows[0].innerHTML='<i class="fas fa-code"></i> '+t('editor');
-      if(rows[1]) rows[1].innerHTML='<i class="fas fa-ranking-star"></i> '+t('total');
+  if(rows[1]) rows[1].innerHTML='<i class="fas fa-ranking-star"></i> '+t('total');
+  // 第三个按钮是投稿指南，保持双语并行显示
       document.getElementById('introTitle').textContent=t('introTitle');
       document.getElementById('introDesc').textContent=t('introDesc');
       const langBtn=document.getElementById('langBtn'); langBtn.innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中');
