@@ -16,12 +16,22 @@
     a.btn,button.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.08);background:var(--panel);color:var(--text);cursor:pointer}
     a.btn.primary,button.btn.primary{background:var(--accent);color:#071022;border:0}
     .card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:16px;margin-top:16px}
+    .layout{display:grid;grid-template-columns:1fr 260px;gap:16px}
+    @media (max-width: 900px){ .layout{grid-template-columns:1fr} .toc{display:none} }
     .content{line-height:1.75;font-size:15px}
     .content h1,.content h2,.content h3{color:#fff;margin:1.2em 0 .6em}
     .content p{margin:.6em 0}
     .content code{background:#161a1e;padding:2px 6px;border-radius:6px;color:#d2e3f7}
     .content pre{background:#161a1e;padding:12px;border-radius:10px;overflow:auto;font-size:13px}
     .content img{max-width:100%;height:auto;border-radius:8px;border:1px solid rgba(255,255,255,0.08)}
+    .step{padding-top:2px;scroll-margin-top:20px}
+    .toc{position:sticky;top:16px;align-self:start;border:1px solid rgba(255,255,255,0.08);border-radius:10px;background:#0f1113}
+    .toc h3{margin:10px 12px;color:#fff;font-size:14px}
+    .toc ul{list-style:none;margin:0;padding:0 8px 10px}
+    .toc li{margin:4px 4px}
+    .toc a{display:block;padding:6px 8px;border-radius:8px;color:#cfe0f0;text-decoration:none;font-size:13px}
+    .toc a:hover{background:#15202b;color:#fff}
+    .toc a.active{background:var(--accent);color:#071022}
     .muted{color:#7e8b97}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -32,12 +42,20 @@
       <h1><i class="fas fa-book"></i> 提交教程 · Submission Guide</h1>
       <div class="row">
         <a class="btn" href="../competition/submit.html"><i class="fas fa-paper-plane"></i> 返回提交页</a>
-        <a class="btn" href="../competition/index.html"><i class="fas fa-flag-checkered"></i> 每周挑战</a>
+  <a class="btn" href="../competition/index.html"><i class="fas fa-flag-checkered"></i> C Code Golf</a>
       </div>
     </header>
     <div class="card">
-      <div id="md" class="content">正在加载教程…</div>
-      <div id="err" class="muted" style="display:none;margin-top:8px"></div>
+      <div class="layout">
+        <div>
+          <div id="md" class="content">正在加载教程…</div>
+          <div id="err" class="muted" style="display:none;margin-top:8px"></div>
+        </div>
+        <aside id="toc" class="toc">
+          <h3><i class="fas fa-list-ol"></i> 步骤目录</h3>
+          <ul id="tocList"></ul>
+        </aside>
+      </div>
     </div>
   </div>
   <script src="../scripts/version.js"></script>
@@ -45,12 +63,90 @@
     (async function(){
       const mdEl = document.getElementById('md');
       const errEl = document.getElementById('err');
+      const tocList = document.getElementById('tocList');
+      const tocEl = document.getElementById('toc');
+      function normalizeStepTitle(text){
+        const t = text.replace(/\s+/g,' ').trim();
+        // 截断到第一个分隔符（：:）后的描述短语
+        const m = t.match(/^(第[^步]*步)[:：]?\s*(.*)$/);
+        if(m){ return { head:m[1], tail:m[2]||'' }; }
+        return { head:t, tail:'' };
+      }
+      function isStepHeaderEl(el){
+        if(!el || el.tagName !== 'P') return false;
+        const txt = (el.textContent||'').trim();
+        return /^第([一二三四五六七八九十百千\d]+)步/.test(txt);
+      }
+      function buildSections(){
+        const nodes = Array.from(mdEl.childNodes);
+        const sections=[];
+        for(let i=0;i<nodes.length;i++){
+          const n = nodes[i];
+          if(n.nodeType===1 && isStepHeaderEl(n)){
+            const sec = document.createElement('section');
+            sec.className='step';
+            // 用当前索引作为序号（从1开始）
+            sec.id = 'step-'+(sections.length+1);
+            mdEl.insertBefore(sec, n);
+            sec.appendChild(n); // 移入标题段落
+            // 将随后连续的相关段落（如图）也移入，直到遇到下一个步骤标题
+            while(nodes[i+1] && nodes[i+1].nodeType===1 && !isStepHeaderEl(nodes[i+1])){
+              sec.appendChild(nodes[i+1]);
+              nodes.splice(i+1,1);
+            }
+            sections.push(sec);
+          }
+        }
+        return sections;
+      }
+      function buildTOC(sections){
+        tocList.innerHTML='';
+        sections.forEach((sec,idx)=>{
+          const p = sec.querySelector('p');
+          const t = normalizeStepTitle(p? p.textContent:'' );
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = '#'+sec.id;
+          a.textContent = t.head + (t.tail? (' · '+t.tail):'');
+          a.addEventListener('click', (e)=>{
+            e.preventDefault();
+            document.getElementById(sec.id)?.scrollIntoView({behavior:'smooth', block:'start'});
+            // 激活状态立即更新
+            document.querySelectorAll('#toc a').forEach(x=>x.classList.remove('active'));
+            a.classList.add('active');
+          });
+          li.appendChild(a); tocList.appendChild(li);
+        });
+        if(!sections.length){ tocEl.style.display='none'; }
+      }
+      function setupSpy(sections){
+        if(!('IntersectionObserver' in window)) return;
+        const map = new Map();
+        sections.forEach((sec)=>{
+          const link = document.querySelector('#toc a[href="#'+sec.id+'"]');
+          if(link) map.set(sec.id, link);
+        });
+        const obs = new IntersectionObserver((entries)=>{
+          entries.forEach(entry=>{
+            const link = map.get(entry.target.id);
+            if(!link) return;
+            if(entry.isIntersecting){
+              document.querySelectorAll('#toc a').forEach(x=>x.classList.remove('active'));
+              link.classList.add('active');
+            }
+          });
+        }, { rootMargin:'-30% 0px -60% 0px', threshold:[0, 0.25, 0.6, 1] });
+        sections.forEach(sec=>obs.observe(sec));
+      }
       try{
         const res = await fetch('./index.md', { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP '+res.status);
         const text = await res.text();
-        // marked 解析为 HTML
         mdEl.innerHTML = marked.parse(text);
+        // 构建步骤分节与目录
+        const sections = buildSections();
+        buildTOC(sections);
+        setupSpy(sections);
       }catch(e){
         errEl.style.display='block';
         errEl.textContent = '无法加载教程 Markdown：'+(e && e.message || e);

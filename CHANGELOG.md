@@ -22,6 +22,40 @@
 	### Changed
 	- 提升版本为 `v1.3.13` 以刷新缓存。
 
+	# [1.3.14] - 2025-11-09
+	### Added
+	- 教程页新增“步骤目录导航”侧边栏：
+		- 自动识别 Markdown 中以“第…步”开头的段落，按步分节生成锚点。
+		- 右侧目录支持平滑滚动与滚动高亮（Scroll Spy）。
+		- 小屏设备下自动隐藏侧栏以保证阅读空间。
+
+	### Changed
+	- 版本号提升为 `v1.3.14` 以刷新缓存。
+
+	# [1.3.15] - 2025-11-09
+	### Changed
+	- 赛事全站品牌从“每周挑战 Weekly”统一更新为 “C Code Golf”（包含入口页、教程、榜单、关于、测试文案等）。
+	- 术语初步从 “Week” 过渡为 “Round”。
+	- 提升版本号至 `v1.3.15` 触发缓存刷新。
+
+	# [1.3.16] - 2025-11-09
+	### Added
+	- 动态积分系统（天梯榜 Ladder）：为每轮配置难度积分 D；第一名获得满分 D，其余选手积分= round(D × 最小字节数 / 自身字节数)。积分随历史与当前提交变化实时重新计算，无需存储在密文中。
+	- 排行脚本输出扩展：`competition/data/week-<n>.json` 新增 `difficulty`（D）、`minBytes`（本轮最小字节数），`ranks[].points`（本轮所得积分）；`competition/data/total.json` 的聚合字段新增 `points`（总积分）与 `rounds`（参与轮数），按积分降序、轮数降序、最佳字节升序排序。
+
+	### Changed
+	- 全站“总榜/Overall”统一替换为“天梯榜 Ladder”；所有“Week”界面呈现为“Round”，提交页保留 `submissions/week-<n>/` 目录前缀（兼容历史），并在指引中说明 week- 仅作为路径前缀。
+	- `competition/rank/index.html`：改造成天梯积分榜，新增“积分 Points”“参与轮数 Rounds”“最佳字节 Best Bytes”列与规则描述。
+	- `competition/rank/week.html` 与具体轮次页 `competition/rank/1.html`：增加“积分 Points”列与本轮积分公式说明。
+	- `competition/1.html`：规则段落补充天梯积分公式与动态更新说明。
+	- `competition/submit.html`：标题与指引中强调 Round 概念，说明 week- 目录前缀的兼容性与合并后会重新计算积分。
+	- `about.html` 赛事介绍条目更新为“每轮榜单/天梯榜”并说明积分公式。
+	- 版本号提升为 `v1.3.16` 以刷新缓存。
+
+	### Notes
+	- 积分实时计算：无需迁移历史数据；只要原始提交（加密代码与元数据）在仓库中，脚本即可重新生成 ladder 排序结果。
+	- 若后续需调整难度，只需在 `scripts/compute_ranks.mjs` 中修改 `ROUND_DIFFICULTY` 映射并重跑脚本。
+
 ### Added
 - 新增 `competition/view.html`：可视化解密页面，支持 v3 密文 JSON 解码展示原始源码与基本元数据（handle, challenge, bytes, ts）。
 

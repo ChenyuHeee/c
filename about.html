@@ -121,10 +121,10 @@
     </div>
 
     <div id="contest" class="section">
-      <h2 id="contestTitle"><i class="fas fa-flag-checkered"></i> 每周挑战赛事</h2>
+  <h2 id="contestTitle"><i class="fas fa-flag-checkered"></i> C Code Golf 赛事</h2>
       <ul class="list">
-        <li class="contestItem" data-i18n-key="contest1">提供每周挑战题与周榜/总榜页面，纯静态适配 GitHub Pages：<code>competition/index.html</code>、<code>competition/1.html</code>、<code>competition/rank/1.html</code>、<code>competition/rank/index.html</code>。</li>
-        <li class="contestItem" data-i18n-key="contest2">排名规则：按代码字节数升序；若相同，按提交时间先后；总榜按全局最佳与参与期数聚合。</li>
+  <li class="contestItem" data-i18n-key="contest1">提供每轮挑战题与每轮榜单/天梯榜页面，纯静态适配 GitHub Pages：<code>competition/index.html</code>、<code>competition/1.html</code>、<code>competition/rank/1.html</code>、<code>competition/rank/index.html</code>。</li>
+  <li class="contestItem" data-i18n-key="contest2">排名与积分：每轮按代码字节数升序；若相同按提交时间先后。天梯积分=round(D × 最小字节/自身字节)，第一名得满分 D，随提交动态变化。</li>
         <li class="contestItem" data-i18n-key="contest3">提交流程：在分享弹窗选择“参赛”，首次填写参赛信息后，打开提交页复制代码并在 GitHub 新建 <code>submissions/week-&lt;n&gt;/&lt;handle&gt;/solution.c</code> 发起 PR；CI 自动更新 JSON 榜单。</li>
       </ul>
       <div class="cta"><a class="btn primary" id="contestEntry" href="./competition/index.html"><i class="fas fa-flag-checkered"></i> 进入赛事</a></div>
@@ -190,7 +190,7 @@
         shortcutTitle:'键盘快捷键', sc1:'运行：Ctrl/Cmd + Enter', sc2:'自动缩进：Ctrl/Cmd + I', sc3:'另存为：Ctrl/Cmd + S', sc4:'切换行注释：Ctrl/Cmd + /', sc5:'命令面板：Ctrl/Cmd + Shift + P（Esc 关闭）',
   shareTitle:'分享与协作', share1:'支持一键分享：代码压缩进链接 (URL hash)，对方打开即还原。', share2:'分享增强：可选包含输入与测试用例，完整复现环境。', share3:'打开分享链接后自动恢复代码及输入/用例。',
   versionTitle:'版本信息', projectVersionLabel:'项目版本', projectVersionValue:'v1.3.7',
-  contestTitle:'每周挑战赛事', contest1:'提供每周挑战题与周榜/总榜页面，纯静态适配 GitHub Pages：competition/index.html、competition/1.html、competition/rank/1.html、competition/rank/index.html。', contest2:'排名规则：按代码字节数升序；若相同，按提交时间先后；总榜按全局最佳与参与期数聚合。', contest3:'提交流程：在分享弹窗选择“参赛”，首次填写参赛信息后，打开提交页复制代码并在 GitHub 新建 submissions/week-<n>/<handle>/solution.c 发起 PR；CI 自动更新 JSON 榜单。', contestEntry:'进入赛事',
+  contestTitle:'C Code Golf 赛事', contest1:'提供 C Code Golf 题目与每轮榜单/天梯榜页面，纯静态适配 GitHub Pages：competition/index.html、competition/1.html、competition/rank/1.html、competition/rank/index.html。', contest2:'排名与积分：每轮按字节数升序；同字节按提交先后。天梯积分=每轮难度 D × (最小字节/自身字节) 四舍五入，第一名得满分 D。总积分实时更新。', contest3:'提交流程：在分享弹窗选择“参赛”，首次填写参赛信息后，打开提交页复制代码并在 GitHub 新建 submissions/week-<n>/<handle>/solution.c 发起 PR；CI 自动更新 JSON 榜单。', contestEntry:'进入赛事',
   contest4:'系统会在提交前自动评测样例，若输出不匹配显示 WA 阻止上传；通过后对参赛元数据（handle, bytes, ts）做简单加密并生成提交页。',
   contest5:'非协作者请先 Fork 仓库，在 Fork 内按路径新建文件并发起 PR；若不便发 PR，可在提交页使用 “Issue 提交” 备用通道。',
   contest7:'提交安全：v3 起参赛通过 (AC) 后前端对昵称/字节数/时间与完整代码做不可见加密并仅提交密文；落地页不再展示明文，防随手篡改。后续可升级 AES-GCM+签名以增强完整性。',
@@ -212,7 +212,7 @@
         shortcutTitle:'Keyboard Shortcuts', sc1:'Run: Ctrl/Cmd + Enter', sc2:'Format: Ctrl/Cmd + I', sc3:'Save As: Ctrl/Cmd + S', sc4:'Toggle Line Comment: Ctrl/Cmd + /', sc5:'Command Palette: Ctrl/Cmd + Shift + P (Esc close)',
   shareTitle:'Sharing & Collaboration', share1:'One-click share: code compressed into URL hash.', share2:'Enhanced share: optionally include stdin & test cases.', share3:'Opening a share link restores code and inputs/cases.',
   versionTitle:'Versions', projectVersionLabel:'Project Version', projectVersionValue:'v1.3.7',
-  contestTitle:'Weekly Challenge', contest1:'Weekly problem and leaderboards, static and Pages-friendly: competition/index.html, competition/1.html, competition/rank/1.html, competition/rank/index.html.', contest2:'Ranking: bytes ascending; tie by earlier submission; overall aggregates best result and participation count.', contest3:'Submission: in Share modal choose "Contest"; on first time fill profile, then open submission page, paste code and create submissions/week-<n>/<handle>/solution.c on GitHub via PR; CI updates JSON.', contestEntry:'Open Competition',
+  contestTitle:'C Code Golf', contest1:'C Code Golf rounds with per-round boards and a ladder, static and Pages-friendly: competition/index.html, competition/1.html, competition/rank/1.html, competition/rank/index.html.', contest2:'Ranking & scoring: per-round sorted by bytes; ties by earlier time. Ladder points = round(D × minBytes/bytes), 1st gets full D. Totals update dynamically.', contest3:'Submission: in Share modal choose "Contest"; on first time fill profile, then open submission page, paste code and create submissions/week-<n>/<handle>/solution.c on GitHub via PR; CI updates JSON.', contestEntry:'Open Competition',
   contest4:'Before submission the system auto-judges sample tests; WA blocks upload. On AC it encrypts metadata (handle, bytes, ts) and opens the submit page.',
   contest5:'For non-collaborators: please Fork first, create the file in your fork and open a PR; if PR is inconvenient, use the “Issue submission” fallback on the submit page.',
   contest7:'Submission security: since v3 the client encrypts handle/bytes/timestamp and full code after AC, sending only ciphertext; submit page hides plaintext to reduce casual tampering. Future: upgrade to AES-GCM + signature for stronger integrity.',

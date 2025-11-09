@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title id="title">第 1 期排行榜 · Week 1 Leaderboard</title>
+  <title id="title">C Code Golf · 第 1 期榜单</title>
   <meta name="theme-color" content="#0b0c0d" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
@@ -24,9 +24,9 @@
 <body>
   <div class="wrap">
     <header>
-      <h1 id="h1"><i class="fas fa-medal"></i> 第 1 期排行榜 · Week 1 Leaderboard</h1>
+  <h1 id="h1"><i class="fas fa-medal"></i> C Code Golf · 第 1 期榜单</h1>
       <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
-        <a class="btn" href="../index.html"><i class="fas fa-flag-checkered"></i> 每周挑战 Weekly</a>
+  <a class="btn" href="../index.html"><i class="fas fa-flag-checkered"></i> C Code Golf</a>
         <a class="btn" href="../../index.html"><i class="fas fa-code"></i> 编辑器 Editor</a>
         <button id="refreshBtn" class="btn"><i class="fas fa-arrows-rotate"></i> 强制刷新</button>
         <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
@@ -34,7 +34,8 @@
     </header>
 
     <div class="card">
-      <div class="muted" id="desc">数据来自 competition/data/week-1.json。按字节数升序排序；相同字节数按提交时间先后。</div>
+  <div class="muted" id="desc">数据来自 competition/data/week-1.json。按字节数升序；同字节按提交先后。积分：第一名得 D，其余得 round(D * 最小字节数/自身字节数)。</div>
+  <div class="muted" id="diffBadge" style="margin-top:4px"></div>
       <div class="muted" id="updated" style="margin-top:6px"></div>
       <table>
         <thead>
@@ -43,6 +44,7 @@
             <th id="th_handle">选手 Handle</th>
             <th id="th_bytes">字节数 Bytes</th>
             <th id="th_time">提交时间 Time</th>
+            <th id="th_pts">积分 Points</th>
             <th id="th_code">代码 Code</th>
           </tr>
         </thead>
@@ -54,10 +56,10 @@
   </div>
   <script>
     const i18n={
-      zh:{ title:'第 1 期排行榜 · Week 1 Leaderboard', header:'第 1 期排行榜 · Week 1 Leaderboard', weekly:'每周挑战 Weekly', editor:'编辑器 Editor', refresh:'强制刷新',
-        desc:'数据来自 competition/data/week-1.json。按字节数升序排序；相同字节数按提交时间先后。', handle:'选手 Handle', bytes:'字节数 Bytes', time:'提交时间 Time', code:'代码 Code', loading:'加载中 Loading…', updated:'更新于' },
-      en:{ title:'Week 1 Leaderboard · 第 1 期排行榜', header:'Week 1 Leaderboard · 第 1 期排行榜', weekly:'Weekly 每周挑战', editor:'Editor 编辑器', refresh:'Force Refresh',
-        desc:'Data from competition/data/week-1.json. Sorted by bytes ascending; ties by earlier submission time.', handle:'Handle 选手', bytes:'Bytes 字节数', time:'Time 提交时间', code:'Code 代码', loading:'Loading 加载中…', updated:'Updated at' }
+  zh:{ title:'C Code Golf · 第 1 期榜单', header:'C Code Golf · 第 1 期榜单', weekly:'C Code Golf', editor:'编辑器 Editor', refresh:'强制刷新',
+  desc:'数据来自 competition/data/week-1.json。按字节数升序；同字节按提交先后。积分：第一名得 D，其余得 round(D * 最小字节数/自身字节数)。', handle:'选手 Handle', bytes:'字节数 Bytes', time:'提交时间 Time', pts:'积分 Points', code:'代码 Code', loading:'加载中 Loading…', updated:'更新于', difficulty:'难度 Difficulty' },
+  en:{ title:'C Code Golf · Round 1 Board', header:'C Code Golf · Round 1 Board', weekly:'C Code Golf', editor:'Editor 编辑器', refresh:'Force Refresh',
+  desc:'Data from competition/data/week-1.json. Sorted by bytes ascending; ties by earlier time. Scoring: 1st gets D, others round(D * minBytes/bytes).', handle:'Handle 选手', bytes:'Bytes 字节数', time:'Time 提交时间', pts:'Points 积分', code:'Code 代码', loading:'Loading 加载中…', updated:'Updated at', difficulty:'Difficulty 难度' }
     };
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
     function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); }
@@ -72,9 +74,10 @@
   const rbtn=document.getElementById('refreshBtn');
   if(rbtn) rbtn.innerHTML='<i class="fas fa-arrows-rotate"></i> '+t('refresh');
       document.getElementById('th_handle').textContent=t('handle');
-      document.getElementById('th_bytes').textContent=t('bytes');
-      document.getElementById('th_time').textContent=t('time');
-  document.getElementById('th_code').textContent=t('code');
+    document.getElementById('th_bytes').textContent=t('bytes');
+    document.getElementById('th_time').textContent=t('time');
+    document.getElementById('th_pts').textContent=t('pts');
+    document.getElementById('th_code').textContent=t('code');
       document.getElementById('langBtn').innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中');
     }
     document.getElementById('langBtn').addEventListener('click',()=>setLang(getLang()==='zh'?'en':'zh'));
@@ -113,19 +116,21 @@
       try{
         const res=await fetch('../data/week-1.json',{cache:'no-store'});
         const data=await res.json();
-        const up=document.getElementById('updated');
+  const up=document.getElementById('updated');
         if(data.updatedAt && up){ up.textContent = `${t('updated')}: ${formatTime(data.updatedAt)}`; }
+  const diff=document.getElementById('diffBadge');
+  if(diff){ const dVal = data.difficulty; if(typeof dVal==='number'){ diff.textContent = `${t('difficulty')}: D = ${dVal}`; } }
         tbody.innerHTML='';
         data.ranks.forEach((row,idx)=>{
           const tr=document.createElement('tr');
           const codeHref = row.path ? `../view.html?path=${encodeURIComponent(row.path)}&repo=${encodeURIComponent(data.repo||'')}&branch=${encodeURIComponent(data.branch||'main')}` : '';
           const codeCell = codeHref ? `<a href="${codeHref}" target="_blank" rel="noreferrer">${t('code')}</a>` : '-';
-          tr.innerHTML=`<td>${idx+1}</td><td>${row.handle}</td><td>${row.bytes}</td><td>${formatTime(row.commitTime)}</td><td>${codeCell}</td>`;
+          tr.innerHTML=`<td>${idx+1}</td><td>${row.handle}</td><td>${row.bytes}</td><td>${formatTime(row.commitTime)}</td><td>${row.points??'-'}</td><td>${codeCell}</td>`;
           tbody.appendChild(tr);
         });
-        if(!data.ranks||data.ranks.length===0){ tbody.innerHTML=`<tr><td colspan="5" class="muted">${t('loading')}</td></tr>`; }
+        if(!data.ranks||data.ranks.length===0){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('loading')}</td></tr>`; }
       }catch(e){
-        tbody.innerHTML=`<tr><td colspan="5" class="muted">${t('loading')}</td></tr>`;
+        tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('loading')}</td></tr>`;
       }
     }
     load();

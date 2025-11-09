@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "slug": "print-pattern",
+    "name_zh": "打印指定图案",
+    "name_en": "Print Specified Pattern",
+    "difficulty": 120,
+    "points": 120,
+    "desc": "示例题：输出指定多行字符图案。",
+    "updatedAt": "2025-11-09T00:00:00.000Z"
+  }
+]

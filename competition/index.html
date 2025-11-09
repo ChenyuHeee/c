@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title id="title">每周挑战 · Weekly Challenge</title>
+  <title id="title">C Code Golf · 挑战轮次</title>
   <meta name="theme-color" content="#0b0c0d" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
@@ -26,26 +26,26 @@
 <body>
   <div class="wrap">
     <header>
-      <h1 id="h1"><i class="fas fa-flag-checkered"></i> 每周挑战 Weekly Challenge</h1>
+  <h1 id="h1"><i class="fas fa-flag-checkered"></i> C Code Golf 挑战轮次</h1>
       <div class="row">
         <a class="btn" href="../index.html"><i class="fas fa-code"></i> 编辑器 Editor</a>
-        <a class="btn" href="./rank/index.html"><i class="fas fa-ranking-star"></i> 总榜 Total</a>
+  <a class="btn" href="./rank/index.html"><i class="fas fa-ranking-star"></i> 天梯榜 Ladder</a>
         <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
       </div>
     </header>
 
     <div class="card">
       <h3 id="introTitle">活动说明</h3>
-      <p id="introDesc">每周发布一道 C 语言挑战题，提交你的最短代码解答。排行榜按“代码字节数”升序排序；若相同，则按提交时间先后排序（先提交者在前）。</p>
+  <p id="introDesc">若干轮（Round）C 语言高尔夫题：按字节数排名。天梯积分：每轮难度积分 D；第一名得 D，其他得 round(D × 最小字节数/自身字节数)，随提交实时变化。</p>
       <div class="row">
-        <a class="btn primary" href="./1.html"><i class="fas fa-calendar-week"></i> 第 1 期 Week 1</a>
-        <a class="btn" href="./rank/1.html"><i class="fas fa-trophy"></i> 第 1 期排行榜</a>
+  <a class="btn primary" href="./1.html"><i class="fas fa-calendar-week"></i> 第 1 期 · Round 1</a>
+  <a class="btn" href="./rank/1.html"><i class="fas fa-trophy"></i> 第 1 期榜单</a>
       </div>
     </div>
 
     <div class="grid" id="weeks">
       <div class="card">
-        <h3>Week 1</h3>
+  <h3>1. 打印指定图案 <span style="font-weight:400;color:#9aa4ad;font-size:12px">D=120</span></h3>
         <p id="w1">打印指定图案（示例题）。</p>
         <div class="row">
           <a class="btn" href="./1.html"><i class="fas fa-book-open"></i> 题目 Problem</a>
@@ -61,13 +61,13 @@
   </div>
   <script>
     const i18n={
-      zh:{ title:'每周挑战 · Weekly Challenge', header:'每周挑战 Weekly Challenge', editor:'编辑器 Editor', total:'总榜 Total',
-        introTitle:'活动说明', introDesc:'每周发布一道 C 语言挑战题，提交你的最短代码解答。排行榜按“代码字节数”升序排序；若相同，则按提交时间先后排序（先提交者在前）。',
-        week1:'打印指定图案（示例题）。', problem:'题目 Problem', rank:'排名 Rank', w1btn:'第 1 期 Week 1', w1rank:'第 1 期排行榜'
+      zh:{ title:'C Code Golf · 挑战轮次', header:'C Code Golf 挑战轮次', editor:'编辑器 Editor', total:'天梯榜 Ladder',
+        introTitle:'活动说明', introDesc:'若干轮（Round）C 语言高尔夫题：按字节数排名。天梯积分：每轮难度积分 D；第一名得 D，其他得 round(D × 最小字节数/自身字节数)，随提交实时变化。',
+        week1:'打印指定图案（示例题）。', problem:'题目 Problem', rank:'榜单 Board', w1btn:'第 1 期 · Round 1', w1rank:'第 1 期榜单'
       },
-      en:{ title:'Weekly Challenge · 每周挑战', header:'Weekly Challenge 每周挑战', editor:'Editor 编辑器', total:'Total 总榜',
-        introTitle:'Rules', introDesc:'One C challenge per week. Submit your shortest code. Leaderboard sorts by code byte length (ascending). Ties are broken by earliest submission time.',
-        week1:'Print the specified pattern (sample).', problem:'Problem 题目', rank:'Rank 排名', w1btn:'Week 1 第 1 期', w1rank:'Week 1 Rank'
+      en:{ title:'C Code Golf · Rounds', header:'C Code Golf Rounds', editor:'Editor 编辑器', total:'Ladder 天梯榜',
+        introTitle:'Overview', introDesc:'Multiple C code golf rounds ranked by byte size. Ladder scoring: round difficulty D; 1st gets D, others round(D × minBytes/bytes); updates in real time.',
+        week1:'Print the specified pattern (sample).', problem:'Problem 题目', rank:'Board 榜单', w1btn:'Round 1 · 第 1 期', w1rank:'Round 1 Board'
       }
     };
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
@@ -81,12 +81,12 @@
       rows[1].innerHTML='<i class="fas fa-ranking-star"></i> '+t('total');
       document.getElementById('introTitle').textContent=t('introTitle');
       document.getElementById('introDesc').textContent=t('introDesc');
-      document.querySelector('a.btn.primary').innerHTML='<i class="fas fa-calendar-week"></i> '+t('w1btn');
+  document.querySelector('a.btn.primary').innerHTML='<i class="fas fa-calendar-week"></i> '+t('w1btn');
       document.querySelectorAll('.row a.btn')[3].innerHTML='<i class="fas fa-trophy"></i> '+t('w1rank');
       document.getElementById('w1').textContent=t('week1');
       const cards=document.querySelectorAll('#weeks .card');
       cards[0].querySelectorAll('.row a.btn')[0].innerHTML='<i class="fas fa-book-open"></i> '+t('problem');
-      cards[0].querySelectorAll('.row a.btn')[1].innerHTML='<i class="fas fa-medal"></i> '+t('rank');
+  cards[0].querySelectorAll('.row a.btn')[1].innerHTML='<i class="fas fa-medal"></i> '+t('rank');
       const langBtn=document.getElementById('langBtn'); langBtn.innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中');
     }
     document.getElementById('langBtn').addEventListener('click',()=>setLang(getLang()==='zh'?'en':'zh'));

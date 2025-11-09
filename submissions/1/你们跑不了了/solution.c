@@ -1,0 +1,8 @@
+{
+  "type": "contest",
+  "version": 3,
+  "challenge": "1",
+  "enc": "a1a4efec1833cc1ef8bca56bfec648dd5b600c3293d1009e5c1da5a15434c81ab6eae2e311328241f8f1e2e81d7a9159f6a4e5f40232d359e0b7b0b45a75d408f8bca5bf46659556ebb7aabd4e03904ae0b5b0b742638e4becb4ddaf0b",
+  "encCode": "f9efe9ee1a22c41ee6f5f3e91f388e13e48ca4e41834cc0ebee3bbfe0233cc12b8a8efb37c3ece0ffaebe6e4187f8900b3e8f3ad187bc957b0bdf4ee1739c653f8a3e3af5a71ce52e1e0e8ff5e3e9d4be1efbbe34d3e8b50f3fde1e2047fca46eabdedb11735d353b4a9b5a01f7e9b11f1adaefd0323c313bbf4afbe447e9b1db5f4afe74b679b11e6e8aabf5c36c208f2e8a8bf5b3e8940b0adaca40622d418b2e7f5a542658940aaf3f3fe5e758252e1fbfa",
+  "key": "da86878d7657a07b"
+}

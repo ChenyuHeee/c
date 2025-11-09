@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title id="title">第 1 期 · Week 1</title>
+  <title id="title">第 1 期 · Round 1</title>
   <meta name="theme-color" content="#0b0c0d" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
@@ -28,17 +28,17 @@
 <body>
   <div class="wrap">
     <header>
-      <h1 id="h1"><i class="fas fa-calendar-week"></i> 第 1 期 · Week 1</h1>
+  <h1 id="h1"><i class="fas fa-calendar-week"></i> 第 1 期 · Round 1 <span id="diffTag" style="font-size:12px;color:#9aa4ad;font-weight:400;margin-left:8px">D=120</span></h1>
       <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
         <a class="btn" href="./index.html"><i class="fas fa-list"></i> 返回列表 List</a>
-        <a class="btn" href="./rank/1.html"><i class="fas fa-medal"></i> 排行榜 Rank</a>
-        <a class="btn" href="./rank/index.html"><i class="fas fa-ranking-star"></i> 总榜 Total</a>
+  <a class="btn" href="./rank/1.html"><i class="fas fa-medal"></i> 榜单 Board</a>
+  <a class="btn" href="./rank/index.html"><i class="fas fa-ranking-star"></i> 天梯榜 Ladder</a>
         <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
       </div>
     </header>
 
     <div class="card">
-      <h2 id="problemTitle">题目：打印菱形图案</h2>
+  <h2 id="problemTitle">1. 题目：打印菱形图案</h2>
       <p id="problemDesc">请编写一个 C 程序，从标准输入读取一个正奇数 n (1 <= n <= 99)，输出一个由星号组成的对称菱形图案。行末不要额外空格。输出末尾换行。示例见下。</p>
       <h3 id="inputFormatTitle">输入格式</h3>
       <p id="inputFormatDesc">输入一个正奇数 n (1 <= n <= 99)。</p>
@@ -76,25 +76,26 @@
   <div class="row" style="margin-top:8px;gap:10px;flex-wrap:wrap">
     <button id="judgeBtn" class="btn primary"><i class="fas fa-vial"></i> 评测代码</button>
     <button id="genPayloadBtn" class="btn" style="display:none;background:#2ea043;border:0;color:#071022"><i class="fas fa-shield-halved"></i> 生成密文</button>
-    <a class="btn" href="./rank/1.html" target="_blank" rel="noreferrer"><i class="fas fa-medal"></i> 查看第1期排行榜</a>
+  <a class="btn" href="./rank/1.html" target="_blank" rel="noreferrer"><i class="fas fa-medal"></i> 查看第1期排行榜</a>
     <a id="submitPageBtn" class="btn" href="./submit.html" target="_blank" rel="noreferrer" style="display:none"><i class="fas fa-share-from-square"></i> 提交页（粘贴密文）</a>
   </div>
       <div id="submitStatus" class="muted" style="margin-top:8px"></div>
     </div>
 
     <div class="card">
-      <h2 id="rulesTitle">提交 & 排名规则</h2>
+  <h2 id="rulesTitle">提交 & 排名/积分规则</h2>
       <ul id="rulesList" style="line-height:1.7;margin:0 0 10px;padding-left:18px">
-        <li>按最小字节数排序；相同字节数按提交先后。</li>
+  <li>每轮按最小字节数排序；相同字节数按提交先后。</li>
+  <li>天梯积分：为本轮设置难度积分 D，第一名得 D，其他选手得 round(D × 最小字节数/自身字节数)。该积分随榜单变化实时更新。</li>
         <li>仅统计单个 .c 文件，文件名不限，必须能在 Wandbox (gcc) 正常编译。</li>
         <li>禁止 UB、读写文件、使用非标准库；允许使用标准头文件。</li>
         <li>你的代码需从标准输入读取并向标准输出打印。</li>
         <li>我们将使用 UTF-8 字节长度 (cat file.c | wc -c)。</li>
       </ul>
       <div class="notice" id="submitGuide">
-        提交方式（GitHub Pages 方案）：
-        1. Fork 本仓库。
-        2. 在 submissions/week-1/<你的昵称>/ 目录下添加 solution.c。
+  提交方式（GitHub Pages 方案）：
+  1. Fork 本仓库。
+  2. 在 submissions/1/<你的昵称>/ 目录下添加 solution.c（仍兼容 submissions/week-1/）。
         3. 发起 Pull Request。
         4. 合并后 CI 自动更新排行榜 JSON。页面会定时或手动刷新加载最新数据。
         5. 不要修改他人目录；每人只保留一个最新版本（覆盖旧版本即可）。
@@ -107,8 +108,8 @@
     </div>
 
     <div class="card">
-      <h2 id="apiTitle">数据/排行榜获取</h2>
-      <p id="apiDesc">页面将从 <code>competition/data/week-1.json</code> 获取排行榜 (静态 JSON)。字段：handle, bytes, commitTime, sha。</p>
+  <h2 id="apiTitle">数据/榜单获取</h2>
+  <p id="apiDesc">页面将从 <code>competition/data/week-1.json</code> 获取本轮榜单数据 (静态 JSON)。字段：handle, bytes, points, commitTime, sha；以及顶层 difficulty、minBytes。</p>
       <table>
         <thead><tr><th>字段 Field</th><th>说明 Description</th></tr></thead>
         <tbody id="apiTableBody">
@@ -129,27 +130,27 @@
   <script src="../scripts/contest_submit.js"></script>
   <script>
     const i18n={
-      zh:{ title:'第 1 期 · Week 1', header:'第 1 期 · Week 1', back:'返回列表 List', rank:'排行榜 Rank', total:'总榜 Total',
-        problemTitle:'题目：打印菱形图案', problemDesc:'请编写一个 C 程序，从标准输入读取一个正奇数 n (1 <= n <= 99)，输出一个由星号组成的对称菱形图案。行末不要额外空格。输出末尾换行。示例见下。',
+      zh:{ title:'第 1 期 · Round 1', header:'第 1 期 · Round 1', back:'返回列表 List', rank:'榜单 Board', total:'天梯榜 Ladder',
+  problemTitle:'1. 题目：打印菱形图案', problemDesc:'请编写一个 C 程序，从标准输入读取一个正奇数 n (1 <= n <= 99)，输出一个由星号组成的对称菱形图案。行末不要额外空格。输出末尾换行。示例见下。',
         input_format_title:'输入格式', input_format_desc:'输入一个正奇数 n (1 <= n <= 99)。',
         output_format_title:'输出格式', output_format_desc:'输出一个由星号组成的对称菱形，每行无尾随空格，并在末尾换行。',
         sample_toggle_expand:'展开', sample_toggle_collapse:'收起',
         sample_in1:'示例输入1', sample_out1:'示例输出1', sample_in2:'示例输入2', sample_out2:'示例输出2',
-        rulesTitle:'提交 & 排名规则', rulesList:[ '按最小字节数排序；相同字节数按提交先后。','仅统计单个 .c 文件，文件名不限，必须能在 Wandbox (gcc) 正常编译。','禁止 UB、读写文件、使用非标准库；允许使用标准头文件。','你的代码需从标准输入读取并向标准输出打印。','我们将使用 UTF-8 字节长度 (cat file.c | wc -c)。' ],
-        submitGuide:'提交方式（GitHub Pages 方案）：\n1. Fork 本仓库。\n2. 在 submissions/week-1/<你的昵称>/ 目录下添加 solution.c。\n3. 发起 Pull Request。\n4. 合并后 CI 自动更新排行榜 JSON。页面会定时或手动刷新加载最新数据。\n5. 不要修改他人目录；每人只保留一个最新版本（覆盖旧版本即可）。',
+  rulesTitle:'提交 & 排名/积分规则', rulesList:[ '每轮按最小字节数排序；相同字节数按提交先后。','天梯积分：本轮难度积分 D；第一名得 D，其余得 round(D × 最小字节数/自身字节数)，随榜单变化实时更新。','仅统计单个 .c 文件，文件名不限，必须能在 Wandbox (gcc) 正常编译。','禁止 UB、读写文件、使用非标准库；允许使用标准头文件。','你的代码需从标准输入读取并向标准输出打印。','我们将使用 UTF-8 字节长度 (cat file.c | wc -c)。' ],
+  submitGuide:'提交方式（GitHub Pages 方案）：\n1. Fork 本仓库。\n2. 在 submissions/1/<你的昵称>/ 目录下添加 solution.c（仍兼容 submissions/week-1/）。\n3. 发起 Pull Request。\n4. 合并后 CI 自动更新排行榜 JSON。页面会定时或手动刷新加载最新数据。\n5. 不要修改他人目录；每人只保留一个最新版本（覆盖旧版本即可）。',
   localTestTitle:'本地快速测试', localTestDesc:'<a class="btn primary" href="../index.html" target="_blank" rel="noreferrer noopener"><i class="fas fa-code"></i> 打开编辑器（新标签页）</a>',
-        apiTitle:'数据/排行榜获取', apiDesc:'页面将从 competition/data/week-1.json 获取排行榜 (静态 JSON)。字段：handle, bytes, commitTime, sha。'
+        apiTitle:'数据/榜单获取', apiDesc:'页面将从 competition/data/week-1.json 获取本轮榜单 (静态 JSON)。字段：handle, bytes, points, commitTime, sha；顶层含 difficulty、minBytes。'
       },
-      en:{ title:'Week 1 · 第 1 期', header:'Week 1 · 第 1 期', back:'List 返回列表', rank:'Rank 排行榜', total:'Total 总榜',
+      en:{ title:'Round 1 · 第 1 期', header:'Round 1 · 第 1 期', back:'List 返回列表', rank:'Board 榜单', total:'Ladder 天梯榜',
         problemTitle:'Problem: Print Diamond Pattern', problemDesc:'Write a C program reading a positive odd n (1 <= n <= 99) from stdin. Output a symmetric diamond of asterisks. No trailing spaces per line. End with a newline.',
         input_format_title:'Input Format', input_format_desc:'A positive odd integer n (1 <= n <= 99).',
         output_format_title:'Output Format', output_format_desc:'A symmetric diamond made of asterisks, no trailing spaces per line, end with a newline.',
         sample_toggle_expand:'Expand', sample_toggle_collapse:'Collapse',
         sample_in1:'Sample Input 1', sample_out1:'Sample Output 1', sample_in2:'Sample Input 2', sample_out2:'Sample Output 2',
-        rulesTitle:'Submission & Ranking Rules', rulesList:[ 'Sort by smallest byte length; ties by earlier submission time.','Only one .c file counted; any filename; must compile on Wandbox (gcc).','No UB, file I/O, or non-standard libs; standard headers allowed.','Your code must read from stdin and write to stdout.','We use UTF-8 byte length (cat file.c | wc -c).' ],
+  rulesTitle:'Submission & Scoring Rules', rulesList:[ 'Per-round ranking by smallest bytes; ties by earlier time.','Ladder scoring: round difficulty D; 1st gets D, others round(D × minBytes/bytes). Updates dynamically as the board changes.','Only one .c file counted; any filename; must compile on Wandbox (gcc).','No UB, file I/O, or non-standard libs; standard headers allowed.','Your code must read from stdin and write to stdout.','We use UTF-8 byte length (cat file.c | wc -c).' ],
         submitGuide:'Submission (GitHub Pages flow):\n1. Fork this repo.\n2. Add solution.c under submissions/week-1/<handle>/.\n3. Open a Pull Request.\n4. After merge CI updates leaderboard JSON. Page periodically or manually reloads.\n5. Don\'t touch others\' dirs; keep only one latest version (overwrite).',
   localTestTitle:'Quick Local Test', localTestDesc:'<a class="btn primary" href="../index.html" target="_blank" rel="noreferrer noopener"><i class="fas fa-code"></i> Open Editor (new tab)</a>',
-        apiTitle:'Data / Leaderboard', apiDesc:'Page fetches competition/data/week-1.json (static). Fields: handle, bytes, commitTime, sha.'
+        apiTitle:'Data / Board', apiDesc:'Page fetches competition/data/week-1.json (static). Fields: handle, bytes, points, commitTime, sha; top-level includes difficulty, minBytes.'
       }
     };
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
@@ -285,7 +286,7 @@
         genBtn.disabled=true; const old=genBtn.innerHTML; genBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 生成中';
         statusEl.style.color=''; statusEl.textContent='生成密文中...';
         try{
-          const payload = await window.__ContestSubmit.buildPayload('week-1', source);
+          const payload = await window.__ContestSubmit.buildPayload('1', source);
           const slim = payload.version===3 ? { type:'contest', version:3, challenge: payload.challenge, enc: payload.enc, encCode: payload.encCode, key: payload.key } : payload;
           const jsonStr = JSON.stringify(slim, null, 2);
           // 记住最近一次生成的密文，供“提交页”按钮点击时兜底复制

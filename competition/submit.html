@@ -23,9 +23,9 @@
 <body>
   <div class="wrap">
     <header>
-      <h1><i class="fas fa-paper-plane"></i> 提交参赛 · Submit Contest</h1>
+  <h1><i class="fas fa-paper-plane"></i> 提交参赛 · Submit Contest (Round)</h1>
       <div class="row">
-        <a class="btn" href="../index.html"><i class="fas fa-flag-checkered"></i> 每周挑战 Weekly</a>
+  <a class="btn" href="../index.html"><i class="fas fa-flag-checkered"></i> C Code Golf</a>
         <a class="btn" href="../../index.html"><i class="fas fa-code"></i> 编辑器 Editor</a>
         <a class="btn primary" href="../submission_guide/index.html" target="_blank" rel="noreferrer"><i class="fas fa-book"></i> 教程 Tutorial</a>
       </div>
@@ -47,9 +47,9 @@
       <div class="muted" style="margin-top:8px" id="flowTips">
         标准流程（推荐 Fork + PR）:<br>
         1) 点击 Fork（若已 Fork 可忽略）。<br>
-        2) 在你的 Fork 仓库中新建文件路径：<code>submissions/week-&lt;n&gt;/&lt;handle&gt;/solution.c</code>。<br>
+  2) 在你的 Fork 仓库中新建文件路径：<code>submissions/&lt;n&gt;/&lt;handle&gt;/solution.c</code>（兼容旧路径 <code>submissions/week-&lt;n&gt;/</code>）。<br>
         3) 将本页下方“密文/内容”粘贴进去保存（可点“复制密文”，或点“自动粘贴密文”将剪贴板内容填入文本框）。<br>
-        4) 发起 Pull Request 回主仓库（ChenyuHeee/c）。<br>
+  4) 发起 Pull Request 回主仓库（ChenyuHeee/c）。合并后脚本会重新计算本轮与天梯积分。<br>
         备用流程：无法方便地发 PR 时，使用“Issue 提交”，自动生成包含加密字段的 Issue；管理员稍后手动归档。<br>
         提示：此页面不具备直接写入主仓库权限——参赛者需在个人 Fork 中完成提交。
       </div>
@@ -62,7 +62,14 @@
         return new TextDecoder().decode(bytes);
       }catch(e){ return decodeURIComponent(escape(atob(b64))); }
     }
-  function parseWeek(code){ const m=code.match(/week-(\d+)/i); return m? parseInt(m[1],10): null; }
+  function parseWeek(code){
+    if(code==null) return null;
+    const s=String(code).trim();
+    const m=s.match(/week-(\d+)/i);
+    if(m) return parseInt(m[1],10);
+    if(/^\d+$/.test(s)) return parseInt(s,10);
+    return null;
+  }
   function fromHex(h){ const arr=new Uint8Array(h.length/2); for(let i=0;i<arr.length;i++){ arr[i]=parseInt(h.substr(i*2,2),16); } return arr; }
   function xorBytes(a,b){ const out=new Uint8Array(a.length); for(let i=0;i<a.length;i++){ out[i]=a[i]^b[i%b.length]; } return out; }
   function toHex(buf){ return Array.from(buf).map(b=>b.toString(16).padStart(2,'0')).join(''); }
@@ -103,9 +110,9 @@
                 const safeHandle = toPathHandle(displayHandle);
                 // 展示元数据与路径
                 metaEl.textContent = `校验通过：bytes=${meta.bytes}, handle=${displayHandle}, ts=${meta.ts}`;
-                const fullPath = `submissions/week-${weekLocal}/${safeHandle}/solution.c`;
-                pathInfoEl.innerHTML = `目录名将使用：<code>${fullPath}</code> <span style="margin-left:6px;color:#8aa3b7">当前昵称：<code>${displayHandle}</code></span>`;
-                openGhBtn.href = `https://github.com/${OWNER}/${REPO}/new/main/${encodeURIComponent(`submissions/week-${weekLocal}/${safeHandle}`)}?filename=solution.c`;
+                const fullPath = `submissions/${weekLocal}/${safeHandle}/solution.c`;
+                pathInfoEl.innerHTML = `目录名将使用：<code>${fullPath}</code>（兼容旧路径 submissions/week-${weekLocal}/） <span style="margin-left:6px;color:#8aa3b7">当前昵称：<code>${displayHandle}</code></span>`;
+                openGhBtn.href = `https://github.com/${OWNER}/${REPO}/new/main/${encodeURIComponent(`submissions/${weekLocal}/${safeHandle}`)}?filename=solution.c`;
                 summaryEl.textContent = `选手 ${displayHandle} · 题目 ${slim.challenge}`;
               } else {
                 metaEl.textContent = '解析失败：不是有效的 v3 密文 JSON。';
@@ -149,7 +156,7 @@
               function rebuildIssueLinkV4(){
                 const weekLocal = parseWeek(obj.challenge)||1;
                 const bodyLines = [];
-                bodyLines.push(`# Week ${weekLocal} Submission (${safeHandle})`);
+                bodyLines.push(`# Round ${weekLocal} Submission (${safeHandle})`);
                 bodyLines.push('');
                 bodyLines.push(`Challenge: ${obj.challenge}`);
                 bodyLines.push('');
@@ -165,7 +172,7 @@
                 bodyLines.push('> 提交说明: 若无法方便地 Fork + PR, 使用该 Issue 方式。管理员会解密并归档。');
                 bodyLines.push('> 注意：明文代码不再展示，请勿在此粘贴明文。');
                 let issueBody = bodyLines.join('\n');
-                const issueTitle = `Week-${weekLocal} Submission ${safeHandle}`;
+                const issueTitle = `Round-${weekLocal} Submission ${safeHandle}`;
                 if(encodeURIComponent(issueBody).length > 7000){
                   issueBody = issueBody.slice(0,6900) + '\n... (truncated)';
                 }
@@ -197,7 +204,7 @@
           if(!(obj.enc && obj.key && meta)) return;
           const weekLocal = parseWeek(obj.challenge)||1;
           const bodyLines = [];
-          bodyLines.push(`# Week ${weekLocal} Submission (${safeHandle})`);
+          bodyLines.push(`# Round ${weekLocal} Submission (${safeHandle})`);
           bodyLines.push('');
           bodyLines.push(`Challenge: ${obj.challenge}`);
           bodyLines.push('');
@@ -218,11 +225,11 @@
           bodyLines.push('> 提交说明: 若无法方便地 Fork + PR, 使用该 Issue 方式。管理员会验证并归档到 submissions/ 目录。');
           bodyLines.push('> 注意：明文代码不再展示，请勿在此粘贴明文。');
           let issueBody = bodyLines.join('\n');
-          const issueTitle = `Week-${weekLocal} Submission ${safeHandle}`;
+          const issueTitle = `Round-${weekLocal} Submission ${safeHandle}`;
           const encodedBody = encodeURIComponent(issueBody);
           if(encodedBody.length > 7000){
             const shortLines = [];
-            shortLines.push(`# Week ${weekLocal} Submission (${safeHandle})`);
+            shortLines.push(`# Round ${weekLocal} Submission (${safeHandle})`);
             shortLines.push('');
             shortLines.push(`Challenge: ${obj.challenge}`);
             shortLines.push('');
@@ -243,7 +250,7 @@
           issueBtn.href=issueUrl;
         }
         // 现在根据最终的 safeHandle 生成“在 Fork 中建文件”的链接，并展示目录名预览
-        const path=`submissions/week-${week}/${safeHandle}`;
+  const path=`submissions/${week}/${safeHandle}`;
         const ghNew=`https://github.com/${OWNER}/${REPO}/new/main/${encodeURIComponent(path)}?filename=solution.c`;
   openGhBtn.href=ghNew;
   const fullPath = `${path}/solution.c`;
@@ -285,7 +292,7 @@
           displayHandle = trimmed; safeHandle = toPathHandle(trimmed);
           summaryEl.textContent=`选手 ${displayHandle} · 题目 ${obj.challenge}`;
           // 重建路径预览与“在 Fork 中建文件”链接
-          const newDir = `submissions/week-${week}/${safeHandle}`;
+          const newDir = `submissions/${week}/${safeHandle}`;
           const newGhNew = `https://github.com/${OWNER}/${REPO}/new/main/${encodeURIComponent(newDir)}?filename=solution.c`;
           openGhBtn.href=newGhNew;
           const newPath = `${newDir}/solution.c`;
@@ -297,7 +304,7 @@
               // v4 不在前端重建加密数据，仅重建 Issue 链接即可（需服务端解密）
               const weekLocal = parseWeek(obj.challenge)||1;
               const bodyLines = [];
-              bodyLines.push(`# Week ${weekLocal} Submission (${safeHandle})`);
+              bodyLines.push(`# Round ${weekLocal} Submission (${safeHandle})`);
               bodyLines.push('');
               bodyLines.push(`Challenge: ${obj.challenge}`);
               bodyLines.push('');
@@ -313,7 +320,7 @@
               bodyLines.push('> 提交说明: 若无法方便地 Fork + PR, 使用该 Issue 方式。管理员会解密并归档。');
               bodyLines.push('> 注意：明文代码不再展示，请勿在此粘贴明文。');
               let issueBody = bodyLines.join('\n');
-              const issueTitle = `Week-${weekLocal} Submission ${safeHandle}`;
+              const issueTitle = `Round-${weekLocal} Submission ${safeHandle}`;
               if(encodeURIComponent(issueBody).length > 7000){ issueBody = issueBody.slice(0,6900)+'\n... (truncated)'; }
               const issueUrl = `https://github.com/${OWNER}/${REPO}/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}`;
               issueBtn.href=issueUrl;

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title id="title">总排行榜 · Overall Leaderboard</title>
+  <title id="title">天梯榜 · Ladder</title>
   <meta name="theme-color" content="#0b0c0d" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
@@ -24,9 +24,9 @@
 <body>
   <div class="wrap">
     <header>
-      <h1 id="h1"><i class="fas fa-ranking-star"></i> 总榜 · Overall Leaderboard</h1>
+  <h1 id="h1"><i class="fas fa-ranking-star"></i> 天梯榜 · Ladder</h1>
       <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
-        <a class="btn" href="../index.html"><i class="fas fa-flag-checkered"></i> 每周挑战 Weekly</a>
+  <a class="btn" href="../index.html"><i class="fas fa-flag-checkered"></i> C Code Golf</a>
         <a class="btn" href="../../index.html"><i class="fas fa-code"></i> 编辑器 Editor</a>
         <button id="refreshBtn" class="btn"><i class="fas fa-arrows-rotate"></i> 强制刷新</button>
         <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
@@ -34,15 +34,16 @@
     </header>
 
     <div class="card">
-      <div class="muted" id="desc">按累计最好成绩（字节数越小越好）进行积分或排名。以下数据来自 competition/data/total.json。</div>
+  <div class="muted" id="desc">按每轮动态积分累积进行排名：每轮第一名获得该轮难度积分 D，其余选手获得 D * (最小字节数/自身字节数) 四舍五入。数据来自 competition/data/total.json（实时再算）。</div>
       <div class="muted" id="updated" style="margin-top:6px"></div>
       <table>
         <thead>
           <tr>
             <th>#</th>
             <th id="th_handle">选手 Handle</th>
-            <th id="th_weeks">参与期数 Weeks</th>
-            <th id="th_best">最好成绩 Best</th>
+            <th id="th_rounds">参与轮数 Rounds</th>
+            <th id="th_points">积分 Points</th>
+            <th id="th_best">最佳字节 Best Bytes</th>
           </tr>
         </thead>
         <tbody id="tbody">
@@ -53,13 +54,13 @@
   </div>
   <script>
     const i18n={
-      zh:{ title:'总排行榜 · Overall Leaderboard', header:'总榜 · Overall Leaderboard', weekly:'每周挑战 Weekly', editor:'编辑器 Editor', refresh:'强制刷新',
-        desc:'按累计最好成绩（字节数越小越好）进行积分或排名。以下数据来自 competition/data/total.json。', handle:'选手 Handle', weeks:'参与期数 Weeks', best:'最好成绩 Best', loading:'加载中 Loading…', updated:'更新于' },
-      en:{ title:'Overall Leaderboard · 总排行榜', header:'Overall Leaderboard · 总榜', weekly:'Weekly 每周挑战', editor:'Editor 编辑器', refresh:'Force Refresh',
-        desc:'Rank by aggregate best results (shorter is better). Data from competition/data/total.json.', handle:'Handle 选手', weeks:'Weeks 参与期数', best:'Best 最好成绩', loading:'Loading 加载中…', updated:'Updated at' }
+      zh:{ title:'天梯榜 · Ladder', header:'天梯榜 · Ladder', weekly:'C Code Golf', editor:'编辑器 Editor', refresh:'强制刷新',
+        desc:'积分规则：每轮设难度积分 D；第一名得 D，其他得 round(D * 最小字节数/自身字节数)。实时计算，历史结果变动会即时影响总积分。数据来自 competition/data/total.json。', handle:'选手 Handle', rounds:'参与轮数 Rounds', points:'积分 Points', best:'最佳字节 Best Bytes', loading:'加载中 Loading…', updated:'更新于' },
+      en:{ title:'Ladder · 天梯榜', header:'Ladder · 天梯榜', weekly:'C Code Golf', editor:'Editor 编辑器', refresh:'Force Refresh',
+        desc:'Scoring: each round has difficulty D; 1st gets D, others get round(D * minBytes/bytes). Recomputed dynamically; historical improvements shift total points. Data from competition/data/total.json.', handle:'Handle 选手', rounds:'Rounds 参与轮数', points:'Points 积分', best:'Best Bytes 最佳字节', loading:'Loading 加载中…', updated:'Updated at' }
     };
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
-    function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); }
+  function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); load(); }
     function t(k){ const L=getLang(); return (i18n[L]&&i18n[L][k])||i18n.zh[k]||k; }
     function applyLang(){
       document.getElementById('title').textContent=t('title');
@@ -71,8 +72,9 @@
   const rbtn=document.getElementById('refreshBtn');
   if(rbtn) rbtn.innerHTML='<i class="fas fa-arrows-rotate"></i> '+t('refresh');
       document.getElementById('th_handle').textContent=t('handle');
-      document.getElementById('th_weeks').textContent=t('weeks');
-      document.getElementById('th_best').textContent=t('best');
+  document.getElementById('th_rounds').textContent=t('rounds');
+  document.getElementById('th_points').textContent=t('points');
+  document.getElementById('th_best').textContent=t('best');
       document.getElementById('langBtn').innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中');
     }
     document.getElementById('langBtn').addEventListener('click',()=>setLang(getLang()==='zh'?'en':'zh'));
@@ -115,7 +117,7 @@
         tbody.innerHTML='';
         data.ranks.forEach((row,idx)=>{
           const tr=document.createElement('tr');
-          tr.innerHTML=`<td>${idx+1}</td><td>${row.handle}</td><td>${row.weeks||'-'}</td><td>${row.best||'-'}</td>`;
+          tr.innerHTML=`<td>${idx+1}</td><td>${row.handle}</td><td>${row.rounds||'-'}</td><td>${row.points||0}</td><td>${row.best||'-'}</td>`;
           tbody.appendChild(tr);
         });
         if(!data.ranks||data.ranks.length===0){ tbody.innerHTML=`<tr><td colspan="4" class="muted">${t('loading')}</td></tr>`; }
