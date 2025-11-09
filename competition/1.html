@@ -1,164 +1,127 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-
-  <meta charset="utf-8" />  <meta charset="utf-8" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1" />  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <title id="title">第 1 期 · Round 1</title>
-
-  <meta name="theme-color" content="#0b0c0d" />  <meta name="theme-color" content="#0b0c0d" />
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Round 1 · 第 1 期</title>
+  <meta name="theme-color" content="#0b0c0d" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
   <style>
-
-    :root{ --bg:#0b0c0d; --panel:#0f1113; --muted:#9aa4ad; --text:#e6eef6; --accent:#48a0ff; --radius:12px; }    :root{ --bg:#0b0c0d; --panel:#0f1113; --muted:#9aa4ad; --text:#e6eef6; --accent:#48a0ff; --radius:12px; }
-
-    body{margin:0;background:var(--bg);color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial}    body{margin:0;background:var(--bg);color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial}
-
-    .wrap{max-width:960px;margin:0 auto;padding:20px}    .wrap{max-width:960px;margin:0 auto;padding:20px}
-
-    header{display:flex;align-items:center;gap:12px;justify-content:space-between}    header{display:flex;align-items:center;gap:12px;justify-content:space-between}
-
-    header h1{color:#fff;font-size:22px;margin:0;display:flex;align-items:center;gap:8px}    header h1{color:#fff;font-size:22px;margin:0;display:flex;align-items:center;gap:8px}
-
-    a.btn,button.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.08);background:var(--panel);color:var(--text);cursor:pointer}    a.btn,button.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.08);background:var(--panel);color:var(--text);cursor:pointer}
-
-    a.btn.primary,button.btn.primary{background:var(--accent);color:#071022;border:0}    a.btn.primary,button.btn.primary{background:var(--accent);color:#071022;border:0}
-
-    .card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:18px;margin-top:18px}    .card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:18px;margin-top:18px}
-
-    .card h2{margin:0 0 12px;color:#fff;font-size:20px}    .card h2{margin:0 0 12px;color:#fff;font-size:20px}
-
-    pre{background:#161a1e;padding:12px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.5}    pre{background:#161a1e;padding:12px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.5}
-
-    code{font-family:Menlo,monospace}    code{font-family:Menlo,monospace}
-
-    table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}    table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
-
-    th,td{border:1px solid #222;padding:6px 8px;text-align:left}    th,td{border:1px solid #222;padding:6px 8px;text-align:left}
-
-    th{background:#161a1e;color:#fff}    th{background:#161a1e;color:#fff}
-
-    .footer{margin-top:26px;display:flex;justify-content:space-between;align-items:center;font-size:12px}    .footer{margin-top:26px;display:flex;justify-content:space-between;align-items:center;font-size:12px}
-
-    .notice{background:#161a1e;padding:10px;border-radius:8px;font-size:13px;line-height:1.6}    .notice{background:#161a1e;padding:10px;border-radius:8px;font-size:13px;line-height:1.6}
-
+    :root{ --bg:#0b0c0d; --panel:#0f1113; --muted:#9aa4ad; --text:#e6eef6; --accent:#48a0ff; --radius:12px; }
+    body{margin:0;background:var(--bg);color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial}
+    .wrap{max-width:860px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}
+    header h1{color:#fff;font-size:22px;margin:0;display:flex;align-items:center;gap:8px}
+    a.btn,button.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.08);background:var(--panel);color:var(--text);cursor:pointer;font-size:13px}
+    a.btn.primary,button.btn.primary{background:var(--accent);color:#071022;border:0}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:18px;margin-top:18px}
+    .card h2{margin:0 0 12px;color:#fff;font-size:19px}
+    textarea{width:100%;min-height:240px;background:#161a1e;border:1px solid #222;border-radius:8px;color:#e6eef6;padding:10px 12px;font-family:Menlo,monospace;font-size:13px;resize:vertical}
+    pre{background:#161a1e;padding:10px 12px;border-radius:8px;overflow:auto;font-size:12px;line-height:1.5;margin:8px 0}
+    code{font-family:Menlo,monospace}
+    .diff-block pre{max-height:260px}
+    .notice{background:#161a1e;padding:10px;border-radius:8px;font-size:12px;line-height:1.6}
+    .fail{color:#ff6b6b}
+    .ok{color:#56d364}
+    .warn{color:#ffb020}
+    .muted{color:#9aa4ad;font-size:12px}
   </style>
-
 </head>
-
 <body>
+  <div class="wrap">
+    <header>
+      <h1><i class="fas fa-calendar-week"></i> Round 1 · 第 1 期 <span id="diffTag" style="font-size:12px;color:#9aa4ad;font-weight:400;margin-left:8px"></span></h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn" href="./index.html"><i class="fas fa-list"></i> 列表</a>
+        <a id="rankBtn" class="btn" href="./rank/week.html?problem=1"><i class="fas fa-medal"></i> 榜单</a>
+        <a class="btn" href="./rank/index.html"><i class="fas fa-ranking-star"></i> 天梯</a>
+      </div>
+    </header>
 
-  <div class="wrap">  <div class="wrap">
-
-  <header>
-
-  <h1 id="h1"><i class="fas fa-calendar-week"></i> 第 1 期 · Round 1 <span id="diffTag" style="font-size:12px;color:#9aa4ad;font-weight:400;margin-left:8px"></span></h1>
-
-  <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
-
-  <a class="btn" href="./index.html"><i class="fas fa-list"></i> 返回列表 List</a>
-
-  <a id="rankBtn" class="btn" href="./rank/week.html?problem=1"><i class="fas fa-medal"></i> 榜单 Board</a>
-
-  <a class="btn" href="./rank/index.html"><i class="fas fa-ranking-star"></i> 天梯榜 Ladder</a>
-
-  <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
-
-      </div>      </div>
-
-    </header>    </header>
-
-
-
-  <div class="card">
-
-  <h2 id="problemTitle">1. 题目：打印菱形图案</h2>
-
-  <p id="problemDesc">请编写一个 C 程序，从标准输入读取一个正奇数 n (1 <= n <= 99)，输出一个由星号组成的对称菱形图案。行末不要额外空格。输出末尾换行。示例见下。</p>
-
-  <h3 id="inputFormatTitle">输入格式</h3>
-
-  <p id="inputFormatDesc">输入一个正奇数 n (1 <= n <= 99)。</p>
-
-  <h3 id="outputFormatTitle">输出格式</h3>
-
-  <p id="outputFormatDesc">输出一个由星号组成的对称菱形，每行无尾随空格，并在末尾换行。</p>
-
-  <h3 id="samplesTitle">样例</h3>
-  <h3 id="sampleIn1Title">示例输入1</h3>
-
-  <pre style="display:none"><code id="sampleIn1">7</code></pre>
-
-  <pre style="display:none"><code id="sampleOut1"></code></pre>
-  <h3 id="sampleOut1Title">示例输出1</h3>
-
+    <div class="card" id="problemCard">
+      <h2>1. 打印菱形图案</h2>
+      <p>读取一个正奇数 n (1 ≤ n ≤ 99)，输出由星号组成的对称菱形。每行无尾随空格，最后一行后需换行。</p>
+    <p class="muted">示例 (n=5)：</p>
+    <pre><code>  *
+ ***
+*****
+ ***
+  *</code></pre>
     </div>
+
     <div class="card" id="submitCard">
-      <h2><i class="fas fa-paper-plane"></i> 直接在此提交 · Submit Here</h2>
-      <div class="row" style="margin:10px 0;gap:10px;align-items:center">
-        <label for="handleInput">昵称 Handle</label>
-        <input id="handleInput" type="text" placeholder="你的昵称（可含空格，不可含/\\）" style="flex:1;min-width:220px"/>
-        <button id="saveHandleBtn" class="btn"><i class="fas fa-user-check"></i> 保存昵称</button>
+      <h2><i class="fas fa-paper-plane"></i> 提交 / Submit</h2>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <label for="handleInput" style="font-size:13px">昵称 Handle</label>
+        <input id="handleInput" type="text" placeholder="你的昵称（可含空格，不可含/\\）" style="flex:1;min-width:220px;padding:6px 10px;border-radius:8px;border:1px solid #222;background:#161a1e;color:#e6eef6;font-size:13px" />
+        <button id="saveHandleBtn" class="btn"><i class="fas fa-user-check"></i> 保存</button>
       </div>
-      <textarea id="codeInput" placeholder="在此粘贴你的 C 代码..." style="width:100%;min-height:240px;background:#161a1e;border:1px solid #222;border-radius:8px;color:#e6eef6;padding:10px 12px;font-family:Menlo,monospace;font-size:13px"></textarea>
-      <div class="row" style="margin-top:8px;gap:10px;flex-wrap:wrap">
-        <button id="judgeBtn" class="btn primary"><i class="fas fa-vial"></i> 评测代码</button>
+      <textarea id="codeInput" placeholder="粘贴你的 C 代码..."></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <button id="judgeBtn" class="btn primary"><i class="fas fa-vial"></i> 评测</button>
         <button id="genPayloadBtn" class="btn" style="display:none;background:#2ea043;border:0;color:#071022"><i class="fas fa-shield-halved"></i> 生成密文</button>
-        <a id="roundRankBtn" class="btn" href="#" target="_blank" rel="noreferrer"><i class="fas fa-medal"></i> 查看本期排行榜</a>
-        <a id="submitPageBtn" class="btn" href="./submit.html" target="_blank" rel="noreferrer" style="display:none"><i class="fas fa-share-from-square"></i> 提交页（粘贴密文）</a>
+        <a id="submitPageBtn" class="btn" href="./submit.html" target="_blank" rel="noreferrer" style="display:none"><i class="fas fa-share-from-square"></i> 提交页</a>
       </div>
       <div id="submitStatus" class="muted" style="margin-top:8px"></div>
+      <div id="judgeDiff" class="diff-block" style="margin-top:10px"></div>
     </div>
 
-        <button id="saveHandleBtn" class="btn"><i class="fas fa-user-check"></i> 保存昵称</button>      <h3 id="sampleIn2Title">示例输入2</h3>
-
-      </div>      <pre style="display:none"><code id="sampleIn2">5</code></pre>
-
-      <textarea id="codeInput" placeholder="在此粘贴你的 C 代码..." style="width:100%;min-height:240px;background:#161a1e;border:1px solid #222;border-radius:8px;color:#e6eef6;padding:10px 12px;font-family:Menlo,monospace;font-size:13px"></textarea>      <h3 id="sampleOut2Title">示例输出2</h3>
-
-      <div class="row" style="margin-top:8px;gap:10px;flex-wrap:wrap">      <pre style="display:none"><code id="sampleOut2">  *
-
-        <button id="judgeBtn" class="btn primary"><i class="fas fa-vial"></i> 评测代码</button> ***
-
-        <button id="genPayloadBtn" class="btn" style="display:none;background:#2ea043;border:0;color:#071022"><i class="fas fa-shield-halved"></i> 生成密文</button>*****
-
-        <a id="roundRankBtn" class="btn" href="#" target="_blank" rel="noreferrer"><i class="fas fa-medal"></i> 查看本期排行榜</a> ***
-
-        <a id="submitPageBtn" class="btn" href="./submit.html" target="_blank" rel="noreferrer" style="display:none"><i class="fas fa-share-from-square"></i> 提交页（粘贴密文）</a>  *</code></pre>
-
-      </div>    </div>
-
-      <div id="submitStatus" class="muted" style="margin-top:8px"></div>
-
-    <div class="card">      <div class="muted" id="submitTips">在下方粘贴你的 C 代码，填写昵称（仅首次），点击“评测并提交”。评测通过才会提交到排行榜。</div>
-
-      <h2>提交 & 规则</h2>      <div class="row" style="margin:10px 0;gap:10px;align-items:center">
-
-      <ul style="line-height:1.7;margin:0 0 10px;padding-left:18px">
+    <div class="card" id="rulesCard">
+      <h2>规则 / Rules</h2>
+      <ul style="line-height:1.7;margin:0 0 10px;padding-left:18px;font-size:13px">
         <li>按最小字节数排序；相同按提交先后。</li>
-        <li>天梯积分：难度积分 D；第一名 D，其他 round(D × 最小字节数/自身字节数)。</li>
-        <li>仅统计单个 .c，需可在 Wandbox(gcc) 编译运行。</li>
-        <li>禁止 UB、文件 I/O、非标准库。</li>
+        <li>难度积分 D：第一名记 D，其他 round(D × 最小字节数 / 自身字节数)。</li>
+        <li>仅统计单个 .c，可在 Wandbox(gcc) 编译运行。</li>
+        <li>禁止 UB、文件 IO、非标准库。</li>
         <li>UTF-8 字节数计数。</li>
       </ul>
-      <div class="notice">提交方式：Fork 本仓库 → 在 <code>submissions/1/&lt;你的昵称&gt;/solution.c</code>（兼容 <code>submissions/week-1/</code>）添加/覆盖 → 发 PR。</div>
-
-    </div>  </div>
-
-      <div id="submitStatus" class="muted" style="margin-top:8px"></div>
+      <div class="notice">提交方式：Fork 仓库 → 在 <code>submissions/1/&lt;昵称&gt;/solution.c</code> （兼容 <code>submissions/week-1/</code>）添加/覆盖 → 发 PR。</div>
+    </div>
+  </div>
 
   <script src="../scripts/version.js"></script>
   <script src="../scripts/contest_submit.js"></script>
   <script>
-    const PROBLEM_ID=1;
-    function genDiamond(n){ const lines=[]; const mid=(n-1)/2; for(let r=0;r<n;r++){ const dist=Math.abs(mid-r); const stars=n-2*dist; const spaces=dist; lines.push(' '.repeat(spaces)+('*'.repeat(stars))); } return lines.join('\n'); }
-    async function tryWandbox(code, stdin){ const wandboxUrl='https://wandbox.org/api/compile.json'; const payload={ code, compiler:'gcc-head', stdin: stdin||undefined, save:false }; const res=await fetch(wandboxUrl,{method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(payload)}); if(!res.ok) throw new Error('wandbox '+res.status); const j=await res.json(); const out=(j.program_output||j.program_stdout||j.program||j.result||'')||''; return out.replace(/\n+$/,''); }
-    async function loadTests(id){ let tests=[]; try{ const r1=await fetch(`./data/tests/prob-${id}.json`,{cache:'no-store'}); if(r1.ok) tests=await r1.json(); }catch(_){} if((!Array.isArray(tests)||!tests.length)){ try{ const r2=await fetch(`./data/tests/week-${id}.json`,{cache:'no-store'}); if(r2.ok) tests=await r2.json(); }catch(_){} } if((!Array.isArray(tests)||!tests.length)&&id===1){ tests=[1,3,5,7,9].map(n=>({stdin:String(n)+'\n', expected: genDiamond(n)})); } return Array.isArray(tests)? tests: []; }
-    async function judgeSource(id, src){ const tests=await loadTests(id); if(!tests.length) return false; for(const tc of tests){ const out=await tryWandbox(src, tc.stdin||''); const exp=(tc.expect||tc.expected||'').replace(/\n+$/,''); if(out!==exp) return false; } return true; }
+    const PROBLEM_ID = 1;
+    // --- Helpers ---
+    function genDiamond(n){ const lines=[]; const mid=(n-1)/2; for(let r=0;r<n;r++){ const dist=Math.abs(mid-r); const stars=n-2*dist; const spaces=dist; lines.push(' '.repeat(spaces)+'*'.repeat(stars)); } return lines.join('\n'); }
+    async function tryWandbox(code, stdin){
+      const wandboxUrl='https://wandbox.org/api/compile.json';
+      const payload={ code, compiler:'gcc-head', stdin: stdin||undefined, save:false };
+      const res=await fetch(wandboxUrl,{method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(payload)});
+      if(!res.ok) throw new Error('wandbox '+res.status);
+      const j=await res.json();
+      const out=(j.program_output||j.program_stdout||j.program||j.result||'')||'';
+      return out.replace(/\n+$/,'');
+    }
+    async function loadTests(id){
+      let tests=[];
+      try{ const r1=await fetch(`./data/tests/prob-${id}.json`,{cache:'no-store'}); if(r1.ok) tests=await r1.json(); }catch(e){ }
+      if((!Array.isArray(tests)||!tests.length)){
+        try{ const r2=await fetch(`./data/tests/week-${id}.json`,{cache:'no-store'}); if(r2.ok) tests=await r2.json(); }catch(e){ }
+      }
+      if((!Array.isArray(tests)||!tests.length) && id===1){ tests=[1,3,5,7,9].map(n=>({stdin:String(n)+'\n', expected: genDiamond(n)})); }
+      return Array.isArray(tests)? tests: [];
+    }
+    function visualize(str){
+      return str.replace(/ /g,'·'); // spaces -> middot
+    }
+    async function judgeWithDiff(id, src){
+      const tests=await loadTests(id);
+      if(!tests.length) return {pass:false, reason:'无测试集', cases:[]};
+      const cases=[];
+      for(let i=0;i<tests.length;i++){
+        const tc=tests[i];
+        const exp=(tc.expect||tc.expected||'').replace(/\n+$/,'');
+        const out=await tryWandbox(src, tc.stdin||'');
+        const ok = out===exp;
+        cases.push({index:i, stdin:tc.stdin||'', expected:exp, output:out, pass:ok});
+        if(!ok){ return {pass:false, failedIndex:i, cases}; }
+      }
+      return {pass:true, cases};
+    }
+
+    // --- UI Logic ---
     (function(){
       const handleInput=document.getElementById('handleInput');
       const saveHandleBtn=document.getElementById('saveHandleBtn');
@@ -167,148 +130,47 @@
       const genBtn=document.getElementById('genPayloadBtn');
       const submitPageBtn=document.getElementById('submitPageBtn');
       const statusEl=document.getElementById('submitStatus');
+      const diffEl=document.getElementById('judgeDiff');
       try{ const h=window.__ContestSubmit.getHandle(); if(h) handleInput.value=h; }catch(_){ }
-      saveHandleBtn.addEventListener('click',()=>{ const raw=(handleInput.value||'').trim(); if(!raw){ alert('昵称不能为空'); return; } window.__ContestSubmit.setProfile({handle:raw}); });
+      saveHandleBtn.addEventListener('click',()=>{ const raw=(handleInput.value||'').trim(); if(!raw){ alert('昵称不能为空'); return; } window.__ContestSubmit.setProfile({handle:raw}); saveHandleBtn.innerHTML='<i class="fas fa-check"></i> 已保存'; setTimeout(()=> saveHandleBtn.innerHTML='<i class="fas fa-user-check"></i> 保存', 1200); });
       judgeBtn.addEventListener('click', async ()=>{
         const handleRaw=(handleInput.value||'').trim(); if(!handleRaw){ alert('请先填写昵称'); return; }
         window.__ContestSubmit.setProfile({handle:handleRaw});
         const source=codeInput.value||''; if(!source.trim()){ alert('请粘贴代码'); return; }
-        statusEl.style.color=''; statusEl.textContent='评测中 / Judging...'; genBtn.style.display='none';
-        try{ const pass=await judgeSource(PROBLEM_ID, source); if(!pass){ statusEl.style.color='#ff6b6b'; statusEl.textContent='未通过（输出不匹配或无测试）。'; return; } statusEl.style.color='#56d364'; statusEl.textContent='通过 | Accepted。现在可生成密文并打开提交页。'; genBtn.style.display='inline-flex'; submitPageBtn.style.display='inline-flex'; genBtn.focus(); }catch(e){ statusEl.style.color='#ffb020'; statusEl.textContent='评测失败（网络/服务异常），请稍后再试。'; }
+        statusEl.className='muted'; statusEl.textContent='评测中 / Judging...'; statusEl.style.color=''; diffEl.innerHTML=''; genBtn.style.display='none'; submitPageBtn.style.display='none';
+        try{
+          const result = await judgeWithDiff(PROBLEM_ID, source);
+          if(!result.pass){
+            statusEl.className='fail'; statusEl.textContent='未通过 / Failed。';
+            if(result.reason){ diffEl.innerHTML='<div class="fail">'+result.reason+'</div>'; return; }
+            const f = result.cases[result.failedIndex];
+            const html = `
+              <div class="fail">失败用例 #${f.index+1}</div>
+              <pre><code>stdin:\n${visualize(f.stdin.replace(/\n$/,''))}</code></pre>
+              <pre><code>expected:\n${visualize(f.expected)}</code></pre>
+              <pre><code>output:\n${visualize(f.output)}</code></pre>
+            `;
+            diffEl.innerHTML=html;
+            return;
+          }
+          statusEl.className='ok'; statusEl.textContent='通过 | Accepted。可以生成密文。';
+          genBtn.style.display='inline-flex'; submitPageBtn.style.display='inline-flex'; genBtn.focus();
+        }catch(e){ statusEl.className='warn'; statusEl.textContent='评测异常：'+(e&&e.message||e); }
       });
       genBtn.addEventListener('click', async ()=>{
         const source=codeInput.value||''; if(!source.trim()){ alert('代码为空'); return; }
-        genBtn.disabled=true; const old=genBtn.innerHTML; genBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 生成中'; statusEl.style.color=''; statusEl.textContent='生成密文中...';
-        try{ const payload=await window.__ContestSubmit.buildPayload(String(PROBLEM_ID), source); const slim=payload.version===3?{ type:'contest', version:3, challenge: payload.challenge, enc: payload.enc, encCode: payload.encCode, key: payload.key }:payload; const jsonStr=JSON.stringify(slim,null,2); try{ window.__LAST_SUBMISSION_JSON=jsonStr; }catch(_){ } const b64=btoa(unescape(encodeURIComponent(JSON.stringify(payload)))); const url='./submit.html#submission='+b64; let copied=false; try{ await navigator.clipboard.writeText(jsonStr); copied=true; }catch(_){ } const copiedTip=copied?'（已自动复制到剪贴板）':'（复制失败，请手动复制下方 JSON）'; statusEl.innerHTML='✅ 已生成密文 '+copiedTip+'。<br>1) 打开提交页。<br>2) 在 Fork 里新建/覆盖 solution.c 粘贴下列 JSON：<br><pre style="background:#161a1e;padding:10px;border-radius:8px;overflow:auto;font-size:12px"><code>'+jsonStr.replace(/[&<>]/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[s]))+'</code></pre>'; const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noreferrer'; a.textContent='打开提交页（新标签）'; a.className='btn'; a.style.marginTop='8px'; statusEl.appendChild(a); submitPageBtn.onclick=async()=>{ if(window.__LAST_SUBMISSION_JSON){ try{ await navigator.clipboard.writeText(window.__LAST_SUBMISSION_JSON); }catch(_){ } } }; }catch(e){ statusEl.style.color='#ff6b6b'; statusEl.textContent='生成密文失败：'+(e&&e.message||e); } finally{ genBtn.disabled=false; genBtn.innerHTML=old; }
-      });
-    })();
-  </script>
-</body>
-</html>
-
-      const pairs=[
-        {title:'sampleIn1Title', pre:'sampleIn1'},
-        {title:'sampleOut1Title', pre:'sampleOut1'},
-        {title:'sampleIn2Title', pre:'sampleIn2'},
-        {title:'sampleOut2Title', pre:'sampleOut2'},
-      ];
-      pairs.forEach(({title,pre})=>{
-        const h=document.getElementById(title); const code=document.getElementById(pre);
-        if(!h||!code) return;
-        // ensure wrapper <pre> is the parent of code
-        const preEl=code.parentElement;
-        if(!h.querySelector('.toggle')){
-          const btn=document.createElement('button');
-          btn.className='btn ghost toggle';
-          btn.style.marginLeft='8px'; btn.style.padding='4px 8px'; btn.style.fontSize='12px';
-          const setLabel=()=>{ btn.textContent = (preEl.style.display==='none'||getComputedStyle(preEl).display==='none')? t('sample_toggle_expand') : t('sample_toggle_collapse'); };
-          setLabel();
-          btn.addEventListener('click',()=>{
-            const hidden = (preEl.style.display==='none'||getComputedStyle(preEl).display==='none');
-            preEl.style.display = hidden? 'block':'none';
-            setLabel();
-          });
-          h.appendChild(btn);
-        }
-      });
-    }
-    function updateToggleLabels(){
-      document.querySelectorAll('.toggle').forEach(btn=>{
-        const preEl = btn.closest('h3')?.nextElementSibling;
-        if(!preEl) return;
-        btn.textContent = (preEl.style.display==='none'||getComputedStyle(preEl).display==='none')? t('sample_toggle_expand') : t('sample_toggle_collapse');
-      });
-    }
-    document.getElementById('langBtn').addEventListener('click',()=>{ setLang(getLang()==='zh'?'en':'zh'); updateToggleLabels(); });
-    applyLang();
-    setupSampleToggles();
-
-    // —— 提交区域逻辑 ——
-    (function(){
-      const handleInput = document.getElementById('handleInput');
-      const saveHandleBtn = document.getElementById('saveHandleBtn');
-      const codeInput = document.getElementById('codeInput');
-  const judgeBtn = document.getElementById('judgeBtn');
-  const genBtn = document.getElementById('genPayloadBtn');
-  const submitPageBtn = document.getElementById('submitPageBtn');
-      const statusEl = document.getElementById('submitStatus');
-      // 预填 handle
-      try{ const h = window.__ContestSubmit.getHandle(); if(h) handleInput.value = h; }catch(e){}
-      saveHandleBtn.addEventListener('click', ()=>{
-        const raw = (handleInput.value||'').trim();
-        if(!raw){ alert('昵称不能为空'); return; }
-        window.__ContestSubmit.setProfile({ handle: raw });
-        saveHandleBtn.innerHTML = '<i class="fas fa-check"></i> 已保存';
-        setTimeout(()=>{ saveHandleBtn.innerHTML = '<i class="fas fa-user-check"></i> 保存昵称'; }, 1200);
-      });
-
-      function genDiamond(n){ const lines=[]; const mid=(n-1)/2; for(let r=0;r<n;r++){ const dist=Math.abs(mid-r); const stars=n-2*dist; const spaces=dist; lines.push(' '.repeat(spaces)+('*'.repeat(stars))); } return lines.join('\n'); }
-      async function tryWandbox(code, stdin){
-        const wandboxUrl='https://wandbox.org/api/compile.json';
-        const payload={ code, compiler:'gcc-head', stdin: stdin||undefined, save:false };
-        const res = await fetch(wandboxUrl,{method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(payload)});
-        if(!res.ok) throw new Error('wandbox '+res.status);
-        const j=await res.json();
-        const out=(j.program_output||j.program_stdout||j.program||j.result||'')||'';
-        return out.replace(/\n+$/,'');
-      }
-      async function judgeWeek1(source){
-        let tests=[];
-  try{ const r=await fetch('./data/tests/prob-1.json',{cache:'no-store'}); if(r.ok) tests = await r.json(); }catch(_){ }
-        if(!Array.isArray(tests)||!tests.length){ tests=[1,3,5].map(n=>({stdin:String(n)+'\n', expected: genDiamond(n)})); }
-        for(const tc of tests){
-          const out = await tryWandbox(source, tc.stdin);
-          const exp = (tc.expect||tc.expected||'').replace(/\n+$/,'');
-          if(out!==exp) return false;
-        }
-        return true;
-      }
-
-      judgeBtn.addEventListener('click', async ()=>{
-        const handleRaw = (handleInput.value||'').trim();
-        if(!handleRaw){ alert('请先填写昵称'); return; }
-        window.__ContestSubmit.setProfile({ handle: handleRaw });
-        const source = codeInput.value||'';
-        if(!source.trim()){ alert('请粘贴代码'); return; }
-        statusEl.style.color=''; statusEl.textContent='评测中 / Judging...';
-        genBtn.style.display='none';
+        genBtn.disabled=true; const old=genBtn.innerHTML; genBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 生成中'; statusEl.className='muted'; statusEl.textContent='生成密文中...';
         try{
-          const pass = await judgeWeek1(source);
-          if(!pass){ statusEl.style.color='#ff6b6b'; statusEl.textContent='WA：输出不匹配，未通过。'; return; }
-          statusEl.style.color='#56d364'; statusEl.textContent='通过 | Accepted。现在可生成密文并打开提交页。';
-          genBtn.style.display='inline-flex';
+          const payload=await window.__ContestSubmit.buildPayload(String(PROBLEM_ID), source);
+          const slim=payload.version===3?{ type:'contest', version:3, challenge: payload.challenge, enc: payload.enc, encCode: payload.encCode, key: payload.key }:payload;
+          const jsonStr=JSON.stringify(slim,null,2);
+          try{ window.__LAST_SUBMISSION_JSON=jsonStr; }catch(_){ }
+          let copied=false; try{ await navigator.clipboard.writeText(jsonStr); copied=true; }catch(_){ }
+          const copiedTip=copied?'（已复制）':'（自动复制失败，请手动）';
+          statusEl.className='ok'; statusEl.innerHTML='✅ 密文生成 '+copiedTip+'：<pre><code>'+jsonStr.replace(/[&<>]/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[s]))+'</code></pre>';
+          submitPageBtn.onclick=async()=>{ if(window.__LAST_SUBMISSION_JSON){ try{ await navigator.clipboard.writeText(window.__LAST_SUBMISSION_JSON); }catch(_){ } } };
           submitPageBtn.style.display='inline-flex';
-          genBtn.focus();
-        }catch(e){ statusEl.style.color='#ffb020'; statusEl.textContent='评测失败（网络/服务异常），请稍后再试。'; }
-      });
-
-      genBtn.addEventListener('click', async ()=>{
-        const source = codeInput.value||'';
-        if(!source.trim()){ alert('代码为空'); return; }
-        genBtn.disabled=true; const old=genBtn.innerHTML; genBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 生成中';
-        statusEl.style.color=''; statusEl.textContent='生成密文中...';
-        try{
-          const payload = await window.__ContestSubmit.buildPayload('1', source);
-          const slim = payload.version===3 ? { type:'contest', version:3, challenge: payload.challenge, enc: payload.enc, encCode: payload.encCode, key: payload.key } : payload;
-          const jsonStr = JSON.stringify(slim, null, 2);
-          // 记住最近一次生成的密文，供“提交页”按钮点击时兜底复制
-          try{ window.__LAST_SUBMISSION_JSON = jsonStr; }catch(_){ }
-          const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-          const url = './submit.html#submission='+b64;
-          // 尝试自动复制到剪贴板
-          let copied = false;
-          try{
-            await navigator.clipboard.writeText(jsonStr);
-            copied = true;
-          }catch(_){ copied = false; }
-          const copiedTip = copied ? '（已自动复制到剪贴板）' : '（复制失败，请手动复制下方 JSON）';
-          statusEl.innerHTML='✅ 已生成密文 '+copiedTip+'。<br>1) 打开提交页。<br>2) 在 Fork 里新建/覆盖 solution.c 粘贴下列 JSON：<br><pre style="background:#161a1e;padding:10px;border-radius:8px;overflow:auto;font-size:12px"><code>'+jsonStr.replace(/[&<>]/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[s]))+'</code></pre>';
-          const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noreferrer'; a.textContent='打开提交页（新标签）'; a.className='btn'; a.style.marginTop='8px'; statusEl.appendChild(a);
-          // 同时给“提交页（粘贴密文）”按钮绑定点击复制兜底
-          submitPageBtn.onclick = async ()=>{
-            if(window.__LAST_SUBMISSION_JSON){ try{ await navigator.clipboard.writeText(window.__LAST_SUBMISSION_JSON); }catch(_){ /* ignore */ } }
-          };
-        }catch(e){ statusEl.style.color='#ff6b6b'; statusEl.textContent='生成密文失败：'+(e&&e.message||e); }
+        }catch(e){ statusEl.className='fail'; statusEl.textContent='生成失败：'+(e&&e.message||e); }
         finally{ genBtn.disabled=false; genBtn.innerHTML=old; }
       });
     })();
