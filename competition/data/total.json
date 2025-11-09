@@ -1,6 +1,6 @@
 {
   "repo": "ChenyuHeee/c",
-  "updatedAt": "2025-11-09T05:47:05.539Z",
+  "updatedAt": "2025-11-09T05:49:32.446Z",
   "ranks": [
     {
       "handle": "你们跑不了了",
@@ -49,6 +49,12 @@
       "rounds": 1,
       "best": 560,
       "points": 38
+    },
+    {
+      "handle": "sky-wolf-tester",
+      "rounds": 1,
+      "best": 668,
+      "points": 32
     },
     {
       "handle": "sky-wolf",
