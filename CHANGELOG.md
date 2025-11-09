@@ -1,4 +1,5 @@
 # [1.3.10] - 2025-11-07
+# [1.3.10] - 2025-11-07
 ### Changed
 - GitHub 用户名从 `DanielHe666` 迁移为 `ChenyuHeee`：更新所有示例与链接（README、提交页、Serverless 示例、榜单数据）。
 - 移除“一键提交”功能：禁用 `window.__CONFIG__.submitEndpoint` 与公钥配置，取消 Cloudflare Worker 提交路径。
@@ -11,6 +12,15 @@
 	 - “提交页”指引文案更新，更加面向新手、列出 Fork + 新建文件 + 粘贴 + PR 的步骤编号。
 	 - 提交页统一缓存与复用 DOM 引用，减少重复查询，提升可维护性。
 	 - 版本号提升为 `v1.3.12` 以刷新缓存并标记此 UX 改进。
+	- 提交页新增“教程”按钮（新标签页）直达 `submission_guide/index.md`，便于首次参赛快速上手。
+
+	# [1.3.13] - 2025-11-09
+	### Added
+	- 新增 `submission_guide/index.html`：在站内渲染 `submission_guide/index.md` 的教程页面（深色主题、适配移动端）。
+	- `competition/submit.html` 的“教程”按钮改为指向渲染后的 HTML（`submission_guide/index.html`），阅读体验更佳。
+
+	### Changed
+	- 提升版本为 `v1.3.13` 以刷新缓存。
 
 ### Added
 - 新增 `competition/view.html`：可视化解密页面，支持 v3 密文 JSON 解码展示原始源码与基本元数据（handle, challenge, bytes, ts）。
