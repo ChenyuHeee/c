@@ -103,8 +103,9 @@ async function computeProblem(problemId){
     // Prefer solution.c if exists
     const pick = files.includes('solution.c') ? 'solution.c' : files[0];
     const fAbs = path.join(hDir, pick);
-    const buf = await fs.readFile(fAbs);
-    let bytes = Buffer.byteLength(buf); // default: raw file length (plaintext legacy)
+  const buf = await fs.readFile(fAbs);
+  // 默认按原文件字节数（纯文本 .c）计数；若检测到 contest v3 密文则按解密后的 UTF-8 字节计数
+  let bytes = buf.length; // Buffer.len 是真实字节数，避免误用 Buffer.byteLength(…) 的编码语义
   let decryptedCode = null;
     try{
       const txt = buf.toString('utf8');
@@ -168,8 +169,28 @@ async function aggregateTotal(){
 }
 
 async function main(){
-  const probEnv = process.env.PROBLEMS || process.env.WEEK || '1'; // 保持 WEEK 向后兼容
-  const problems = probEnv.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!Number.isNaN(n));
+  // 1) 从环境变量读取目标轮次（兼容 WEEK），形如 "0,1,2"；
+  const probEnvRaw = (process.env.PROBLEMS || process.env.WEEK || '').trim();
+  let problems = probEnvRaw
+    ? probEnvRaw.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!Number.isNaN(n))
+    : [];
+  // 2) 若未指定，则自动从 submissions/ 目录发现现有轮次（包含 week-<n> 与 <n> 两种命名，去重后升序）
+  if(problems.length===0){
+    const dirs = await listDirs(SUBMISSIONS);
+    const ids = new Set();
+    for(const d of dirs){
+      const mWeek = d.match(/^week-(\d+)$/);
+      const mNum = d.match(/^(\d+)$/);
+      if(mWeek){ ids.add(parseInt(mWeek[1],10)); }
+      else if(mNum){ ids.add(parseInt(mNum[1],10)); }
+    }
+    problems = Array.from(ids).sort((a,b)=>a-b);
+    log('discovered problems from submissions:', problems.join(','));
+  }
+  if(problems.length===0){
+    log('no problems discovered; nothing to do. You can set PROBLEMS=0,1,... to force.');
+    return;
+  }
   for(const p of problems){ await computeProblem(p); }
   await aggregateTotal();
 }
