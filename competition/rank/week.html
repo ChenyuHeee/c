@@ -64,7 +64,12 @@
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
     function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); load(); }
     function t(k){ const L=getLang(); return (i18n[L]&&i18n[L][k])||i18n.zh[k]||k; }
-    function paramProblem(){ const u=new URL(location.href); const p=u.searchParams.get('problem')||u.searchParams.get('week'); const n=parseInt(p,10); return Number.isFinite(n)&&n>=0?n:1; }
+    function paramProblem(){
+      const u=new URL(location.href);
+      const p=u.searchParams.get('id')||u.searchParams.get('problem')||u.searchParams.get('week');
+      const n=parseInt(p,10);
+      return Number.isFinite(n)&&n>=0?n:1;
+    }
     function applyLang(){
       const w=paramProblem();
       document.getElementById('title').textContent=t('title');
