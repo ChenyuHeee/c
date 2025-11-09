@@ -10,6 +10,7 @@ const ROOT = path.resolve(process.cwd());
 // 若两者同时存在，以新目录内容为准（避免重复计数）。未配置的轮次默认 100 分。
 const ROUND_DIFFICULTY = Object.freeze({
   1: 120,
+  // 0: 150, // 可选：直接在此声明 0 号题的 D；否则将尝试从 problems.json 读取
   // 2: 150,
   // 3: 200,
 });
@@ -75,6 +76,15 @@ function tryParseContestEncrypted(text){
 }
 
 async function computeWeek(week){
+  // 若未在映射中，尝试从 competition/problems.json 读取对应难度 D
+  let difficultyFromMap = ROUND_DIFFICULTY[week];
+  if(typeof difficultyFromMap !== 'number'){
+    try{
+      const pj = JSON.parse(await fs.readFile(path.join(DATA_DIR, '..', 'problems.json'), 'utf8'));
+      const p = Array.isArray(pj) ? pj.find(x=>x && x.id===week) : null;
+      if(p && typeof p.difficulty==='number') difficultyFromMap = p.difficulty;
+    }catch(_){ /* ignore */ }
+  }
   const legacyDir = path.join(SUBMISSIONS, `week-${week}`);
   const newDir = path.join(SUBMISSIONS, String(week));
   const legacyHandles = await listDirs(legacyDir);
@@ -110,7 +120,7 @@ async function computeWeek(week){
   // sort: bytes asc, time asc
   entries.sort((a,b)=> a.bytes!==b.bytes ? a.bytes-b.bytes : (a.commitTime < b.commitTime ? -1 : a.commitTime > b.commitTime ? 1 : 0));
   // 计算本轮积分：第一名获得难度积分 D，其余按 D * (minBytes/bytes) 四舍五入到整数。
-  const difficulty = ROUND_DIFFICULTY[week] || 100;
+  const difficulty = typeof difficultyFromMap === 'number' ? difficultyFromMap : 100;
   const minBytes = entries.length ? entries[0].bytes : null;
   if(minBytes && Number.isFinite(minBytes) && minBytes>0){
     for(const r of entries){

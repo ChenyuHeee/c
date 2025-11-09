@@ -1,12 +1,7 @@
 [
   {
     "id": 1,
-    "slug": "print-pattern",
-    "name_zh": "打印指定图案",
-    "name_en": "Print Specified Pattern",
-    "difficulty": 120,
-    "points": 120,
-    "desc": "示例题：输出指定多行字符图案。",
-    "updatedAt": "2025-11-09T00:00:00.000Z"
+    "desc_en": "---\nnumber: 1\nslug: print-diamond-fast\ntitle: 打印菱形（优化版）\nshort: 打印指定大小的菱形图案\nname_zh: 打印菱形（优化版）\nname_en: Print Diamond (Optimized)\ndifficulty: 150\ndesc_zh:\n  给定一个正奇数 n，打印由星号组成的对称菱形图案。\n  要求：\n  1. 无额外尾随空格\n  2. 末尾换行\ndesc_en:\n  Given a positive odd integer n, print a symmetric diamond of asterisks.\n  Requirements:\n  1. No trailing spaces per line\n  2. Final newline at end\n# tests_file: tests.json\ntests_file: tests.json\nupdatedAt: 2025-11-09T00:00:00.000Z\n---\n\n# 题面正文（Markdown）\n这里可以继续写更详细的题解、约束、提示、样例、FAQ 等。\n",
+    "desc_zh": "---\nnumber: 1\nslug: print-diamond-fast\ntitle: 打印菱形（优化版）\nshort: 打印指定大小的菱形图案\nname_zh: 打印菱形（优化版）\nname_en: Print Diamond (Optimized)\ndifficulty: 150\ndesc_zh:\n  给定一个正奇数 n，打印由星号组成的对称菱形图案。\n  要求：\n  1. 无额外尾随空格\n  2. 末尾换行\ndesc_en:\n  Given a positive odd integer n, print a symmetric diamond of asterisks.\n  Requirements:\n  1. No trailing spaces per line\n  2. Final newline at end\n# tests_file: tests.json\ntests_file: tests.json\nupdatedAt: 2025-11-09T00:00:00.000Z\n---\n\n# 题面正文（Markdown）\n这里可以继续写更详细的题解、约束、提示、样例、FAQ 等。\n"
   }
 ]
