@@ -130,10 +130,10 @@
       return out.replace(/\n+$/,'');
     }
     async function judgeTemplate(id, source){
-      // TODO: 请为本题实现评测。建议在 competition/data/tests/week-<id>.json 中放置用例数组：{stdin, expected}
+  // TODO: 请为本题实现评测。建议在 competition/data/tests/prob-<id>.json 中放置用例数组：{stdin, expected}
       // 下面示例：若无 tests 文件，则直接判 AC（仅示例，务必替换！）
       try{
-        const r=await fetch(`./data/tests/week-${id}.json`,{cache:'no-store'});
+  const r=await fetch(`./data/tests/prob-${id}.json`,{cache:'no-store'});
         if(r.ok){ const tests=await r.json();
           for(const tc of (tests||[])){
             const out = await tryWandbox(source, tc.stdin||'');

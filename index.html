@@ -824,7 +824,10 @@ int main() {
             const contestBtn = modal.querySelector('#contestSubmitBtn');
             const contestInput = modal.querySelector('#contestCodeInput');
             let pendingContestCode = null; let pendingWin = null;
-            function validContestCode(code){ return /^week-\d+$/i.test(code.trim()); }
+            // Canonical problem code helpers (support prob-<n>, week-<n>, or raw number)
+            function extractProblemId(code){ const m=String(code).trim().match(/^(?:prob-|week-)?(\d+)$/i); return m? parseInt(m[1],10): null; }
+            function toCanonicalProblemCode(code){ const id=extractProblemId(code); return id!=null? `prob-${id}`: String(code).trim(); }
+            function validContestCode(code){ return extractProblemId(code)!=null; }
             function buildContestPayload(code){
                 const profileRaw = localStorage.getItem('contest_profile');
                 let profile = {}; try{ profile = JSON.parse(profileRaw||'{}'); }catch(e){}
@@ -835,7 +838,8 @@ int main() {
                 }
                 const source = window.editor? window.editor.getValue() : '';
                 const bytes = new TextEncoder().encode(source).length;
-                return { type:'contest', version:1, challenge:code, handle, bytes, ts:new Date().toISOString(), code:source };
+                const canonical = toCanonicalProblemCode(code);
+                return { type:'contest', version:1, challenge:canonical, handle, bytes, ts:new Date().toISOString(), code:source };
             }
             function performContestSubmit(code, winRef){
                 const statusEl = document.getElementById('contestJudgeStatus');
@@ -863,12 +867,26 @@ int main() {
                 statusEl.textContent='评测中 / Judging...';
                 function genDiamond(n){ const lines=[]; const mid=(n-1)/2; for(let r=0;r<n;r++){ const dist=Math.abs(mid-r); const stars=n-2*dist; const spaces=dist; lines.push(' '.repeat(spaces)+('*'.repeat(stars))); } return lines.join('\n'); }
                 let tests=[];
-                if(/^week-1$/i.test(challenge)){
-                    try{
-                        const resp = await fetch('./competition/data/tests/week-1.json',{cache:'no-store'});
-                        if(resp.ok){ tests = await resp.json(); }
-                    }catch(e){ /* ignore */ }
-                    if(!Array.isArray(tests) || !tests.length){ tests=[1,3,5].map(n=>({stdin:String(n)+'\n', expected: genDiamond(n)})); }
+                // Normalize challenge and derive numeric id
+                const pid = extractProblemId(challenge);
+                const canonical = pid!=null? `prob-${pid}`: challenge;
+                try{
+                    if(pid!=null){
+                        // Prefer new prob-<id> tests path
+                        const resp1 = await fetch(`./competition/data/tests/prob-${pid}.json`,{cache:'no-store'});
+                        if(resp1.ok){ tests = await resp1.json(); }
+                        // Fallback to legacy week-<id>
+                        if((!Array.isArray(tests) || !tests.length)){
+                            const resp2 = await fetch(`./competition/data/tests/week-${pid}.json`,{cache:'no-store'});
+                            if(resp2.ok){ tests = await resp2.json(); }
+                        }
+                    }
+                }catch(e){ /* ignore network/parse errors */ }
+                // Synthetic fallback ONLY for problem 1 if still empty
+                if((!Array.isArray(tests) || !tests.length) && pid===1){ tests=[1,3,5].map(n=>({stdin:String(n)+'\n', expected: genDiamond(n)})); }
+                if(!Array.isArray(tests) || !tests.length){
+                    statusEl.textContent='未知题目，跳过评测 / Unknown challenge, skip judge.';
+                    return performContestSubmit(canonical, winRef);
                 }
                 if(!tests.length){ statusEl.textContent='未知题目，跳过评测 / Unknown challenge, skip judge.'; return performContestSubmit(challenge, winRef); }
                 let allPass=true;
@@ -882,7 +900,7 @@ int main() {
                 }
                 if(!allPass){ statusEl.style.color='#ff6b6b'; statusEl.textContent='WA：输出不匹配，阻止上传 / Wrong Answer blocked.'; try{ if(winRef && !winRef.closed) winRef.close(); }catch(e){} return; }
                 statusEl.style.color='#56d364'; statusEl.textContent='通过 | Accepted，生成提交数据...';
-                let encPayload = secureContestPayload(challenge, source);
+                let encPayload = secureContestPayload(canonical, source);
                 // v4 secureContestPayload 返回 Promise
                 if (encPayload && typeof encPayload.then === 'function') {
                     encPayload = await encPayload;
