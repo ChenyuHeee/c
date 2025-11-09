@@ -120,7 +120,41 @@ function parseFrontmatter(mdContent) {
     return { metadata, content };
   } catch (e) {
     console.error("Error parsing YAML frontmatter:", e);
-    return { metadata: {}, content: mdContent };
+    console.log("Attempting manual extraction...");
+    
+    // Fallback: manually extract key-value pairs
+    const metadata = {};
+    const lines = frontmatter.split('\n');
+    let currentKey = null;
+    let currentValue = '';
+    
+    for (const line of lines) {
+      const keyMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(.*)$/);
+      if (keyMatch && !line.startsWith(' ') && !line.startsWith('\t')) {
+        // Save previous key-value
+        if (currentKey) {
+          metadata[currentKey] = currentValue.trim();
+        }
+        // Start new key
+        currentKey = keyMatch[1];
+        currentValue = keyMatch[2] || '';
+      } else if (currentKey && (line.startsWith(' ') || line.startsWith('\t'))) {
+        // Continuation of current value
+        currentValue += '\n' + line.trim();
+      }
+    }
+    
+    // Save last key-value
+    if (currentKey) {
+      metadata[currentKey] = currentValue.trim();
+    }
+    
+    // Convert numeric strings
+    if (metadata.number) metadata.number = parseInt(metadata.number, 10);
+    if (metadata.difficulty) metadata.difficulty = parseInt(metadata.difficulty, 10);
+    
+    console.log("Manual extraction result:", metadata);
+    return { metadata, content };
   }
 }
 
