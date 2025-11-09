@@ -109,8 +109,8 @@
       if(typeof meta?.difficulty==='number'){ document.getElementById('diffTag').textContent = `D=${meta.difficulty}`; }
       document.getElementById('problemDesc').textContent = meta?.desc || document.getElementById('problemDesc').textContent;
   const rb=document.getElementById('rankBtn'); const rrb=document.getElementById('roundRankBtn');
-  if(rb) rb.href = `./rank/week.html?id=${id}`;
-  if(rrb) rrb.href = `./rank/week.html?id=${id}`;
+  if(rb) rb.href = `./rank/board.html?id=${id}`;
+  if(rrb) rrb.href = `./rank/board.html?id=${id}`;
     }
 
   // —— 评测逻辑（新版统一 diff 输出） ——

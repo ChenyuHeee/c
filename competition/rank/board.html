@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title id="title">C Code Golf · 榜单</title>
+  <meta name="theme-color" content="#0b0c0d" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root{ --bg:#0b0c0d; --panel:#0f1113; --muted:#9aa4ad; --text:#e6eef6; --accent:#48a0ff; --radius:12px; }
+    body{margin:0;background:var(--bg);color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial}
+    .wrap{max-width:1040px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;gap:10px;justify-content:space-between}
+    header h1{color:#fff;font-size:22px;margin:0;display:flex;align-items:center;gap:8px}
+    a.btn,button.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.08);background:var(--panel);color:var(--text);cursor:pointer}
+    a.btn.primary,button.btn.primary{background:var(--accent);color:#071022;border:0}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:16px;margin-top:16px}
+    table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+    th,td{border:1px solid #222;padding:6px 8px;text-align:left}
+    th{background:#161a1e;color:#fff}
+    .muted{color:#7e8b97}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 id="h1"><i class="fas fa-medal"></i> <span id="hdr">C Code Golf · 榜单</span></h1>
+      <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn" href="../index.html"><i class="fas fa-flag-checkered"></i> C Code Golf</a>
+        <a class="btn" href="../../index.html"><i class="fas fa-code"></i> 编辑器 Editor</a>
+        <button id="refreshBtn" class="btn"><i class="fas fa-arrows-rotate"></i> 强制刷新</button>
+        <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="muted" id="desc">数据来自 competition/data/prob-<span id="pid">?</span>.json。</div>
+      <div class="muted" id="diffBadge" style="margin-top:4px"></div>
+      <div class="muted" id="updated" style="margin-top:6px"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th id="th_handle">选手 Handle</th>
+            <th id="th_bytes">字节数 Bytes</th>
+            <th id="th_time">提交时间 Time</th>
+            <th id="th_pts">积分 Points</th>
+            <th id="th_code">代码 Code</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="6" class="muted">加载中 Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    const i18n={
+      zh:{ title:'C Code Golf · 榜单', header:'C Code Golf · Round <n> · 第 <n> 期', refresh:'强制刷新',
+        desc:'数据来自 competition/data/prob-<n>.json。按字节数升序；同字节按提交先后。', handle:'选手 Handle', bytes:'字节数 Bytes', time:'提交时间 Time', pts:'积分 Points', code:'代码 Code', loading:'加载中 Loading…', empty:'暂无提交 No submissions yet', updated:'更新于', difficulty:'难度 Difficulty' },
+      en:{ title:'C Code Golf · Board', header:'C Code Golf · Round <n>', refresh:'Force Refresh',
+        desc:'Data from competition/data/prob-<n>.json. Sorted by bytes ascending; ties by earlier time.', handle:'Handle 选手', bytes:'Bytes 字节数', time:'Time 提交时间', pts:'Points 积分', code:'Code 代码', loading:'Loading 加载中…', empty:'No submissions yet 暂无提交', updated:'Updated at', difficulty:'Difficulty 难度' }
+    };
+    function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
+    function t(k){ const L=getLang(); return (i18n[L]&&i18n[L][k])||i18n.zh[k]||k; }
+    function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); load(); }
+    function paramId(){ const u=new URL(location.href); const p=u.searchParams.get('id')||u.searchParams.get('problem')||u.searchParams.get('week'); const n=parseInt(p,10); return Number.isFinite(n)&&n>=0?n:1; }
+    function applyLang(){ const id=paramId(); document.getElementById('title').textContent=t('title'); document.getElementById('h1').innerHTML='<i class="fas fa-medal"></i> '+t('header').replace(/<n>/g,id); document.getElementById('desc').innerHTML=t('desc').replace(/<n>/g,id); document.getElementById('th_handle').textContent=t('handle'); document.getElementById('th_bytes').textContent=t('bytes'); document.getElementById('th_time').textContent=t('time'); document.getElementById('th_pts').textContent=t('pts'); document.getElementById('th_code').textContent=t('code'); document.getElementById('pid').textContent=id; document.getElementById('langBtn').innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中'); const rbtn=document.getElementById('refreshBtn'); if(rbtn) rbtn.innerHTML='<i class="fas fa-arrows-rotate"></i> '+t('refresh'); }
+    document.getElementById('langBtn').addEventListener('click',()=>setLang(getLang()==='zh'?'en':'zh'));
+    document.getElementById('refreshBtn').addEventListener('click', async ()=>{ try{ if('caches' in window){ const keys=await caches.keys(); await Promise.all(keys.map(k=>caches.delete(k).catch(()=>{}))); } if('serviceWorker' in navigator){ const regs=await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r=>r.unregister().catch(()=>{}))); } }catch(e){} const u=new URL(location.href); u.searchParams.set('fresh',Date.now().toString()); location.replace(u.toString()); });
+    applyLang();
+
+    function formatTime(iso){ try{ const d=new Date(iso); if(!isNaN(d)) return d.toLocaleString(); }catch(e){} return iso||'-'; }
+
+    async function load(){
+      const id=paramId(); const tbody=document.getElementById('tbody');
+      try{
+        const res=await fetch(`../data/prob-${id}.json`,{cache:'no-store'});
+        if(res.status===404){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; return; }
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const data=await res.json();
+        const up=document.getElementById('updated'); if(data.updatedAt && up){ up.textContent=`${t('updated')}: ${formatTime(data.updatedAt)}`; }
+        const diff=document.getElementById('diffBadge'); if(diff){ const dVal=data.difficulty; if(typeof dVal==='number'){ diff.textContent=`${t('difficulty')}: D = ${dVal}`; } }
+        tbody.innerHTML='';
+        (data.ranks||[]).forEach((row,idx)=>{
+          const codeHref=row.path?`../view.html?path=${encodeURIComponent(row.path)}&repo=${encodeURIComponent(data.repo||'')}&branch=${encodeURIComponent(data.branch||'main')}`:'';
+          const codeCell=codeHref?`<a href="${codeHref}" target="_blank" rel="noreferrer">${t('code')}</a>`:'-';
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>${idx+1}</td><td>${row.handle}</td><td>${row.bytes}</td><td>${formatTime(row.commitTime)}</td><td>${row.points??'-'}</td><td>${codeCell}</td>`;
+          tbody.appendChild(tr);
+        });
+        if(!data.ranks||data.ranks.length===0){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; }
+      }catch(e){ const msg=(e&&e.message)||String(e)||''; tbody.innerHTML=`<tr><td colspan="6" class="muted">加载失败 Load failed: ${msg} <a href=\"javascript:location.reload()\">重试 Retry</a></td></tr>`; }
+    }
+    load();
+  </script>
+</body>
+</html>
