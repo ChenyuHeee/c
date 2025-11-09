@@ -36,23 +36,14 @@
 
     <div class="card">
       <h3 id="introTitle">活动说明</h3>
-  <p id="introDesc">若干轮（Round）C 语言高尔夫题：按字节数排名。天梯积分：每轮难度积分 D；第一名得 D，其他得 round(D × 最小字节数/自身字节数)，随提交实时变化。</p>
+	<p id="introDesc">若干轮（Round）C 语言高尔夫题：按字节数排名。天梯积分：每轮难度积分 D；第一名得 D，其他得 round(D × 最小字节数/自身字节数)，随提交实时变化。</p>
       <div class="row">
-  <a class="btn primary" href="./1.html"><i class="fas fa-calendar-week"></i> 第 1 期 · Round 1</a>
-  <a class="btn" href="./rank/1.html"><i class="fas fa-trophy"></i> 第 1 期榜单</a>
+	<a id="firstProblemBtn" class="btn primary" href="#"><i class="fas fa-calendar-week"></i> …</a>
+	<a id="firstRankBtn" class="btn" href="#"><i class="fas fa-trophy"></i> …</a>
       </div>
     </div>
 
-    <div class="grid" id="weeks">
-      <div class="card">
-  <h3>1. 打印指定图案 <span style="font-weight:400;color:#9aa4ad;font-size:12px">D=120</span></h3>
-        <p id="w1">打印指定图案（示例题）。</p>
-        <div class="row">
-          <a class="btn" href="./1.html"><i class="fas fa-book-open"></i> 题目 Problem</a>
-          <a class="btn" href="./rank/1.html"><i class="fas fa-medal"></i> 排名 Rank</a>
-        </div>
-      </div>
-    </div>
+    <div class="grid" id="weeks"></div>
 
     <div class="footer">
       <div>By C. He from ZJU · Online C Compiler</div>
@@ -63,34 +54,64 @@
     const i18n={
       zh:{ title:'C Code Golf · 挑战轮次', header:'C Code Golf 挑战轮次', editor:'编辑器 Editor', total:'天梯榜 Ladder',
         introTitle:'活动说明', introDesc:'若干轮（Round）C 语言高尔夫题：按字节数排名。天梯积分：每轮难度积分 D；第一名得 D，其他得 round(D × 最小字节数/自身字节数)，随提交实时变化。',
-        week1:'打印指定图案（示例题）。', problem:'题目 Problem', rank:'榜单 Board', w1btn:'第 1 期 · Round 1', w1rank:'第 1 期榜单'
+        week1:'打印指定图案（示例题）。', problem:'题目 Problem', rank:'榜单 Board'
       },
       en:{ title:'C Code Golf · Rounds', header:'C Code Golf Rounds', editor:'Editor 编辑器', total:'Ladder 天梯榜',
         introTitle:'Overview', introDesc:'Multiple C code golf rounds ranked by byte size. Ladder scoring: round difficulty D; 1st gets D, others round(D × minBytes/bytes); updates in real time.',
-        week1:'Print the specified pattern (sample).', problem:'Problem 题目', rank:'Board 榜单', w1btn:'Round 1 · 第 1 期', w1rank:'Round 1 Board'
+        week1:'Print the specified pattern (sample).', problem:'Problem 题目', rank:'Board 榜单'
       }
     };
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
-    function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); }
+  function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); renderProblems(); }
     function t(k){ const L=getLang(); return (i18n[L]&&i18n[L][k])||i18n.zh[k]||k; }
     function applyLang(){
       document.getElementById('title').textContent=t('title');
       document.getElementById('h1').innerHTML='<i class="fas fa-flag-checkered"></i> '+t('header');
       const rows=document.querySelectorAll('a.btn');
-      rows[0].innerHTML='<i class="fas fa-code"></i> '+t('editor');
-      rows[1].innerHTML='<i class="fas fa-ranking-star"></i> '+t('total');
+      // 前两个固定按钮
+      if(rows[0]) rows[0].innerHTML='<i class="fas fa-code"></i> '+t('editor');
+      if(rows[1]) rows[1].innerHTML='<i class="fas fa-ranking-star"></i> '+t('total');
       document.getElementById('introTitle').textContent=t('introTitle');
       document.getElementById('introDesc').textContent=t('introDesc');
-  document.querySelector('a.btn.primary').innerHTML='<i class="fas fa-calendar-week"></i> '+t('w1btn');
-      document.querySelectorAll('.row a.btn')[3].innerHTML='<i class="fas fa-trophy"></i> '+t('w1rank');
-      document.getElementById('w1').textContent=t('week1');
-      const cards=document.querySelectorAll('#weeks .card');
-      cards[0].querySelectorAll('.row a.btn')[0].innerHTML='<i class="fas fa-book-open"></i> '+t('problem');
-  cards[0].querySelectorAll('.row a.btn')[1].innerHTML='<i class="fas fa-medal"></i> '+t('rank');
       const langBtn=document.getElementById('langBtn'); langBtn.innerHTML='<i class="fas fa-globe"></i> '+(getLang()==='zh'?'EN':'中');
     }
     document.getElementById('langBtn').addEventListener('click',()=>setLang(getLang()==='zh'?'en':'zh'));
     applyLang();
+
+    async function renderProblems(){
+      const container = document.getElementById('weeks');
+      if(!container) return;
+      container.innerHTML='';
+      let list=[];
+      try{
+        const res=await fetch('./problems.json?fresh='+(Date.now()),{cache:'no-store'});
+        if(res.ok) list=await res.json();
+      }catch(e){}
+      if(!Array.isArray(list)||list.length===0){
+        list=[{id:1,name_zh:'打印指定图案',name_en:'Print Specified Pattern',difficulty:120,desc:t('week1')}];
+      }
+      const L=getLang();
+      const first=list[0];
+      const fp=document.getElementById('firstProblemBtn');
+      const fr=document.getElementById('firstRankBtn');
+      const firstName=L==='zh'?(first.name_zh||first.name_en||('Round '+first.id)):(first.name_en||first.name_zh||('Round '+first.id));
+      if(fp){ fp.href=`./${first.id}.html`; fp.innerHTML=`<i class="fas fa-calendar-week"></i> ${first.id}. ${firstName}`; }
+  if(fr){ fr.href=`./rank/week.html?week=${first.id}`; fr.innerHTML=`<i class="fas fa-trophy"></i> ${L==='zh'?('第 '+first.id+' 期榜单'):('Round '+first.id+' Board')}`; }
+      list.forEach(p=>{
+        const name=L==='zh'?(p.name_zh||p.name_en||('Round '+p.id)):(p.name_en||p.name_zh||('Round '+p.id));
+        const d=(typeof p.difficulty==='number')?p.difficulty: (typeof p.points==='number'?p.points:undefined);
+        const badge=d!=null?`<span style="font-weight:400;color:#9aa4ad;font-size:12px">D=${d}</span>`:'';
+        const card=document.createElement('div'); card.className='card';
+        card.innerHTML=`<h3>${p.id}. ${name} ${badge}</h3>
+          <p>${p.desc||''}</p>
+          <div class='row'>
+            <a class='btn' href='./${p.id}.html'><i class='fas fa-book-open'></i> ${t('problem')}</a>
+            <a class='btn' href='./rank/week.html?week=${p.id}'><i class='fas fa-medal'></i> ${t('rank')}</a>
+          </div>`;
+        container.appendChild(card);
+      });
+    }
+    renderProblems();
   </script>
 </body>
 </html>

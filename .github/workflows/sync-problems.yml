@@ -1,0 +1,36 @@
+name: Sync problems from ccodegolf
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *' # 每 6 小时运行一次
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run sync script
+        run: |
+          node scripts/sync_problems_from_ccodegolf.mjs
+
+      - name: Commit and create pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: sync problems from ccodegolf"
+          branch: sync/problems-from-ccodegolf
+          title: "chore: sync problems from ccodegolf"
+          body: |-
+            This PR updates `competition/problems.json` and tests by syncing from `ChenyuHeee/ccodegolf`.
+          labels: automated, sync
+          delete-branch: true

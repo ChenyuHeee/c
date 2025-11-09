@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title id="title">Round <id> · 第 <id> 期</title>
+  <meta name="theme-color" content="#0b0c0d" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root{ --bg:#0b0c0d; --panel:#0f1113; --muted:#9aa4ad; --text:#e6eef6; --accent:#48a0ff; --radius:12px; }
+    body{margin:0;background:var(--bg);color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial}
+    .wrap{max-width:960px;margin:0 auto;padding:20px}
+    header{display:flex;align-items:center;gap:12px;justify-content:space-between}
+    header h1{color:#fff;font-size:22px;margin:0;display:flex;align-items:center;gap:8px}
+    a.btn,button.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.08);background:var(--panel);color:var(--text);cursor:pointer}
+    a.btn.primary,button.btn.primary{background:var(--accent);color:#071022;border:0}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:18px;margin-top:18px}
+    .card h2{margin:0 0 12px;color:#fff;font-size:20px}
+    pre{background:#161a1e;padding:12px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.5}
+    code{font-family:Menlo,monospace}
+    table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+    th,td{border:1px solid #222;padding:6px 8px;text-align:left}
+    th{background:#161a1e;color:#fff}
+    .footer{margin-top:26px;display:flex;justify-content:space-between;align-items:center;font-size:12px}
+    .notice{background:#161a1e;padding:10px;border-radius:8px;font-size:13px;line-height:1.6}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 id="h1"><i class="fas fa-calendar-week"></i> Round <span id="rid"></span> · 第 <span id="rid2"></span> 期 <span id="diffTag" style="font-size:12px;color:#9aa4ad;font-weight:400;margin-left:8px"></span></h1>
+      <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn" href="./index.html"><i class="fas fa-list"></i> 返回列表 List</a>
+        <a id="rankBtn" class="btn" href="#"><i class="fas fa-medal"></i> 榜单 Board</a>
+        <a class="btn" href="./rank/index.html"><i class="fas fa-ranking-star"></i> 天梯榜 Ladder</a>
+        <button id="langBtn" class="btn"><i class="fas fa-globe"></i> EN</button>
+      </div>
+    </header>
+
+    <div class="card">
+      <h2 id="problemTitle"><span id="pid"></span>. 题目标题</h2>
+      <p id="problemDesc">在这里填写题目描述（可中英文）。你也可以从 problems.json 中读取 desc 字段。</p>
+      <h3 id="inputFormatTitle">输入格式</h3>
+      <p id="inputFormatDesc">请在这里写输入格式。</p>
+      <h3 id="outputFormatTitle">输出格式</h3>
+      <p id="outputFormatDesc">请在这里写输出格式。</p>
+      <h3 id="samplesTitle">样例</h3>
+      <pre style="display:none"><code id="sampleIn1"></code></pre>
+      <pre style="display:none"><code id="sampleOut1"></code></pre>
+    </div>
+
+    <div class="card" id="submitCard">
+      <h2><i class="fas fa-paper-plane"></i> 直接在此提交 · Submit Here</h2>
+      <div class="row" style="margin:10px 0;gap:10px;align-items:center">
+        <label for="handleInput">昵称 Handle</label>
+        <input id="handleInput" type="text" placeholder="你的昵称（可含空格，不可含/\\）" style="flex:1;min-width:220px"/>
+        <button id="saveHandleBtn" class="btn"><i class="fas fa-user-check"></i> 保存昵称</button>
+      </div>
+      <textarea id="codeInput" placeholder="在此粘贴你的 C 代码..." style="width:100%;min-height:240px;background:#161a1e;border:1px solid #222;border-radius:8px;color:#e6eef6;padding:10px 12px;font-family:Menlo,monospace;font-size:13px"></textarea>
+      <div class="row" style="margin-top:8px;gap:10px;flex-wrap:wrap">
+        <button id="judgeBtn" class="btn primary"><i class="fas fa-vial"></i> 评测代码</button>
+        <button id="genPayloadBtn" class="btn" style="display:none;background:#2ea043;border:0;color:#071022"><i class="fas fa-shield-halved"></i> 生成密文</button>
+        <a id="roundRankBtn" class="btn" href="#" target="_blank" rel="noreferrer"><i class="fas fa-medal"></i> 查看本期排行榜</a>
+        <a id="submitPageBtn" class="btn" href="./submit.html" target="_blank" rel="noreferrer" style="display:none"><i class="fas fa-share-from-square"></i> 提交页（粘贴密文）</a>
+      </div>
+      <div id="submitStatus" class="muted" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <h2>提交 & 规则</h2>
+      <ul style="line-height:1.7;margin:0 0 10px;padding-left:18px">
+        <li>按最小字节数排序；相同按提交先后。</li>
+        <li>天梯积分：难度积分 D；第一名 D，其他 round(D × 最小字节数/自身字节数)。</li>
+        <li>仅统计单个 .c，需可在 Wandbox(gcc) 编译运行。</li>
+        <li>禁止 UB、文件 I/O、非标准库。</li>
+        <li>UTF-8 字节数计数。</li>
+      </ul>
+      <div class="notice">
+        提交方式：Fork 本仓库 → 在 <code>submissions/<id>/<你的昵称>/solution.c</code>（兼容 <code>submissions/week-<id>/</code>）添加/覆盖 → 发 PR。
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>By C. He · Online C Compiler</div>
+      <a class="btn" href="../about.html"><i class="fas fa-circle-info"></i> 关于 About</a>
+    </div>
+  </div>
+  <script src="../scripts/version.js"></script>
+  <script src="../scripts/contest_submit.js"></script>
+  <!-- tiny markdown renderer (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    function currentId(){
+      const m = location.pathname.match(/(\d+)\.html$/); return m? parseInt(m[1],10): 1;
+    }
+    async function loadMeta(id){
+      try{ const res=await fetch('./problems.json?fresh='+(Date.now()),{cache:'no-store'}); if(!res.ok) return null; const arr=await res.json(); return (arr||[]).find(x=>x.id===id)||null; }catch(e){ return null; }
+    }
+    function setText(id, meta){
+      document.getElementById('rid').textContent=id; document.getElementById('rid2').textContent=id; document.getElementById('pid').textContent=id;
+      const name = (localStorage.getItem('ui_lang')||'zh')==='zh'? (meta?.name_zh||meta?.name_en||('Round '+id)) : (meta?.name_en||meta?.name_zh||('Round '+id));
+      document.getElementById('title').textContent = `${name} · Round ${id}`;
+      document.getElementById('problemTitle').textContent = `${id}. ${name}`;
+      if(typeof meta?.difficulty==='number'){ document.getElementById('diffTag').textContent = `D=${meta.difficulty}`; }
+      // 如果有 Markdown 源，我们会在 loadProblemMd() 中渲染并覆盖 problemDesc 区域。
+      document.getElementById('problemDesc').textContent = meta?.desc || document.getElementById('problemDesc').textContent;
+      const rb=document.getElementById('rankBtn'); const rrb=document.getElementById('roundRankBtn');
+      if(rb) rb.href = `./rank/week.html?week=${id}`;
+      if(rrb) rrb.href = `./rank/week.html?week=${id}`;
+    }
+
+    // 尝试从多种位置加载 problem.md：
+    // 1. 本 repo 下的 ./problems/<id>/problem.md
+    // 2. 在 problems.json 的 meta 中指定 md_url 或 external_base（外部 GitHub Pages 地址）
+    // 3. fallback: 使用 meta.desc 简短描述（已设置）
+    async function loadProblemMd(id, meta){
+      const el = document.getElementById('problemDesc');
+      // helper to try fetch and return text or null
+      async function tryFetch(url){
+        try{
+          const r = await fetch(url, {cache:'no-store'});
+          if(r.ok) return await r.text();
+        }catch(e){}
+        return null;
+      }
+      // 1) try local path
+      const localPath = `./problems/${id}/problem.md`;
+      let md = await tryFetch(localPath);
+      // 2) try meta.md_url if provided
+      if(!md && meta && meta.md_url) md = await tryFetch(meta.md_url+'?fresh='+(Date.now()));
+      // 3) try meta.external_base if provided
+      if(!md && meta && meta.external_base){
+        md = await tryFetch(meta.external_base.replace(/\/$/, '') + `/problem.md`);
+      }
+      // 4) fallback: nothing – keep description
+      if(md){
+        // render markdown into container (marked)
+        try{
+          const html = marked.parse(md);
+          // replace problemDesc content with rendered HTML
+          el.innerHTML = html;
+        }catch(e){ el.textContent = md; }
+      }
+    }
+
+    // —— 评测逻辑模板（请按题目改写） ——
+    async function tryWandbox(code, stdin){
+      const wandboxUrl='https://wandbox.org/api/compile.json';
+      const payload={ code, compiler:'gcc-head', stdin: stdin||undefined, save:false };
+      const res = await fetch(wandboxUrl,{method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(payload)});
+      if(!res.ok) throw new Error('wandbox '+res.status);
+      const j=await res.json();
+      const out=(j.program_output||j.program_stdout||j.program||j.result||'')||'';
+      return out.replace(/\n+$/,'');
+    }
+    async function loadTestsFor(id, meta){
+      // try multiple locations for tests: local competition/data/tests/week-<id>.json,
+      // ./problems/<id>/tests.json, or meta.tests_url
+      async function tryFetchJson(url){ try{ const r=await fetch(url,{cache:'no-store'}); if(r.ok) return await r.json(); }catch(e){} return null; }
+      let tests = await tryFetchJson(`./data/tests/week-${id}.json`);
+      if(!tests) tests = await tryFetchJson(`./problems/${id}/tests.json`);
+      if(!tests && meta && meta.tests_url) tests = await tryFetchJson(meta.tests_url+'?fresh='+(Date.now()));
+      return Array.isArray(tests) ? tests : null;
+    }
+
+    async function judgeTemplate(id, source){
+      // Load tests from known locations; if none found, return false to force author to provide tests
+      const meta = await loadMeta(id);
+      const tests = await loadTestsFor(id, meta);
+      if(!tests || tests.length===0) return false; // require tests to be present
+      for(const tc of tests){
+        const stdin = tc.stdin || tc.input || '';
+        const expected = (tc.expected || tc.expect || tc.output || tc.stdout || '').replace(/\n+$/,'');
+        try{
+          const out = await tryWandbox(source, stdin);
+          if(out !== expected) return false;
+        }catch(e){ return false; }
+      }
+      return true;
+    }
+
+    (function(){
+      const id=currentId();
+      loadMeta(id).then(meta=>{
+        setText(id, meta);
+        loadProblemMd(id, meta);
+      });
+      const handleInput=document.getElementById('handleInput');
+      const saveHandleBtn=document.getElementById('saveHandleBtn');
+      const codeInput=document.getElementById('codeInput');
+      const judgeBtn=document.getElementById('judgeBtn');
+      const genBtn=document.getElementById('genPayloadBtn');
+      const submitPageBtn=document.getElementById('submitPageBtn');
+      const statusEl=document.getElementById('submitStatus');
+      try{ const h=window.__ContestSubmit.getHandle(); if(h) handleInput.value=h; }catch(_){ }
+      saveHandleBtn.addEventListener('click',()=>{ const raw=(handleInput.value||'').trim(); if(!raw){ alert('昵称不能为空'); return; } window.__ContestSubmit.setProfile({handle:raw}); });
+      judgeBtn.addEventListener('click', async ()=>{
+        const handleRaw=(handleInput.value||'').trim(); if(!handleRaw){ alert('请先填写昵称'); return; }
+        window.__ContestSubmit.setProfile({handle:handleRaw});
+        const source=codeInput.value||''; if(!source.trim()){ alert('请粘贴代码'); return; }
+        statusEl.style.color=''; statusEl.textContent='评测中 / Judging...'; genBtn.style.display='none';
+        try{
+          const pass = await judgeTemplate(id, source);
+          if(!pass){ statusEl.style.color='#ff6b6b'; statusEl.textContent='未通过（评测未实现或输出不匹配）。请完善本题评测或修正代码。'; return; }
+          statusEl.style.color='#56d364'; statusEl.textContent='通过 | Accepted。现在可生成密文并打开提交页。';
+          genBtn.style.display='inline-flex'; submitPageBtn.style.display='inline-flex'; genBtn.focus();
+        }catch(e){ statusEl.style.color='#ffb020'; statusEl.textContent='评测失败（网络/服务异常），请稍后再试。'; }
+      });
+      genBtn.addEventListener('click', async ()=>{
+        const source=codeInput.value||''; if(!source.trim()){ alert('代码为空'); return; }
+        genBtn.disabled=true; const old=genBtn.innerHTML; genBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 生成中';
+        statusEl.style.color=''; statusEl.textContent='生成密文中...';
+        try{
+          const payload = await window.__ContestSubmit.buildPayload(String(id), source);
+          const slim = payload.version===3 ? { type:'contest', version:3, challenge: payload.challenge, enc: payload.enc, encCode: payload.encCode, key: payload.key } : payload;
+          const jsonStr = JSON.stringify(slim, null, 2);
+          try{ window.__LAST_SUBMISSION_JSON = jsonStr; }catch(_){ }
+          const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+          const url = './submit.html#submission='+b64;
+          let copied=false; try{ await navigator.clipboard.writeText(jsonStr); copied=true; }catch(_){ }
+          const copiedTip = copied ? '（已自动复制到剪贴板）' : '（复制失败，请手动复制下方 JSON）';
+          statusEl.innerHTML='✅ 已生成密文 '+copiedTip+'。<br>1) 打开提交页。<br>2) 在 Fork 里新建/覆盖 solution.c 粘贴下列 JSON：<br><pre style="background:#161a1e;padding:10px;border-radius:8px;overflow:auto;font-size:12px"><code>'+jsonStr.replace(/[&<>]/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[s]))+'</code></pre>';
+          const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noreferrer'; a.textContent='打开提交页（新标签）'; a.className='btn'; a.style.marginTop='8px'; statusEl.appendChild(a);
+          submitPageBtn.onclick = async ()=>{ if(window.__LAST_SUBMISSION_JSON){ try{ await navigator.clipboard.writeText(window.__LAST_SUBMISSION_JSON); }catch(_){ } } };
+        }catch(e){ statusEl.style.color='#ff6b6b'; statusEl.textContent='生成密文失败：'+(e&&e.message||e); }
+        finally{ genBtn.disabled=false; genBtn.innerHTML=old; }
+      });
+    })();
+  </script>
+</body>
+</html>
