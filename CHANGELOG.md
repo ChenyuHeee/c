@@ -38,7 +38,22 @@
 	- 术语初步从 “Week” 过渡为 “Round”。
 	- 提升版本号至 `v1.3.15` 触发缓存刷新。
 
-	# [1.3.16] - 2025-11-09
+		# [1.3.17] - 2025-11-09
+		### Changed
+		- 命名统一：将所有排行榜数据文件从 `week-<n>.json` 重命名为 `prob-<n>.json`；`tests/week-<n>.json` 重命名为 `tests/prob-<n>.json`。
+		- 页面与脚本全面适配：
+			- `competition/rank/week.html` 读取 `prob-<n>.json`，URL 参数支持 `?problem=<id>`（兼容旧 `?week=`）。
+			- `competition/index.html`、题面页与模板链接统一指向 `rank/week.html?problem=<id>`。
+			- 排名脚本 `scripts/compute_ranks.mjs`：输出 `prob-<id>.json`，顶层键由 `week` 改为 `problemId`；环境变量改为 `PROBLEMS`（兼容 `WEEK`）。
+			- 同步脚本 `scripts/sync_problems_from_ccodegolf.mjs`：测试文件改存为 `tests/prob-<id>.json`。
+			- GitHub Actions `compute-rank.yml`：改为 `PROBLEMS: '0,1'`。
+		- 难度来源统一：优先从 `competition/problems.json` 读取每题 `difficulty`。
+		- 版本号提升至 `v1.3.17` 并同步更新 `sw.js` 以刷新缓存。
+
+		### Notes
+		- `week-<n>.json` 已弃用，页面保留 `?week=` 参数以便老链接可用。
+
+		# [1.3.16] - 2025-11-09
 	### Added
 	- 动态积分系统（天梯榜 Ladder）：为每轮配置难度积分 D；第一名获得满分 D，其余选手积分= round(D × 最小字节数 / 自身字节数)。积分随历史与当前提交变化实时重新计算，无需存储在密文中。
 	- 排行脚本输出扩展：`competition/data/week-<n>.json` 新增 `difficulty`（D）、`minBytes`（本轮最小字节数），`ranks[].points`（本轮所得积分）；`competition/data/total.json` 的聚合字段新增 `points`（总积分）与 `rounds`（参与轮数），按积分降序、轮数降序、最佳字节升序排序。

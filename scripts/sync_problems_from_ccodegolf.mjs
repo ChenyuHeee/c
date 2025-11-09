@@ -70,7 +70,7 @@ async function syncProblems() {
           const testsResponse = await fetch(testsUrl);
           if (testsResponse.ok) {
             const testsJson = await testsResponse.json();
-            const testsPath = path.join(TESTS_DIR, `week-${id}.json`);
+            const testsPath = path.join(TESTS_DIR, `prob-${id}.json`);
             await fs.writeFile(testsPath, JSON.stringify(testsJson, null, 2));
             console.log(`Saved tests to ${testsPath}`);
           } else {
@@ -83,7 +83,7 @@ async function syncProblems() {
            const testsResponse = await fetch(testsUrl);
            if (testsResponse.ok) {
              const testsJson = await testsResponse.json();
-             const testsPath = path.join(TESTS_DIR, `week-${id}.json`);
+             const testsPath = path.join(TESTS_DIR, `prob-${id}.json`);
              await fs.writeFile(testsPath, JSON.stringify(testsJson, null, 2));
              console.log(`Saved tests to ${testsPath}`);
            } else {

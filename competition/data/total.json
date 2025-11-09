@@ -1,72 +1,77 @@
 {
+<<<<<<< HEAD
   "repo": "ChenyuHeee/c",
   "updatedAt": "2025-11-09T07:14:15.155Z",
+=======
+  "repo": "",
+  "updatedAt": "2025-11-09T07:26:04.147Z",
+>>>>>>> 24d877a (rename)
   "ranks": [
     {
       "handle": "你们跑不了了",
       "rounds": 1,
       "best": 179,
-      "points": 120
+      "points": 150
     },
     {
       "handle": "He Chenyu",
       "rounds": 1,
       "best": 277,
-      "points": 78
+      "points": 97
     },
     {
       "handle": "我要拿冠军",
       "rounds": 1,
       "best": 277,
-      "points": 78
+      "points": 97
     },
     {
       "handle": "chen",
       "rounds": 1,
       "best": 330,
-      "points": 65
+      "points": 81
     },
     {
       "handle": "JackthinTest",
       "rounds": 1,
       "best": 393,
-      "points": 55
+      "points": 68
     },
     {
       "handle": "Jackthin",
       "rounds": 1,
       "best": 399,
-      "points": 54
+      "points": 67
     },
     {
       "handle": "hehehe",
       "rounds": 1,
       "best": 425,
-      "points": 51
+      "points": 63
     },
     {
       "handle": "zzh",
       "rounds": 1,
       "best": 560,
-      "points": 38
+      "points": 48
     },
     {
       "handle": "sky-wolf-tester",
       "rounds": 1,
       "best": 668,
-      "points": 32
+      "points": 40
     },
     {
       "handle": "sky-wolf",
       "rounds": 1,
       "best": 668,
-      "points": 32
+      "points": 40
     },
     {
       "handle": "anon",
       "rounds": 1,
       "best": 708,
-      "points": 30
+      "points": 38
     }
   ]
 }

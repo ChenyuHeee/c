@@ -23,10 +23,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Compute week 1 and total
+      - name: Compute problems and total
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
-          WEEK: '1'
+          PROBLEMS: '0,1'
         run: |
           node --version
           node scripts/compute_ranks.mjs

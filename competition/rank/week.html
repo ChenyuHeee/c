@@ -34,7 +34,7 @@
     </header>
 
     <div class="card">
-  <div class="muted" id="desc">数据来自 competition/data/week-<span id="wk">?</span>.json。按字节数升序排序；相同字节数按提交时间先后。本轮设难度积分 D：第一名得 D，其他得 round(D * 最小字节数/自身字节数)。</div>
+  <div class="muted" id="desc">数据来自 competition/data/prob-<span id="wk">?</span>.json。按字节数升序排序；相同字节数按提交时间先后。本轮设难度积分 D：第一名得 D，其他得 round(D * 最小字节数/自身字节数)。</div>
       <div class="muted" id="diffBadge" style="margin-top:4px"></div>
       <div class="muted" id="updated" style="margin-top:6px"></div>
       <table>
@@ -57,16 +57,16 @@
   <script>
     const i18n={
   zh:{ title:'C Code Golf · 每轮榜单', header:'C Code Golf · 每轮榜单', weekly:'C Code Golf', editor:'编辑器 Editor', refresh:'强制刷新',
-    desc:'数据来自 competition/data/week-<n>.json。按字节数升序；同字节按提交先后。本轮积分：第一名得 D，其他得 round(D * 最小字节数/自身字节数)。', handle:'选手 Handle', bytes:'字节数 Bytes', time:'提交时间 Time', pts:'积分 Points', code:'代码 Code', loading:'加载中 Loading…', updated:'更新于', weekLabel:'Round <n> · 第 <n> 期', difficulty:'难度 Difficulty' },
+    desc:'数据来自 competition/data/prob-<n>.json。按字节数升序；同字节按提交先后。本轮积分：第一名得 D，其他得 round(D * 最小字节数/自身字节数)。', handle:'选手 Handle', bytes:'字节数 Bytes', time:'提交时间 Time', pts:'积分 Points', code:'代码 Code', loading:'加载中 Loading…', updated:'更新于', weekLabel:'Round <n> · 第 <n> 期', difficulty:'难度 Difficulty' },
   en:{ title:'C Code Golf · Round Board', header:'C Code Golf · Round Board', weekly:'C Code Golf', editor:'Editor 编辑器', refresh:'Force Refresh',
-    desc:'Data from competition/data/week-<n>.json. Sorted by bytes ascending; ties by earlier time. Round scoring: 1st gets D, others round(D * minBytes/bytes).', handle:'Handle 选手', bytes:'Bytes 字节数', time:'Time 提交时间', pts:'Points 积分', code:'Code 代码', loading:'Loading 加载中…', updated:'Updated at', weekLabel:'Round <n> · 第 <n> 期', difficulty:'Difficulty 难度' }
+    desc:'Data from competition/data/prob-<n>.json. Sorted by bytes ascending; ties by earlier time. Round scoring: 1st gets D, others round(D * minBytes/bytes).', handle:'Handle 选手', bytes:'Bytes 字节数', time:'Time 提交时间', pts:'Points 积分', code:'Code 代码', loading:'Loading 加载中…', updated:'Updated at', weekLabel:'Round <n> · 第 <n> 期', difficulty:'Difficulty 难度' }
     };
     function getLang(){ try{return localStorage.getItem('ui_lang')||'zh';}catch(e){return 'zh';} }
     function setLang(l){ try{localStorage.setItem('ui_lang',l);}catch(e){} applyLang(); load(); }
     function t(k){ const L=getLang(); return (i18n[L]&&i18n[L][k])||i18n.zh[k]||k; }
-    function paramWeek(){ const u=new URL(location.href); const w=u.searchParams.get('week'); const n=parseInt(w,10); return Number.isFinite(n)&&n>0?n:1; }
+    function paramProblem(){ const u=new URL(location.href); const p=u.searchParams.get('problem')||u.searchParams.get('week'); const n=parseInt(p,10); return Number.isFinite(n)&&n>=0?n:1; }
     function applyLang(){
-      const w=paramWeek();
+      const w=paramProblem();
       document.getElementById('title').textContent=t('title');
   document.getElementById('h1').innerHTML='<i class="fas fa-medal"></i> '+t('weekLabel').replace(/<n>/g,w);
       const btns=document.querySelectorAll('header .row a.btn');
@@ -100,10 +100,10 @@
     }
 
     async function load(){
-      const w=paramWeek();
+      const w=paramProblem();
       const tbody=document.getElementById('tbody');
       try{
-        const res=await fetch(`../data/week-${w}.json`,{cache:'no-store'});
+        const res=await fetch(`../data/prob-${w}.json`,{cache:'no-store'});
         if(!res.ok) throw new Error(res.status);
         const data=await res.json();
         const up=document.getElementById('updated');

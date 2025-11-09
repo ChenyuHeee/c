@@ -1,9 +1,14 @@
 {
-  "repo": "ChenyuHeee/c",
-  "week": 1,
+  "repo": "",
+  "problemId": 1,
   "branch": "main",
+<<<<<<< HEAD:competition/data/week-1.json
   "updatedAt": "2025-11-09T07:14:15.151Z",
   "difficulty": 120,
+=======
+  "updatedAt": "2025-11-09T07:26:04.147Z",
+  "difficulty": 150,
+>>>>>>> 24d877a (rename):competition/data/prob-1.json
   "minBytes": 179,
   "ranks": [
     {
@@ -12,7 +17,7 @@
       "commitTime": "2025-11-09T11:53:13+08:00",
       "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
       "path": "submissions/1/你们跑不了了/solution.c",
-      "points": 120
+      "points": 150
     },
     {
       "handle": "He Chenyu",
@@ -20,7 +25,7 @@
       "commitTime": "2025-11-09T11:53:13+08:00",
       "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
       "path": "submissions/1/He Chenyu/solution.c",
-      "points": 78
+      "points": 97
     },
     {
       "handle": "我要拿冠军",
@@ -28,7 +33,7 @@
       "commitTime": "2025-11-09T11:53:13+08:00",
       "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
       "path": "submissions/1/我要拿冠军/solution.c",
-      "points": 78
+      "points": 97
     },
     {
       "handle": "chen",
@@ -36,7 +41,7 @@
       "commitTime": "2025-11-09T11:53:13+08:00",
       "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
       "path": "submissions/1/chen/solution.c",
-      "points": 65
+      "points": 81
     },
     {
       "handle": "JackthinTest",
@@ -44,7 +49,7 @@
       "commitTime": "2025-11-09T11:53:13+08:00",
       "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
       "path": "submissions/1/JackthinTest/solution.c",
-      "points": 55
+      "points": 68
     },
     {
       "handle": "Jackthin",
@@ -52,7 +57,7 @@
       "commitTime": "2025-11-09T11:53:13+08:00",
       "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
       "path": "submissions/1/Jackthin/solution.c",
-      "points": 54
+      "points": 67
     },
     {
       "handle": "hehehe",
@@ -60,7 +65,7 @@
       "commitTime": "2025-11-09T11:53:13+08:00",
       "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
       "path": "submissions/1/hehehe/solution.c",
-      "points": 51
+      "points": 63
     },
     {
       "handle": "zzh",
@@ -68,7 +73,7 @@
       "commitTime": "2025-11-09T11:53:13+08:00",
       "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
       "path": "submissions/1/zzh/solution.c",
-      "points": 38
+      "points": 48
     },
     {
       "handle": "sky-wolf-tester",
@@ -76,7 +81,7 @@
       "commitTime": "2025-11-09T01:40:00+08:00",
       "sha": "62878e2a6dcc6b43120806d0dcabc970b3dffccd",
       "path": "submissions/week-1/sky-wolf-tester/solution.c",
-      "points": 32
+      "points": 40
     },
     {
       "handle": "sky-wolf",
@@ -84,7 +89,7 @@
       "commitTime": "2025-11-09T11:53:13+08:00",
       "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
       "path": "submissions/1/sky-wolf/solution.c",
-      "points": 32
+      "points": 40
     },
     {
       "handle": "anon",
@@ -92,7 +97,7 @@
       "commitTime": "2025-11-09T11:53:13+08:00",
       "sha": "2488e807d87f8875062d245f0eea14d11b6b92ed",
       "path": "submissions/1/anon/solution.c",
-      "points": 30
+      "points": 38
     }
   ]
 }

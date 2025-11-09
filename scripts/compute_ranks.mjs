@@ -8,9 +8,11 @@ const ROOT = path.resolve(process.cwd());
 //  旧：submissions/week-<n>/
 //  新：submissions/<n>/
 // 若两者同时存在，以新目录内容为准（避免重复计数）。未配置的轮次默认 100 分。
+// 注意：优先从 problems.json 读取难度，此处配置作为 fallback
 const ROUND_DIFFICULTY = Object.freeze({
-  1: 120,
-  // 0: 150, // 可选：直接在此声明 0 号题的 D；否则将尝试从 problems.json 读取
+  // 题目难度优先从 problems.json 读取，下方配置仅在文件不存在或缺少数据时使用
+  // 0: 150,
+  // 1: 150,
   // 2: 150,
   // 3: 200,
 });
@@ -75,18 +77,18 @@ function tryParseContestEncrypted(text){
   }catch(e){ return null; }
 }
 
-async function computeWeek(week){
+async function computeProblem(problemId){
   // 若未在映射中，尝试从 competition/problems.json 读取对应难度 D
-  let difficultyFromMap = ROUND_DIFFICULTY[week];
+  let difficultyFromMap = ROUND_DIFFICULTY[problemId];
   if(typeof difficultyFromMap !== 'number'){
     try{
       const pj = JSON.parse(await fs.readFile(path.join(DATA_DIR, '..', 'problems.json'), 'utf8'));
-      const p = Array.isArray(pj) ? pj.find(x=>x && x.id===week) : null;
+      const p = Array.isArray(pj) ? pj.find(x=>x && x.id===problemId) : null;
       if(p && typeof p.difficulty==='number') difficultyFromMap = p.difficulty;
     }catch(_){ /* ignore */ }
   }
-  const legacyDir = path.join(SUBMISSIONS, `week-${week}`);
-  const newDir = path.join(SUBMISSIONS, String(week));
+  const legacyDir = path.join(SUBMISSIONS, `week-${problemId}`);
+  const newDir = path.join(SUBMISSIONS, String(problemId));
   const legacyHandles = await listDirs(legacyDir);
   const newHandles = await listDirs(newDir);
   // 合并 handle，若新目录存在同名则优先使用新目录
@@ -114,7 +116,7 @@ async function computeWeek(week){
     }catch(_){ /* ignore parse errors */ }
     const meta = getCommitMeta(fAbs);
     // 记录路径：使用实际目录（新或旧）。
-    const relPosix = ['submissions', (newHandles.includes(handle)? String(week): `week-${week}`), handle, pick].join('/');
+    const relPosix = ['submissions', (newHandles.includes(handle)? String(problemId): `week-${problemId}`), handle, pick].join('/');
     entries.push({handle, bytes, commitTime: meta.time, sha: meta.sha, path: relPosix});
   }
   // sort: bytes asc, time asc
@@ -134,19 +136,19 @@ async function computeWeek(week){
   }else{
     for(const r of entries){ r.points = 0; }
   }
-  const out = { repo: REPO, week, branch: getCurrentBranch(), updatedAt: new Date().toISOString(), difficulty, minBytes, ranks: entries };
+  const out = { repo: REPO, problemId, branch: getCurrentBranch(), updatedAt: new Date().toISOString(), difficulty, minBytes, ranks: entries };
   await ensureDir(DATA_DIR);
-  await fs.writeFile(path.join(DATA_DIR, `week-${week}.json`), JSON.stringify(out, null, 2)+"\n");
-  log(`week-${week}: ${entries.length} entries`);
+  await fs.writeFile(path.join(DATA_DIR, `prob-${problemId}.json`), JSON.stringify(out, null, 2)+"\n");
+  log(`prob-${problemId}: ${entries.length} entries`);
   return out;
 }
 
 async function aggregateTotal(){
-  const files = (await listFiles(DATA_DIR)).filter(f=>/^week-\d+\.json$/.test(f)).sort();
+  const files = (await listFiles(DATA_DIR)).filter(f=>/^prob-\d+\.json$/.test(f)).sort();
   const byHandle = new Map();
   for(const f of files){
     const obj = JSON.parse(await fs.readFile(path.join(DATA_DIR, f), 'utf8'));
-    const week = obj.week;
+    const problemId = obj.problemId;
     for(const r of (obj.ranks||[])){
       const cur = byHandle.get(r.handle) || {handle:r.handle, rounds:0, best:Infinity, points:0};
       cur.rounds = cur.rounds + 1;
@@ -166,9 +168,9 @@ async function aggregateTotal(){
 }
 
 async function main(){
-  const weekEnv = process.env.WEEK || '1';
-  const weeks = weekEnv.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!Number.isNaN(n));
-  for(const w of weeks){ await computeWeek(w); }
+  const probEnv = process.env.PROBLEMS || process.env.WEEK || '1'; // 保持 WEEK 向后兼容
+  const problems = probEnv.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!Number.isNaN(n));
+  for(const p of problems){ await computeProblem(p); }
   await aggregateTotal();
 }
 
