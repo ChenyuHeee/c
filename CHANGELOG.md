@@ -1,3 +1,13 @@
+# [1.3.19] - 2025-11-09
+### Removed
+- 彻底移除 Serverless 一键提交方式：删除 `serverless/` 目录（Cloudflare Worker 示例与 README、wrangler.toml.example）。不再推荐或支持前端直接 POST 创建 PR 的流程，统一采用“Fork + 提交加密文件”常规路径。
+
+### Changed
+- 清理文档残留：更新版本脚本与 Service Worker 版本号为 `v1.3.19` 触发缓存刷新；后续如需恢复可从历史提交恢复目录。
+
+### Notes
+- 前端仍保留加密与复制功能；`window.__CONFIG__.submitEndpoint` 空值表示禁用远程提交。后续若引入其它后端，可在新目录下重建，不再使用旧 `serverless/` 路径。
+
 # [1.3.10] - 2025-11-07
 # [1.3.10] - 2025-11-07
 ### Changed

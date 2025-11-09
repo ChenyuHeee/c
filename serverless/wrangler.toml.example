@@ -1,36 +1,8 @@
-name = "contest-submit"              # Worker 名称
-main = "serverless/cloudflare-worker.js"   # 入口脚本路径
-compatibility_date = "2025-11-07"     # 根据部署日期调整
+# Deprecated placeholder (v1.3.19): serverless one-click submission removed.
+# This example retained only to signal deprecation. Do not deploy.
 
-# 可选：使用 modules 格式或增加 compatibility_flags 等
-# workers_dev = true   # 若使用 *.workers.dev 域名
-
-[vars]
-REPO = "ChenyuHeee/c"          # 目标仓库 (owner/repo)
-BASE_BRANCH = "main"            # 基准分支
-
-# 下面这些不应写入明文 (用 wrangler secret put 设置)：
-#   GITHUB_TOKEN
-#   GITHUB_APP_ID
-#   GITHUB_INSTALLATION_ID
-#   GITHUB_PRIVATE_KEY (PEM)
-#   SUBMIT_PRIVATE_KEY (RSA PKCS#8 PEM，用于 v4 解密)
-# 任选一条认证路径：PAT (GITHUB_TOKEN) 或 GitHub App (三件套)
-
-# 可选的加固/扩展变量（需要你在 worker 里自行使用）：
-# ALLOWED_ORIGINS = "https://your-site.example,https://another.example"
-# MAX_CODE_BYTES = "65536"            # 覆盖默认 64KB 限制
-# TURNSTILE_SECRET_KEY = ""          # 若接入 Turnstile 验证
-# SIGNING_SECRET = ""                # 自定义 HMAC 防重放/篡改
-
-# KV / D1 / R2 绑定示例（若要做速率限制或审计日志）
-# [[kv_namespaces]]
-# binding = "RATE_LIMIT_KV"
-# id = "<kv-id>"
-
-# 本文件复制为 wrangler.toml 后：
-#   1) 设置 secrets:  wrangler secret put SUBMIT_PRIVATE_KEY  等
-#   2) 若用 GitHub App：wrangler secret put GITHUB_APP_ID / GITHUB_INSTALLATION_ID / GITHUB_PRIVATE_KEY
-#   3) 或者用 PAT：wrangler secret put GITHUB_TOKEN
-#   4) 发布: wrangler deploy
+[deprecated]
+status = "removed"
+since = "v1.3.19"
+replacement = "Use PR-based encrypted submission in submissions/<id>/<handle>/"
 
