@@ -1,0 +1,5 @@
+[
+  {"stdin":"1\n","expected":"*"},
+  {"stdin":"3\n","expected":" *\n***\n *"},
+  {"stdin":"5\n","expected":"  *\n ***\n*****\n ***\n  *"}
+]

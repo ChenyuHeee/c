@@ -1,6 +1,6 @@
 {
   "repo": "ChenyuHeee/c",
-  "updatedAt": "2025-11-09T09:04:02.113Z",
+  "updatedAt": "2025-11-09T09:13:39.339Z",
   "ranks": [
     {
       "handle": "你们跑不了了",
@@ -28,6 +28,12 @@
     },
     {
       "handle": "JackthinTest",
+      "rounds": 1,
+      "best": 393,
+      "points": 68
+    },
+    {
+      "handle": "JackthinS",
       "rounds": 1,
       "best": 393,
       "points": 68
