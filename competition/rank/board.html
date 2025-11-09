@@ -75,7 +75,7 @@
     async function load(){
       const id=paramId(); const tbody=document.getElementById('tbody');
       try{
-        const res=await fetch(`../data/prob-${id}.json`,{cache:'no-store'});
+        const res=await fetch(`../data/prob-${id}.json?fresh=${Date.now()}`,{cache:'no-store'});
         if(res.status===404){ tbody.innerHTML=`<tr><td colspan="6" class="muted">${t('empty')}</td></tr>`; return; }
         if(!res.ok) throw new Error('HTTP '+res.status);
         const data=await res.json();
