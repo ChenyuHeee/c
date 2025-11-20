@@ -816,12 +816,42 @@ int main() {
         const sidebarToggle = document.getElementById('sidebarToggle');
         const editorWrap = document.querySelector('.editor-wrap');
     const mobilePanelBtn = document.getElementById('mobilePanelBtn');
+        let autoCollapsedForMobile = false;
+        let mobileAutocollapseInitialized = false;
+
+        function isMobileViewport(){
+            return (Math.min(window.innerWidth, window.innerHeight) < 600) || (/Android|iPhone/i.test(navigator.userAgent) && !/iPad|Tablet/i.test(navigator.userAgent));
+        }
+
+        function ensureMobileSidebarState(forceMobile){
+            try{
+                if (!sidebar) return;
+                const mobile = forceMobile === true || isMobileViewport();
+                if (mobile){
+                    const shouldAutoCollapse = forceMobile === true || !mobileAutocollapseInitialized || autoCollapsedForMobile;
+                    if (shouldAutoCollapse && !sidebar.classList.contains('collapsed')){
+                        sidebar.classList.add('collapsed');
+                        autoCollapsedForMobile = true;
+                        try { window.editor && window.editor.layout(); } catch (e) {}
+                    }
+                    mobileAutocollapseInitialized = true;
+                    if (mobilePanelBtn) mobilePanelBtn.innerHTML = '<i class="fas fa-sliders"></i> ' + t('io_toggle');
+                } else if (autoCollapsedForMobile){
+                    sidebar.classList.remove('collapsed');
+                    autoCollapsedForMobile = false;
+                    mobileAutocollapseInitialized = false;
+                    if (mobilePanelBtn) mobilePanelBtn.innerHTML = '<i class="fas fa-sliders"></i> ' + t('hide_io');
+                    try { window.editor && window.editor.layout(); } catch (e) {}
+                }
+            }catch(e){}
+        }
         closeSb.addEventListener('click', () => {
             sidebar.classList.add('collapsed');
             sidebarToggle.style.display = 'flex';
             // 折叠侧栏时不改变编辑器宽度（编辑器始终填满宽度），仅触发布局
             try { editorWrap && editorWrap.classList.add('full'); } catch (e) {}
             setTimeout(() => { try { window.editor && window.editor.layout(); } catch (e) {} }, 320);
+            autoCollapsedForMobile = false;
         });
         sidebarToggle.addEventListener('click', () => {
             // 展开侧栏：先移除 collapsed，使其恢复到正常宽度
@@ -836,6 +866,7 @@ int main() {
             // 立即触发一次布局以快速响应，稍后 transitionend 会触发最终布局
             try { window.editor && window.editor.layout(); } catch (e) {}
             setTimeout(() => { try { window.editor && window.editor.layout(); } catch (e) {} }, 180);
+            autoCollapsedForMobile = false;
         });
 
         // 手机端顶部按钮控制侧栏显示/隐藏
@@ -845,9 +876,11 @@ int main() {
             if (isCollapsed) {
                 sidebar.classList.remove('collapsed');
                 mobilePanelBtn.innerHTML = '<i class="fas fa-sliders"></i> ' + t('hide_io');
+                autoCollapsedForMobile = false;
             } else {
                 sidebar.classList.add('collapsed');
                 mobilePanelBtn.innerHTML = '<i class="fas fa-sliders"></i> ' + t('io_toggle');
+                autoCollapsedForMobile = false;
             }
             try { window.editor && window.editor.layout(); } catch(e){}
         });
@@ -1027,14 +1060,10 @@ int main() {
             }
             applyOrientationLayout();
             window.addEventListener('resize', applyOrientationLayout);
+            window.addEventListener('resize', () => ensureMobileSidebarState());
 
             // 手机端默认隐藏侧栏（使用 collapsed 类即可复用现有样式）
-            try{
-                const isPhone = (Math.min(window.innerWidth, window.innerHeight) < 600) || (/Android|iPhone/i.test(navigator.userAgent) && !/iPad|Tablet/i.test(navigator.userAgent));
-                if (isPhone && sidebar && !sidebar.classList.contains('collapsed')) {
-                    sidebar.classList.add('collapsed');
-                }
-            }catch(e){}
+            ensureMobileSidebarState();
 
             // 主动预热 clang-format wasm，避免首次点击时未加载
             try {
@@ -1078,6 +1107,8 @@ int main() {
                 window.addEventListener('offline', ()=>{ updateNet(); applyLang(); });
             }catch(e){}
         });
+
+        window.addEventListener('orientationchange', () => ensureMobileSidebarState());
 
         // 当窗口尺寸变化时，重新布局编辑器以适配容器大小
         window.addEventListener('resize', () => { try { window.editor && window.editor.layout(); } catch (e) {} });
