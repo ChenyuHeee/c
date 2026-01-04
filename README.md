@@ -30,8 +30,6 @@
 
 ## English (Optional)
 
-[![Deploy Pages Status](https://github.com/ChenyuHeee/c/actions/workflows/deploy-pages.yml/badge.svg?branch=main)](https://github.com/ChenyuHeee/c/actions/workflows/deploy-pages.yml)
-
 A lightweight, browser-based C compiler with Monaco editor, theme switching, and Uncrustify WASM formatting. Deployed automatically via GitHub Pages.
 
 **Live demo:** https://chenyuheee.github.io/c
