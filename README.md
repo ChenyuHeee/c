@@ -28,6 +28,5 @@
 - `scripts/`：排名计算、同步与发布相关的脚本。
 - `submissions/`、`competition/`：比赛提交与数据存储。
 
----
 
-> Looking for English? Click the "English README" badge above to read the full English documentation.
+> Looking for English? Read the [English README](README.en.md).
