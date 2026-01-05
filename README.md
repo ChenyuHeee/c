@@ -1,4 +1,4 @@
-# Online C Compiler
+# 在线c语言编辑器
 
 [![Stars](https://img.shields.io/github/stars/ChenyuHeee/c?style=flat-square&logo=github)](https://github.com/ChenyuHeee/c/stargazers)
 [![Contributors](https://img.shields.io/github/contributors/ChenyuHeee/c?style=flat-square)](https://github.com/ChenyuHeee/c/graphs/contributors)
