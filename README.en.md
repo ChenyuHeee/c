@@ -1,28 +1,70 @@
-# Online C Compiler
+# C Lab
 
-[![Stars](https://img.shields.io/github/stars/ChenyuHeee/c?style=flat-square&logo=github)](https://github.com/ChenyuHeee/c/stargazers)
-[![Contributors](https://img.shields.io/github/contributors/ChenyuHeee/c?style=flat-square)](https://github.com/ChenyuHeee/c/graphs/contributors)
-[![中文文档](https://img.shields.io/badge/README-中文-blueviolet?style=flat-square)](README.md)
+[中文](README.md) · [Live demo](https://chenyuheee.github.io/c/)
 
-A lightweight, browser-based C compiler with Monaco editor, theme switching, and Uncrustify WASM formatting. Deployed automatically via GitHub Pages.
+C Lab is a focused learning workbench for C beginners: write, compile for real, run tests, and jump from a diagnostic back to the source. Clang and the compiled program both run in the browser, with no account, database, compiler API, or backend maintenance.
 
-## Live demo
-- https://chenyuheee.github.io/c
+## Features
 
-## Highlights
-- Zero-install: entirely front-end, ready to use in the browser.
-- Editing: Monaco-based editor with themes, shortcuts, syntax highlighting, and file name display/save.
-- Formatting & highlighting: built-in Uncrustify WASM and Highlight.js.
-- UX niceties: I/O sidebar, mobile-friendly layout, network/version badges.
+- Real in-browser compilation with Clang 22 and the WASI C library, supporting C99, C11, and C17. No JavaScript simulation and no remote compiler service.
+- A dedicated Web Worker for compilation, linking, and execution, keeping the editor responsive and allowing immediate termination.
+- Structured Clang diagnostics mapped to source lines and columns, including warnings from successful builds, plus local hints for common mistakes.
+- CodeMirror 6 with C highlighting, automatic indentation, bracket completion, search, and light/dark themes.
+- Separate stdin, stdout, stderr, exit status, and elapsed-time displays.
+- Custom test cases executed locally in batch with output comparison.
+- Nine runnable examples and six exercises with public tests, progressive hints, and reference solutions.
+- Automatic browser storage, file import/export, and compressed share links.
+- Full offline editing, learning, and real compilation after the compiler has been cached.
 
-## Run locally
-1. Clone: `git clone https://github.com/ChenyuHeee/c.git`
-2. Enter project: `cd c`
-3. (Optional) Install script deps: `npm install`
-4. Serve with any static server, e.g. `npx serve .`, then open the shown URL in your browser.
+## Architecture
 
-## Directory at a glance
-- `index.html`: main online compiler UI.
-- `wasm/`: WebAssembly assets for compiling/formatting.
-- `scripts/`: ranking, sync, and deployment helper scripts.
-- `submissions/`, `competition/`: contest submissions and data.
+C Lab is a React + TypeScript + Vite single-page application deployed as static files.
+
+1. On the first run, the browser lazily downloads approximately **28 MB** of Clang, LLD, MemFS, and WASI sysroot assets. Nothing this large is loaded for the initial editor view.
+2. Clang inside a Worker compiles and links source into a `wasm32-wasi` module, which is then instantiated and executed locally.
+3. A service worker caches the application and compiler assets for subsequent and offline runs.
+4. Source, stdin, and tests move only between the page and its Worker. They are never uploaded. Work and settings stay in `localStorage`.
+5. Share data is compressed into the URL hash and decoded locally by the recipient's browser.
+
+The initial compiler download requires a network connection. The resident toolchain can require several hundred MB of memory, so use a modern WebAssembly-capable browser and account for memory-constrained mobile devices.
+
+## Boundaries
+
+This is a single-file **WASI** learning environment, not a full local IDE or native Linux sandbox. Standard I/O, arrays, pointers, structs, and dynamic memory run for real, while operating-system capabilities are bounded by WASI.
+
+- No multi-file project builds, external native C libraries, interactive debugger, or cloud sync.
+- Networking, processes, device files, and other native OS APIs do not behave like desktop Linux.
+- Programs have a 128 MB memory limit. Tasks without progress stop after 30 seconds and can also be cancelled manually.
+
+## Development
+
+Node.js 22.12 or newer is required.
+
+```bash
+npm ci
+npm run dev
+```
+
+```bash
+npm run typecheck
+npm run build
+npm run preview
+```
+
+The production build is written to `dist/`. Compiler assets are committed under `public/clang/` and copied into the build. Regenerate them only when upgrading the toolchain:
+
+```bash
+npx clang-wasm-copy-assets public/clang
+```
+
+## Deployment
+
+The included GitHub Actions workflow installs dependencies, builds the app, and publishes `dist/` to GitHub Pages on pushes to `main`.
+
+Select **GitHub Actions** under **Settings → Pages → Build and deployment**. Relative application and Worker asset URLs support both domain-root and `/c/` subpath hosting. The host must serve `.wasm.gz` and `sysroot.tar.gz` as static files; no backend or compiler API is required.
+
+## Privacy and backups
+
+Automatic local save is not version control. Clearing site data removes the workspace and compiler cache. Export important source files or keep them in your own Git repository, and never include secrets or sensitive personal information in share links.
+
+Third-party runtime attribution is included in `public/clang/THIRD-PARTY-NOTICES.md`.

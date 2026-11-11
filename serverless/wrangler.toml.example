@@ -1,8 +1,0 @@
-# Deprecated placeholder (v1.3.19): serverless one-click submission removed.
-# This example retained only to signal deprecation. Do not deploy.
-
-[deprecated]
-status = "removed"
-since = "v1.3.19"
-replacement = "Use PR-based encrypted submission in submissions/<id>/<handle>/"
-

@@ -1,0 +1,41 @@
+{
+  "manifestVersion": 1,
+  "version": "llvmorg-22.1.8",
+  "defaultTarget": "wasm32-wasi",
+  "compiler": {
+    "memfs": {
+      "asset": "bin/memfs.wasm.gz",
+      "argv0": "memfs"
+    },
+    "clang": {
+      "asset": "bin/clang.wasm.gz",
+      "argv0": "clang"
+    },
+    "lld": {
+      "asset": "bin/lld.wasm.gz",
+      "argv0": "wasm-ld"
+    },
+    "sysroot": {
+      "asset": "bin/sysroot.tar.gz"
+    },
+    "provenance": {
+      "name": "clang",
+      "version": "22.1.8",
+      "revision": "ca7933e47d3a3451d81e72ac174dcb5aa28b59d1"
+    },
+    "resourceDir": "/lib/clang/22",
+    "compilerRuntimeLibDir": "lib/clang/22/lib/wasi"
+  },
+  "clangd": {
+    "js": "clangd/clangd.js",
+    "wasm": "clangd/clangd.wasm.gz"
+  },
+  "targets": {
+    "wasm32-wasi": {
+      "artifactFormat": "wasi-core-wasm",
+      "execution": {
+        "kind": "wasi-preview1"
+      }
+    }
+  }
+}

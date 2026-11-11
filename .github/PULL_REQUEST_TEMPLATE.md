@@ -1,16 +1,15 @@
 ## Summary
 Describe what this PR changes and why.
 
-## Screenshots / Demo (if UI)
+## Screenshots / Demo
+Include desktop and mobile screenshots for UI changes.
 
 ## How to verify
-- Steps to test locally
-- Pages affected
+- [ ] Ran `npm run typecheck`
+- [ ] Ran `npm run build`
+- [ ] Exercised the affected workflow in the browser
+- [ ] Verified mobile and dark themes where relevant
+- [ ] Tested every changed reference solution against its public cases
 
-## Checklist
-- [ ] Small, focused changes (prefer multiple small PRs over one huge PR)
-- [ ] i18n keys (zh/en) updated if any text changed
-- [ ] Bumped version/date in `scripts/version.js` if user-visible behavior or caching is affected
-- [ ] Updated `CHANGELOG.md` (brief entry)
-- [ ] For contest logic, confirmed encrypted submission flow still works (v3 JSON)
-- [ ] Leaderboard loads and internal viewer (`competition/view.html`) displays code correctly
+## Notes
+Document privacy, deployment, or external-service implications and any remaining limitations.

@@ -1,0 +1,30 @@
+{
+  "runtime-manifest.v1.json": {
+    "bytes": 876,
+    "sha256": "1420808d0391ff2d8a2fdf2a9f6bbce8f728e06b1ed1651029ed80b226101444"
+  },
+  "bin/memfs.wasm.gz": {
+    "bytes": 38702,
+    "sha256": "cbca9e27ceafbca840603a39fc71e4f83bfb085237c8eab84fd0401ac76806c7"
+  },
+  "bin/clang.wasm.gz": {
+    "bytes": 15721977,
+    "sha256": "b1174438d9a67b7ff11e623541b9a0572c024a9e798084b9b021dd9da2da0874"
+  },
+  "bin/lld.wasm.gz": {
+    "bytes": 7837837,
+    "sha256": "f842a9b5df3c6d326f0260bfd313c11c2e22bc8b8ae0387deede9a4af55779cd"
+  },
+  "bin/sysroot.tar.gz": {
+    "bytes": 5401380,
+    "sha256": "195e8083bace1baf86014f134a210db354cd77825988eaac7d262161cf496c4f"
+  },
+  "objective-c/libobjc.a": {
+    "bytes": 190272,
+    "sha256": "1dde20d4ce78eed271ab725062ef25f1923b20d51384943c9b8f7177eb1fc2d9"
+  },
+  "objective-c/headers.json": {
+    "bytes": 83231,
+    "sha256": "64bf5a09feffa612e6f82cfc52f3d6a9c5e4fc3064c3824c24aeea59cb544d8e"
+  }
+}

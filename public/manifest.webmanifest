@@ -1,0 +1,17 @@
+{
+  "name": "C Lab — C 语言学习工作台",
+  "short_name": "C Lab",
+  "description": "编写、运行、测试，在真实编译结果中理解 C。",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f5f0",
+  "theme_color": "#173f35",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
