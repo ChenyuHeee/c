@@ -80,6 +80,11 @@ export interface RunState {
   message?: string;
   progress?: number;
   stage?: string;
+  loadedBytes?: number;
+  totalBytes?: number;
+  assetName?: string;
+  assetLoadedBytes?: number;
+  assetTotalBytes?: number;
 }
 
 export interface Example {

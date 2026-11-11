@@ -32,6 +32,7 @@ import type {
 } from '../types';
 import { createId } from '../lib/storage';
 import Editor from './Editor';
+import CompilerLoading from './CompilerLoading';
 
 interface WorkbenchProps {
   code: string;
@@ -247,16 +248,7 @@ export default function Workbench({
                       <button className="text-button" onClick={onRun}>运行当前代码<ChevronRight size={15} /></button>
                     </div>
                   )}
-                  {runState.phase === 'running' && (
-                    <div className="empty-state running-state">
-                      <LoaderCircle className="spin" size={27} />
-                      <h3>{runState.stage === 'bootstrap' ? '正在准备本地编译器' : runState.stage === 'run' ? '正在运行 WASM 程序' : '正在浏览器内编译'}</h3>
-                      <p>{runState.stage === 'bootstrap'
-                        ? `首次需下载约 28 MB，缓存后可离线编译。${runState.progress ? ` ${Math.round(runState.progress)}%` : ''}`
-                        : 'Clang 22 和你的程序都在这台设备的 Worker 中运行。'}</p>
-                      {runState.stage === 'bootstrap' && <div className="engine-progress"><span style={{ width: `${Math.max(2, runState.progress || 0)}%` }} /></div>}
-                    </div>
-                  )}
+                  {runState.phase === 'running' && <CompilerLoading runState={runState} />}
                   {runState.phase === 'engine-error' && (
                     <div className="empty-state error-state">
                       <AlertTriangle size={27} />

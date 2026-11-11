@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.1
+
+### Added
+
+- Added a guided first-run loading flow with real byte-level progress for the Clang, linker, sysroot, and MemFS downloads.
+- Added current-component progress, total downloaded size, and clear preparation, compilation, and execution stages.
+- Kept cancellation available throughout compiler download and execution.
+
 ## 2.1.0
 
 ### Changed

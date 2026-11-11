@@ -76,6 +76,11 @@ interface ProgressUpdate {
   stage: string;
   progress: number;
   message?: string;
+  loadedBytes?: number;
+  totalBytes?: number;
+  assetName?: string;
+  assetLoadedBytes?: number;
+  assetTotalBytes?: number;
 }
 
 interface PendingRun {
@@ -132,7 +137,16 @@ function ensureWorker() {
     if (!run || message.id !== run.id) return;
 
     if (message.type === 'progress') {
-      run.onProgress?.({ stage: message.stage, progress: message.progress, message: message.message });
+      run.onProgress?.({
+        stage: message.stage,
+        progress: message.progress,
+        message: message.message,
+        loadedBytes: message.loadedBytes,
+        totalBytes: message.totalBytes,
+        assetName: message.assetName,
+        assetLoadedBytes: message.assetLoadedBytes,
+        assetTotalBytes: message.assetTotalBytes,
+      });
       armIdleTimer(run);
       return;
     }

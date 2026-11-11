@@ -1,4 +1,4 @@
-const CACHE_NAME = 'c-lab-v2.1.0';
+const CACHE_NAME = 'c-lab-v2.1.1';
 const APP_SHELL = self.registration.scope;
 
 self.addEventListener('install', (event) => {

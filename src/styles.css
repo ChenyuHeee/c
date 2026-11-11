@@ -391,8 +391,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; border
 .engine-value { padding: 11px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--lime-soft); }
 .engine-value strong { display: block; color: var(--accent); font-size: 12px; }
 .engine-value small { display: block; color: var(--muted); font-size: 8px; margin-top: 5px; }
-.engine-progress { width: min(230px, 80%); height: 4px; border-radius: 4px; background: var(--surface-soft); overflow: hidden; margin-top: 5px; }
-.engine-progress > span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .2s ease; }
 .range-field { height: 36px; display: flex; align-items: center; gap: 10px; }
 .range-field input { min-width: 0; flex: 1; accent-color: var(--accent); }
 .range-field output { color: var(--text); font-family: "SFMono-Regular", Menlo, monospace; font-size: 10px; width: 34px; }
@@ -514,4 +512,43 @@ kbd { display: inline-flex; align-items: center; justify-content: center; border
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+
+.compiler-loading { min-height: 100%; padding: 20px 17px 14px; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+.loading-intro { display: flex; align-items: flex-start; gap: 12px; }
+.download-badge { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; background: var(--lime-soft); color: var(--accent); }
+.loading-kicker { display: block; color: var(--accent); font-size: 8px; font-weight: 700; letter-spacing: .7px; margin: 1px 0 5px; }
+.loading-intro h3 { margin: 0 0 6px; font-size: 15px; letter-spacing: -.25px; }
+.loading-intro p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.65; }
+.download-progress { padding: 14px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface-raised); }
+.progress-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
+.progress-heading > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 10px; }
+.progress-heading strong { color: var(--accent); font-family: "SFMono-Regular", Menlo, monospace; font-size: 24px; line-height: 1; letter-spacing: -1px; }
+.progress-heading strong small { font-size: 11px; margin-left: 2px; letter-spacing: 0; }
+.download-track { height: 7px; border-radius: 8px; background: var(--surface-soft); overflow: hidden; }
+.download-track > span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .16s linear; position: relative; }
+.download-track > span::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgb(255 255 255 / 22%), transparent); transform: translateX(-100%); animation: progress-shimmer 1.5s infinite; }
+.progress-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 9px; color: var(--faint); font-family: "SFMono-Regular", Menlo, monospace; font-size: 8px; }
+.loading-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.loading-steps li { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: 8px; color: var(--faint); }
+.loading-steps li.active { background: var(--lime-soft); color: var(--accent); }
+.loading-steps li.done { color: var(--success); }
+.step-icon { width: 19px; display: inline-flex; justify-content: center; flex: 0 0 auto; }
+.loading-steps li > span:nth-child(2) { flex: 1; min-width: 0; }
+.loading-steps strong { display: block; color: var(--text); font-size: 10px; font-weight: 600; }
+.loading-steps small { display: block; margin-top: 3px; font-size: 8px; color: var(--faint); }
+.step-state { font-size: 8px; }
+.loading-offline-note { display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--muted); font-size: 8px; line-height: 1.5; }
+.loading-offline-note svg { color: var(--success); flex: 0 0 auto; }
+@keyframes progress-shimmer { to { transform: translateX(100%); } }
+@media (max-height: 760px) and (min-width: 861px) {
+  .compiler-loading { gap: 11px; padding-top: 13px; padding-bottom: 10px; }
+  .download-badge { width: 36px; height: 36px; }
+  .download-progress { padding: 11px 12px; }
+  .loading-steps li { padding-top: 5px; padding-bottom: 5px; }
+}
+@media (max-width: 420px) {
+  .compiler-loading { padding-left: 13px; padding-right: 13px; }
+  .progress-meta { align-items: flex-start; flex-direction: column; gap: 5px; }
 }
